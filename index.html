@@ -29,7 +29,17 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 .leaflet-container.mesure{cursor:crosshair}
 .cp{font:12px system-ui}.cp button{font:11px system-ui;margin-top:4px}
 .contour-lbl{background:#fffd;border:1px solid #c60;color:#630;font:600 11px system-ui;padding:1px 4px;border-radius:3px;box-shadow:none}
+#lock{position:fixed;inset:0;z-index:5000;background:#1d2228;display:flex;align-items:center;justify-content:center;font:14px system-ui,sans-serif}
+#lock form{background:#fff;padding:22px 24px;border-radius:10px;width:300px;max-width:88vw;box-shadow:0 4px 20px #0008}
+#lock h2{margin:0 0 6px;font-size:18px}#lock p{margin:0 0 12px;color:#555;font-size:13px}
+#lock input[type=password]{width:100%;box-sizing:border-box;font:16px monospace;padding:8px;border:1px solid #aaa;border-radius:6px;letter-spacing:.05em}
+#lock button{margin-top:10px;width:100%;padding:8px;font:600 14px system-ui;background:#2a6;color:#fff;border:0;border-radius:6px;cursor:pointer}
+#lock .err{color:#c00;min-height:18px;font-size:13px;margin-top:6px}
 </style></head><body>
+<div id="lock"><form id="lockf"><h2>🔒 Atlas</h2><p>Accès réservé. Entre le code d'accès.</p>
+<input id="code" type="password" autocomplete="current-password" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autofocus>
+<label style="display:block;margin-top:8px;font-size:13px"><input id="memo" type="checkbox"> Se souvenir sur cet appareil</label>
+<button type="submit">Déverrouiller</button><div class="err" id="lerr"></div></form></div>
 <div id="m"></div><div id="rideau"><span>⇔</span></div>
 <div id="p">
  <div id="tete"><b>Atlas</b><button id="pli" title="Replier / déplier le menu">☰</button></div>
@@ -50,7 +60,8 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <button id="bPos">📍 Ma position</button>
    <button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button>
    <button id="bRid" title="Comparer le plan et le fond avec une barre à glisser">⇔ Rideau</button>
-   <button id="bLien" title="Copier un lien vers la vue actuelle">🔗 Lien</button></div>
+   <button id="bLien" title="Copier un lien vers la vue actuelle">🔗 Lien</button>
+   <button id="bLock" title="Oublier le code sur cet appareil">🔒 Verrouiller</button></div>
    <div id="info">Clique sur un contour orange ou un nom pour charger un plan.</div></div>
  </div>
 </div>
@@ -80,13 +91,40 @@ L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan)
 const info=document.getElementById('info');
 const copier=t=>{try{navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
+
+// ---------- chiffrement : rien n'est lisible sans le code ----------
+const te=new TextEncoder(),b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),b64e=u=>btoa(String.fromCharCode(...new Uint8Array(u)));
+let EK=null,NK=null;
+async function cles(dk){const base=await crypto.subtle.importKey('raw',dk,'HKDF',false,['deriveKey']);
+ const prm=i=>({name:'HKDF',hash:'SHA-256',salt:te.encode('atlas-v1'),info:te.encode(i)});
+ EK=await crypto.subtle.deriveKey(prm('enc'),base,{name:'AES-GCM',length:256},false,['decrypt']);
+ NK=await crypto.subtle.deriveKey(prm('name'),base,{name:'HMAC',hash:'SHA-256',length:256},false,['sign'])}
+async function nomF(s){const h=new Uint8Array(await crypto.subtle.sign('HMAC',NK,te.encode(s)));return [...h.slice(0,16)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function lire(s){const n=await nomF(s);const r=await fetch(`t/${n.slice(0,2)}/${n}`);if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
+ return crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},EK,b.slice(12))}
+async function deverrouille(code){const L_=await (await fetch('lock.json',{cache:'no-store'})).json();
+ const pk=await crypto.subtle.importKey('raw',te.encode(code),'PBKDF2',false,['deriveKey']);
+ const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:b64d(L_.salt),iterations:L_.iter},pk,{name:'AES-GCM',length:256},false,['decrypt']);
+ return crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(L_.iv),additionalData:te.encode('atlas-lock')},kek,b64d(L_.wrapped))}
+const CTile=L.GridLayer.extend({createTile(c,done){const img=document.createElement('img');img.alt='';img.style.visibility='hidden';
+ lire(`${this.options.d}/${c.z}/${c.x}/${c.y}`).then(buf=>{if(!buf){done(null,img);return}const u=URL.createObjectURL(new Blob([buf],{type:'image/webp'}));
+  img.onload=()=>{URL.revokeObjectURL(u);img.style.visibility='';done(null,img)};img.onerror=()=>done(null,img);img.src=u}).catch(()=>done(null,img));return img}});
+const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
+async function demarre(dk){await cles(dk);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';initPlans(JSON.parse(new TextDecoder().decode(buf)))}
+document.getElementById('lockf').onsubmit=async e=>{e.preventDefault();const err=document.getElementById('lerr');err.textContent='Vérification…';
+ try{const dk=await deverrouille(document.getElementById('code').value.trim().toUpperCase());const s=b64e(dk);
+  try{(document.getElementById('memo').checked?localStorage:sessionStorage).setItem('atlas_dk',s)}catch(_){}
+  err.textContent='';await demarre(dk)}catch(x){err.textContent='Code incorrect.'}};
+document.getElementById('bLock').onclick=()=>{try{localStorage.removeItem('atlas_dk');sessionStorage.removeItem('atlas_dk')}catch(e){}location.reload()};
+(async()=>{const m=memDK();if(m){try{await demarre(b64d(m))}catch(e){try{localStorage.removeItem('atlas_dk');sessionStorage.removeItem('atlas_dk')}catch(_){}}}})();
+
 // ---------- plans : chargement à la demande ----------
 let P=[];const etat=store.get('plans',{});const contours=L.featureGroup();
 const contCb=document.getElementById('cont');contCb.checked=store.get('cont',true);
 contCb.onchange=()=>{contCb.checked?contours.addTo(map):map.removeLayer(contours);store.set('cont',contCb.checked)};
 function sauve(){const o={};P.forEach(p=>{if(p.layer||p.op!==1)o[p.id]={on:!!p.layer,op:p.op}});store.set('plans',o)}
 function charge(p,aller){
- if(!p.layer){p.layer=L.tileLayer(p.d+'/{z}/{x}/{y}.'+(p.ext||'webp'),{minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
+ if(!p.layer){p.layer=new CTile({d:p.d,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
   p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(p.extra&&!p.xl)chargeExtra(p);
  if(aller)map.fitBounds([[p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]],{maxZoom:17});
@@ -94,12 +132,12 @@ function charge(p,aller){
 function decharge(p){if(p.layer){map.removeLayer(p.layer);p.layer=null}if(p.xl){map.removeLayer(p.xl);p.xl=null}p.ui.cb.checked=false;p.ui.row.classList.remove('actif');p.poly&&p.poly.setStyle({fillOpacity:.15,weight:2,dashArray:null});sauve();majNb()}
 const colT={salle:'#c0f',info:'#08f',pa:'#f00',pb:'#f60',vehicule:'#555',cao:'#0a0',caf:'#060',passage:'#fa0',elec:'#ff0',danger:'#f00'};
 const colR={principal:'#e00',secondaire:'#f80',chemin:'#fc0'};
-async function chargeExtra(p){p.xl=L.layerGroup().addTo(map);const j=await (await fetch(p.extra)).json();if(!p.xl)return;
+async function chargeExtra(p){p.xl=L.layerGroup().addTo(map);const bx=await lire('extra/'+p.extra);if(!bx||!p.xl)return;const j=JSON.parse(new TextDecoder().decode(bx));if(!p.xl)return;
  L.geoJSON(j,{pane:'cadp',style:f=>({color:colR[f.properties.type]||'#f80',weight:f.properties.type==='principal'?3:2,dashArray:f.properties.type==='chemin'?'4 4':null,opacity:.9}),
   pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:'cadp',radius:5,color:'#fff',weight:1.5,fillColor:colT[f.properties.type]||'#08f',fillOpacity:1}),
   onEachFeature:(f,l)=>{if(f.properties.nom)l.bindTooltip(f.properties.nom)}}).addTo(p.xl)}
 function majNb(){document.getElementById('nbp').textContent=`(${P.filter(p=>p.layer).length} chargé(s) / ${P.length})`}
-fetch('plans.json').then(r=>r.json()).then(j=>{
+function initPlans(j){
  P=j.plans;const box=document.getElementById('plans');box.innerHTML='';
  const deps=[...new Set(P.map(p=>p.dep))].sort();const ouverts=store.get('deps',{});
  deps.forEach(dep=>{const det=document.createElement('details');det.className='dep';det.open=!!ouverts[dep];
@@ -120,7 +158,7 @@ fetch('plans.json').then(r=>r.json()).then(j=>{
   box.appendChild(det)});
  if(contCb.checked)contours.addTo(map);majNb();
  if(new URLSearchParams(location.search).get('plan')){const p=P.find(x=>x.id===new URLSearchParams(location.search).get('plan'));p&&charge(p,true)}
-});
+}
 document.getElementById('filtre').oninput=e=>{const q=e.target.value.toLowerCase().trim();document.querySelectorAll('details.dep').forEach(d=>{let n=0;d.querySelectorAll('.plan').forEach(r=>{const ok=!q||r.dataset.nom.includes(q);r.style.display=ok?'':'none';n+=ok});d.style.display=n?'':'none';if(q)d.open=true})};
 document.getElementById('tout0').onclick=()=>P.forEach(p=>p.layer&&decharge(p));
 
