@@ -78,7 +78,7 @@ p:L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{...fondOpt,maxNa
 w:L.tileLayer('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',{maxZoom:22})};
 let fond=store.get('fond','o');if(!B[fond])fond='o';B[fond].addTo(map);
 document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onchange=()=>{Object.values(B).forEach(x=>map.removeLayer(x));B[r.value].addTo(map);store.set('fond',r.value)}});
-const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELLAIRE_EXPRESS','PCI%20vecteur','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
+const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
 function lireHash(){const m=location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+\.\d+)\/(-?\d+\.\d+)/);return m?[+m[2],+m[3],+m[1]]:null}
