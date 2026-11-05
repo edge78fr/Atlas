@@ -52,6 +52,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
+   <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label><br>
    <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><br>
    <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
@@ -83,6 +84,12 @@ document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onc
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
+const IGCP=L.TileLayer.extend({getTileUrl(c){const C=2*Math.PI*6378137,t=C/2**c.z;
+ const b=[c.x*t-C/2,C/2-(c.y+1)*t,(c.x+1)*t-C/2,C/2-c.y*t].map(v=>v.toFixed(2)).join(',');
+ return 'https://capgeo2.paris.fr/public/rest/services/IGC/IGC_Atlas_v2/MapServer/export?bbox='+b+'&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image'}});
+const igcp=new IGCP('',{maxZoom:22,maxNativeZoom:20,minZoom:12,pane:'plans',opacity:.9,keepBuffer:1,bounds:[[48.76,2.18],[48.99,2.62]],attribution:'Atlas IGC © Ville de Paris'});
+const igcpCb=document.getElementById('igcp');igcpCb.checked=store.get('igcp',false);if(igcpCb.checked)igcp.addTo(map);
+igcpCb.onchange=e=>{e.target.checked?igcp.addTo(map):map.removeLayer(igcp);store.set('igcp',e.target.checked)};
 const ch=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.HISTO.2008-2013.PARCELS&STYLE=bdparcellaire&FORMAT=image/png&TILEMATRIXSET=PM_0_20&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:22,maxNativeZoom:20,pane:'cadp',opacity:.8,keepBuffer:1});
 const chCb=document.getElementById('cad2');chCb.checked=store.get('cad2',false);if(chCb.checked)ch.addTo(map);
 chCb.onchange=e=>{e.target.checked?ch.addTo(map):map.removeLayer(ch);store.set('cad2',e.target.checked)};
