@@ -10,7 +10,12 @@ html,body,#m{height:100%;margin:0}
 #p button:hover{background:#e8e8e8}#p button.on{background:#2a6;color:#fff;border-color:#2a6}
 .sec{border-top:1px solid #ddd;margin-top:7px;padding-top:6px}
 .sec h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;color:#666;letter-spacing:.04em}
-.fonds label{display:inline-block;margin:2px 8px 2px 0}
+.fonds{display:grid;grid-template-columns:1fr 1fr;gap:1px 6px}.fonds label{margin:1px 0}
+.sec h5{margin:7px 0 2px;font-size:10.5px;font-weight:600;color:#888}
+.opf{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;margin:2px 0 2px}
+.cou{margin:1px 0}.cou label{display:block}
+input.op{width:100%;max-width:200px;height:14px;margin:0 0 3px 20px;display:block}.opf input.op{margin:0;flex:1}
+.cou input.op{display:none}.cou.on input.op{display:block}
 details.dep{margin:2px 0;border-radius:5px}
 details.dep>summary{cursor:pointer;padding:3px 4px;font-weight:600;background:#f3f3f3;border-radius:5px;list-style:none;display:flex;justify-content:space-between}
 details.dep>summary::-webkit-details-marker{display:none}
@@ -47,26 +52,23 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
   <div class="sec"><h4>Rechercher un lieu</h4>
    <div id="rech"><input id="q" placeholder="Adresse, lieu, commune…"><button id="go">🔍</button></div><div id="res"></div></div>
   <div class="sec"><h4>Fond de carte</h4><div class="fonds">
-   <label><input type="radio" name="b" value="o" checked> Photo</label>
+   <label><input type="radio" name="b" value="o" checked> Satellite</label>
+   <label><input type="radio" name="b" value="t"> Carte IGN</label>
+   <label><input type="radio" name="b" value="p"> OSM</label>
    <label><input type="radio" name="b" value="l"> Relief LiDAR</label>
-   <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
-   <div style="font-size:12px;color:#666">Opacité du fond <input id="fondo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"></div>
-   <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label>
-   <input id="cado" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
-   <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label>
-   <input id="igcpo" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité de l'atlas IGC Paris" style="width:90px;vertical-align:middle"><br>
-   <label><input id="gir" type="checkbox"> Carrières de Gironde (SIG 33, en direct)</label>
-   <input id="giro" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité des carrières de Gironde" style="width:90px;vertical-align:middle"><br>
-   <label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label>
-   <input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
-   <label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label>
-   <input id="zono" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
-   <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label>
-   <input id="cad2o" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
-   <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label>
-   <input id="admo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
-   <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
+   <div class="opf">Opacité <input id="fondo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité du fond"></div>
+   <h5>Cadastre et limites</h5>
+   <div class="cou"><label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><input id="cado" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><input id="cad2o" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="adm" type="checkbox"> Limites de communes</label><input id="admo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <h5>Carrières</h5>
+   <div class="cou"><label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label><input id="igcpo" class="op" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité"></div>
+   <div class="cou"><label><input id="gir" type="checkbox"> Carrières de Gironde (en direct)</label><input id="giro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label><input id="zono" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <h5>Divers</h5>
+   <div class="cou"><label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label><input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="cont" type="checkbox" checked> Contours des plans</label></div></div>
   <div class="sec"><h4>Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
    <input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
@@ -87,6 +89,7 @@ const map=L.map('m',{zoomControl:true,maxZoom:22,zoomSnap:0.5,wheelPxPerZoomLeve
 map.createPane('plans').style.zIndex=250;map.createPane('cadp').style.zIndex=300;map.createPane('cont').style.zIndex=350;
 const fondOpt={maxZoom:22,maxNativeZoom:18,keepBuffer:1,updateWhenZooming:false};
 const B={o:L.tileLayer(g('ORTHOIMAGERY.ORTHOPHOTOS','normal','image/jpeg'),{...fondOpt,maxNativeZoom:19,attribution:'IGN'}),
+t:L.tileLayer(g('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2','normal','image/png'),{...fondOpt,maxNativeZoom:19,attribution:'IGN'}),
 l:L.tileLayer(g('IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW','normal','image/png'),{...fondOpt,attribution:'IGN'}),
 p:L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{...fondOpt,maxNativeZoom:19,attribution:'© OpenStreetMap'}),
 w:L.tileLayer('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',{maxZoom:22})};
@@ -141,6 +144,8 @@ map.on('moveend',()=>{clearTimeout(adT);adT=setTimeout(adLoad,300)});
 function adSet(on){adOn=on;store.set('adm',on);if(on)adLoad();else{map.removeLayer(adR);map.removeLayer(adV)}}
 const admCb=document.getElementById('adm');admCb.checked=store.get('adm',false);adSet(admCb.checked);admCb.onchange=e=>adSet(e.target.checked);
 // ---- opacités des couches ----
+function majOp(){document.querySelectorAll('.cou').forEach(d=>{const c=d.querySelector('input[type=checkbox]');d.classList.toggle('on',!!(c&&c.checked))})}
+document.querySelectorAll('.cou input[type=checkbox]').forEach(c=>c.addEventListener('change',majOp));majOp();
 function opV(id,d=1){return +(store.get(id,d))}
 const opApply={
  fondo:v=>Object.values(B).forEach(x=>x.setOpacity(v)),
