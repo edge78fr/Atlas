@@ -52,6 +52,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
+   <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><br>
    <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
   <div class="sec"><h4>Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
@@ -82,6 +83,9 @@ document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onc
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
+const ch=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.HISTO.2008-2013.PARCELS&STYLE=bdparcellaire&FORMAT=image/png&TILEMATRIXSET=PM_0_20&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:22,maxNativeZoom:20,pane:'cadp',opacity:.8,keepBuffer:1});
+const chCb=document.getElementById('cad2');chCb.checked=store.get('cad2',false);if(chCb.checked)ch.addTo(map);
+chCb.onchange=e=>{e.target.checked?ch.addTo(map):map.removeLayer(ch);store.set('cad2',e.target.checked)};
 const adR=L.tileLayer(g('LIMITES_ADMINISTRATIVES_EXPRESS.LATEST','normal','image/png'),{maxZoom:22,maxNativeZoom:16,pane:'cadp',keepBuffer:1});
 const adV=L.geoJSON(null,{pane:'cadp',style:{color:'#ffd400',weight:2.5,opacity:.95,dashArray:'10 4 2 4',fill:false},
  onEachFeature:(f,l)=>l.bindTooltip(f.properties.nom_com,{sticky:true})});
