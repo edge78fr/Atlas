@@ -58,7 +58,10 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #info{font-size:14px}
 #rideau{width:6px;margin-left:-3px}#rideau span{width:48px;height:48px;left:-21px;margin-top:-24px;line-height:48px;font-size:20px}
 .leaflet-bottom.leaflet-right{display:none}
-.leaflet-touch .leaflet-bar a{width:40px;height:40px;line-height:40px}
+.leaflet-control-zoom{display:none}
+#p.ferme{left:auto;right:14px;width:auto;padding:0;background:transparent;box-shadow:none;border-radius:50%;opacity:.7;overflow:visible}
+#p.ferme #tete{margin:0;padding:0;background:transparent;position:static;min-height:0}#p.ferme #tete b{display:none}
+#p.ferme #pli{width:56px;height:56px;border-radius:50%!important;padding:0!important;font-size:26px!important;background:#fff;border:0;box-shadow:0 2px 8px #0007}
 }
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2><p>Accès réservé. Entre le code d'accès.</p>
@@ -78,6 +81,9 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <label><input type="radio" name="b" value="l"> Relief LiDAR</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <div class="opf">Opacité <input id="fondo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité du fond"></div>
+   <h5>Remonter le temps</h5>
+   <div id="rlt"><select id="epq" style="width:100%;font:13px system-ui;padding:3px"><option value="">— Aucune époque —</option></select>
+   <div class="opf" id="epqrow" style="display:none">Opacité <input id="epqo" class="op" type="range" min="0.1" max="1" step="0.05" value="1"><button id="epqc" title="Comparer l'époque et le fond actuel avec une barre à glisser">⇔ Comparer</button></div></div>
    <h5>Cadastre et limites</h5>
    <div class="cou"><label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><input id="cado" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><input id="cad2o" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
@@ -298,10 +304,32 @@ bMes.onclick=()=>{if(mesure){if(mesure.pts.length>1)info.textContent='Distance t
 map.on('click',e=>{if(!mesure)return;mesure.pts.push(e.latlng);mesure.ligne.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent='Distance : '+fmt(dist(mesure.pts))});
 map.on('dblclick',()=>{if(mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts))+' (re-clique 📏 pour effacer)';finMesure()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure()}});
+
+// ---------- Remonter le temps ----------
+map.createPane('epoq').style.zIndex=220;
+const EPQ_DEF=[['ORTHOIMAGERY.ORTHOPHOTOS.1950-1965','Photos 1950-1965','normal','image/png'],['ORTHOIMAGERY.ORTHOPHOTOS.1965-1980','Photos 1965-1980','normal','image/png'],['ORTHOIMAGERY.ORTHOPHOTOS2000-2005','Photos 2000-2005','normal','image/jpeg'],['ORTHOIMAGERY.ORTHOPHOTOS2006-2010','Photos 2006-2010','normal','image/jpeg'],['ORTHOIMAGERY.ORTHOPHOTOS2011-2015','Photos 2011-2015','normal','image/jpeg'],['GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40','Carte d\'état-major (1820-1866)','normal','image/jpeg']];
+const epqSel=document.getElementById('epq'),epqRow=document.getElementById('epqrow'),epqO=document.getElementById('epqo');let epqL=null,epqListe=null;
+function remplirEpq(l){const cur=epqSel.value;epqSel.innerHTML='<option value="">— Aucune époque —</option>'+l.map(e=>`<option value="${e[0]}|${e[2]}|${e[3]}">${e[1]}</option>`).join('');epqSel.value=cur}
+remplirEpq(EPQ_DEF);
+async function chargerEpq(){if(epqListe)return;epqListe=EPQ_DEF;try{const t=await fetch('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities').then(r=>r.text());const x=new DOMParser().parseFromString(t,'text/xml');const out=[];
+ for(const ly of x.getElementsByTagName('Layer')){const id=ly.getElementsByTagName('ows:Identifier')[0]?.textContent||'';const tms=[...ly.getElementsByTagName('TileMatrixSet')].map(e=>e.textContent);if(!tms.includes('PM'))continue;
+  let lab=null;const m=id.match(/^ORTHOIMAGERY\.ORTHOPHOTOS\.?(\d{4})(?:-(\d{4}))?$/);if(m)lab='Photos '+m[1]+(m[2]?'-'+m[2]:'');
+  else if(/ETATMAJOR/.test(id))lab='Carte d\'état-major'+(/10/.test(id)?' (1:10 000)':'');else if(/CASSINI/i.test(id))lab='Carte de Cassini (XVIIIe)';else if(/SCAN50.*1950/i.test(id))lab='Carte 1950';
+  if(!lab)continue;const st=ly.getElementsByTagName('Style')[0]?.getElementsByTagName('ows:Identifier')[0]?.textContent||'normal';const f=ly.getElementsByTagName('Format')[0]?.textContent||'image/jpeg';out.push([id,lab,st,f])}
+ if(out.length){out.sort((a,b)=>(b[1].match(/\d{4}/)?.[0]||'0').localeCompare(a[1].match(/\d{4}/)?.[0]||'0'));epqListe=out;remplirEpq(out)}}catch(e){}}
+epqSel.addEventListener('focus',chargerEpq);epqSel.addEventListener('pointerdown',chargerEpq);setTimeout(chargerEpq,3000);
+epqO.value=store.get('epqo',1);
+epqSel.onchange=()=>{if(epqL){map.removeLayer(epqL);epqL=null}const v=epqSel.value;epqRow.style.display=v?'flex':'none';store.set('epq',v);
+ if(!v){if(ridCible==='epoq')arretRid();return}const [id,st,f]=v.split('|');epqL=L.tileLayer(g(id,st,f),{maxZoom:22,maxNativeZoom:18,pane:'epoq',keepBuffer:1,opacity:+epqO.value,attribution:'IGN – Remonter le temps'}).addTo(map)};
+epqO.oninput=()=>{epqL&&epqL.setOpacity(+epqO.value);store.set('epqo',+epqO.value)};
+{const v=store.get('epq','');if(v){const o=[...epqSel.options].find(o=>o.value===v);if(!o){const [id,st,f]=v.split('|');epqSel.insertAdjacentHTML('beforeend',`<option value="${v}">${id}</option>`)}epqSel.value=v;epqSel.onchange()}}
 // ---------- rideau ----------
-const rid=document.getElementById('rideau'),bRid=document.getElementById('bRid'),pane=map.getPane('plans');let ridX=null;
+const rid=document.getElementById('rideau'),bRid=document.getElementById('bRid');let pane=map.getPane('plans'),ridCible='plans';let ridX=null;
 function clip(){if(ridX===null){pane.style.clip='';return}const nw=map.containerPointToLayerPoint([0,0]),se=map.containerPointToLayerPoint(map.getSize()),cx=map.containerPointToLayerPoint([ridX,0]).x;pane.style.clip=`rect(${nw.y}px,${cx}px,${se.y}px,${nw.x}px)`;rid.style.left=ridX+'px'}
-bRid.onclick=()=>{if(ridX===null){ridX=map.getSize().x/2;rid.style.display='block';bRid.classList.add('on');info.textContent='Plans à gauche de la barre, fond seul à droite.';plier()}else{ridX=null;rid.style.display='none';bRid.classList.remove('on')}clip()};
+function arretRid(){ridX=null;clip();pane.style.clip='';rid.style.display='none';bRid.classList.remove('on');document.getElementById('epqc').classList.remove('on')}
+function lanceRid(cible){if(ridX!==null){const meme=ridCible===cible;arretRid();if(meme)return}ridCible=cible;pane=map.getPane(cible);ridX=map.getSize().x/2;rid.style.display='block';(cible==='epoq'?document.getElementById('epqc'):bRid).classList.add('on');
+ info.textContent=cible==='epoq'?'Époque ancienne à gauche de la barre, fond actuel à droite.':'Plans à gauche de la barre, fond seul à droite.';plier();clip()}
+bRid.onclick=()=>lanceRid('plans');document.getElementById('epqc').onclick=()=>lanceRid('epoq');
 map.on('move zoom resize viewreset zoomend',clip);
 let drag=false;const dep=e=>{if(!drag)return;const x=(e.touches?e.touches[0].clientX:e.clientX)-map.getContainer().getBoundingClientRect().left;ridX=Math.max(0,Math.min(map.getSize().x,x));clip();e.preventDefault()};
 rid.addEventListener('mousedown',e=>{drag=true;e.preventDefault()});rid.addEventListener('touchstart',e=>{drag=true;e.preventDefault()},{passive:false});
