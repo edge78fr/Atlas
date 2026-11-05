@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Atlas</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -27,7 +27,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 .badge{font-size:11px;cursor:help}
 #filtre{width:100%;box-sizing:border-box;font:12px system-ui;padding:3px 5px;border:1px solid #bbb;border-radius:4px;margin-bottom:4px}
 #rech{display:flex;gap:4px}#rech input{flex:1;min-width:0;font:12px system-ui;padding:3px 5px;border:1px solid #bbb;border-radius:4px}
-#res div{padding:3px 4px;cursor:pointer;border-radius:3px;font-size:12px}#res div:hover{background:#eef}
+#res div{padding:6px 4px;cursor:pointer;border-radius:3px;font-size:12px}#res div:hover{background:#eef}
 .outils{display:flex;flex-wrap:wrap;gap:4px}
 #info{font-size:12px;color:#333;margin-top:4px;min-height:16px}
 #rideau{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;background:#fff;box-shadow:0 0 4px #000a;z-index:900;cursor:ew-resize;display:none}
@@ -41,12 +41,31 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 #lock input[type=password]{width:100%;box-sizing:border-box;font:16px monospace;padding:8px;border:1px solid #aaa;border-radius:6px;letter-spacing:.05em}
 #lock button{margin-top:10px;width:100%;padding:8px;font:600 14px system-ui;background:#2a6;color:#fff;border:0;border-radius:6px;cursor:pointer}
 #lock .err{color:#c00;min-height:18px;font-size:13px;margin-top:6px}
+#bulle{position:absolute;z-index:1001;left:50%;transform:translateX(-50%);top:10px;background:#fff;border-radius:16px;padding:6px 12px;font:600 14px system-ui;box-shadow:0 1px 6px #0006;display:none;max-width:80vw;text-align:center}
+@media (max-width:640px){
+#p{top:auto;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;max-height:62vh;font-size:15px;padding:8px 12px;border-radius:14px 14px 10px 10px;box-shadow:0 -2px 12px #0005}
+#tete{min-height:36px;position:sticky;top:-8px;background:#fff;z-index:2;margin:-8px -12px 0;padding:8px 12px}#tete b{font-size:16px}#pli{font-size:20px!important;padding:4px 14px!important}
+#p button{font-size:14px;padding:6px 10px;border-radius:6px}
+.depbar button{font-size:13px;padding:5px 9px}
+#p input[type=checkbox],#p input[type=radio]{width:20px;height:20px;vertical-align:-4px;margin:2px 6px 2px 0}
+.fonds{gap:4px 8px}.fonds label,.cou label{padding:4px 0}
+input.op,.plan input[type=range]{height:26px;max-width:none}
+.plan{grid-template-columns:26px 1fr auto auto;gap:6px;margin:6px 0 6px 2px}
+details.dep>summary{padding:9px 8px;font-size:15px}
+#filtre,#rech input{font-size:16px;padding:7px 8px}
+.sec h4{font-size:12px}.sec h5{font-size:12px}
+.outils button{flex:1 1 45%}
+#info{font-size:14px}
+#rideau{width:6px;margin-left:-3px}#rideau span{width:48px;height:48px;left:-21px;margin-top:-24px;line-height:48px;font-size:20px}
+.leaflet-bottom.leaflet-right{display:none}
+.leaflet-touch .leaflet-bar a{width:40px;height:40px;line-height:40px}
+}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2><p>Accès réservé. Entre le code d'accès.</p>
 <input id="code" type="password" autocomplete="current-password" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autofocus>
 <label style="display:block;margin-top:8px;font-size:13px"><input id="memo" type="checkbox"> Se souvenir sur cet appareil</label>
 <button type="submit">Déverrouiller</button><div class="err" id="lerr"></div></form></div>
-<div id="m"></div><div id="rideau"><span>⇔</span></div>
+<div id="m"></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
 <div id="p">
  <div id="tete"><b>Atlas</b><button id="pli" title="Replier / déplier le menu">☰</button></div>
  <div id="corps">
@@ -165,6 +184,10 @@ const pan=document.getElementById('p');if(store.get('ferme',window.innerWidth<60
 document.getElementById('pli').onclick=()=>{pan.classList.toggle('ferme');store.set('ferme',pan.classList.contains('ferme'))};
 L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan);
 const info=document.getElementById('info');
+
+const mobile=()=>window.innerWidth<=640,plier=()=>{if(mobile()){pan.classList.add('ferme');store.set('ferme',true)}};
+const bulle=document.getElementById('bulle');new MutationObserver(()=>{const t=info.textContent;bulle.textContent=t;bulle.style.display=(mobile()&&pan.classList.contains('ferme')&&t)?'block':'none'}).observe(info,{childList:true,characterData:true,subtree:true});
+document.getElementById('pli').addEventListener('click',()=>{bulle.style.display=(mobile()&&pan.classList.contains('ferme')&&info.textContent)?'block':'none'});
 const copier=t=>{try{navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
 
@@ -232,7 +255,7 @@ function initPlans(j){
    r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
    const [cb,nm,,bt,rg]=r.children;p.ui={cb,row:r};
    cb.onchange=()=>cb.checked?charge(p,false):decharge(p);
-   nm.onclick=bt.onclick=()=>charge(p,true);
+   nm.onclick=bt.onclick=()=>{charge(p,true);plier()};
    rg.oninput=()=>{p.op=+rg.value;p.layer&&p.layer.setOpacity(p.op);sauve()};
    det.appendChild(r);
    if(p.contour){p.poly=L.polygon(p.multi?p.contour.map(r=>[r.map(c=>[c[1],c[0]])]):p.contour.map(c=>[c[1],c[0]]),{pane:'cont',color:'#d60',weight:2,fillColor:'#f90',fillOpacity:.15}).bindTooltip(p.nom,{sticky:true,className:'contour-lbl'});
@@ -250,7 +273,7 @@ const q=document.getElementById('q'),res=document.getElementById('res');
 async function chercher(){const t=q.value.trim();if(!t)return;res.textContent='Recherche…';
  try{const r=await fetch('https://data.geopf.fr/geocodage/search?limit=5&q='+encodeURIComponent(t));const j=await r.json();res.innerHTML='';
   if(!j.features||!j.features.length){res.textContent='Aucun résultat';return}
-  j.features.forEach(f=>{const d=document.createElement('div');d.textContent=f.properties.label;d.onclick=()=>{const [lo,la]=f.geometry.coordinates;map.setView([la,lo],17);res.innerHTML=''};res.appendChild(d)})}
+  j.features.forEach(f=>{const d=document.createElement('div');d.textContent=f.properties.label;d.onclick=()=>{const [lo,la]=f.geometry.coordinates;map.setView([la,lo],17);res.innerHTML='';q.blur();plier()};res.appendChild(d)})}
  catch(e){res.textContent='Recherche indisponible'}}
 document.getElementById('go').onclick=chercher;q.onkeydown=e=>{if(e.key==='Enter')chercher()};
 // ---------- coordonnées ----------
@@ -266,19 +289,19 @@ map.on('locationfound',e=>{if(posM)map.removeLayer(posM);posM=L.layerGroup([L.ci
 map.on('locationerror',()=>info.textContent='Position indisponible (autorise la localisation)');
 // ---------- mesure ----------
 const bMes=document.getElementById('bMes');let couches=[];
-function finMesure(){if(!mesure)return;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();bMes.classList.remove('on');mesure=null}
+function finMesure(){bMes.textContent='📏 Mesurer';if(!mesure)return;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();bMes.classList.remove('on');mesure=null}
 const dist=pts=>{let s=0;for(let i=1;i<pts.length;i++)s+=pts[i-1].distanceTo(pts[i]);return s};
 const fmt=m=>m<1000?m.toFixed(1)+' m':(m/1000).toFixed(2)+' km';
-bMes.onclick=()=>{if(mesure){finMesure();return}couches.forEach(c=>map.removeLayer(c));couches=[];
+bMes.onclick=()=>{if(mesure){if(mesure.pts.length>1)info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure();bMes.textContent='📏 Mesurer';return}couches.forEach(c=>map.removeLayer(c));couches=[];
  mesure={pts:[],ligne:L.polyline([],{color:'#e30',weight:3,dashArray:'6 4'}).addTo(map)};couches.push(mesure.ligne);
- map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();bMes.classList.add('on');info.textContent='Clique pour poser des points, double-clic ou Échap pour finir.'};
+ map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();bMes.classList.add('on');info.textContent=mobile()?'Touche la carte pour poser des points. Re-touche 📏 pour finir.':'Clique pour poser des points, double-clic ou Échap pour finir.';if(mobile()){bMes.textContent='✔ Terminer';plier()}};
 map.on('click',e=>{if(!mesure)return;mesure.pts.push(e.latlng);mesure.ligne.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent='Distance : '+fmt(dist(mesure.pts))});
 map.on('dblclick',()=>{if(mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts))+' (re-clique 📏 pour effacer)';finMesure()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure()}});
 // ---------- rideau ----------
 const rid=document.getElementById('rideau'),bRid=document.getElementById('bRid'),pane=map.getPane('plans');let ridX=null;
 function clip(){if(ridX===null){pane.style.clip='';return}const nw=map.containerPointToLayerPoint([0,0]),se=map.containerPointToLayerPoint(map.getSize()),cx=map.containerPointToLayerPoint([ridX,0]).x;pane.style.clip=`rect(${nw.y}px,${cx}px,${se.y}px,${nw.x}px)`;rid.style.left=ridX+'px'}
-bRid.onclick=()=>{if(ridX===null){ridX=map.getSize().x/2;rid.style.display='block';bRid.classList.add('on');info.textContent='Plans à gauche de la barre, fond seul à droite.'}else{ridX=null;rid.style.display='none';bRid.classList.remove('on')}clip()};
+bRid.onclick=()=>{if(ridX===null){ridX=map.getSize().x/2;rid.style.display='block';bRid.classList.add('on');info.textContent='Plans à gauche de la barre, fond seul à droite.';plier()}else{ridX=null;rid.style.display='none';bRid.classList.remove('on')}clip()};
 map.on('move zoom resize viewreset zoomend',clip);
 let drag=false;const dep=e=>{if(!drag)return;const x=(e.touches?e.touches[0].clientX:e.clientX)-map.getContainer().getBoundingClientRect().left;ridX=Math.max(0,Math.min(map.getSize().x,x));clip();e.preventDefault()};
 rid.addEventListener('mousedown',e=>{drag=true;e.preventDefault()});rid.addEventListener('touchstart',e=>{drag=true;e.preventDefault()},{passive:false});
