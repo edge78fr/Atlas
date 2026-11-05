@@ -176,7 +176,7 @@ async function cles(dk){const base=await crypto.subtle.importKey('raw',dk,'HKDF'
  EK=await crypto.subtle.deriveKey(prm('enc'),base,{name:'AES-GCM',length:256},false,['decrypt']);
  NK=await crypto.subtle.deriveKey(prm('name'),base,{name:'HMAC',hash:'SHA-256',length:256},false,['sign'])}
 async function nomF(s){const h=new Uint8Array(await crypto.subtle.sign('HMAC',NK,te.encode(s)));return [...h.slice(0,16)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function lire(s){const n=await nomF(s);const r=await fetch(`t/${n.slice(0,2)}/${n}`);if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
+async function lire(s){const n=await nomF(s);const r=await fetch(`t/${n.slice(0,2)}/${n}`,s=="plans.json"?{cache:"no-cache"}:{});if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
  return crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},EK,b.slice(12))}
 async function deverrouille(code){const L_=await (await fetch('lock.json',{cache:'no-store'})).json();
  const pk=await crypto.subtle.importKey('raw',te.encode(code),'PBKDF2',false,['deriveKey']);
