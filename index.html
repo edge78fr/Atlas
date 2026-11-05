@@ -52,6 +52,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
+   <label><input id="adm" type="checkbox"> Limites administratives</label><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
   <div class="sec"><h4>Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
    <input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div>
@@ -81,6 +82,9 @@ document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onc
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
+const ad=L.tileLayer(g('LIMITES_ADMINISTRATIVES_EXPRESS.LATEST','normal','image/png'),{maxZoom:22,maxNativeZoom:16,pane:'cadp',keepBuffer:1});
+const admCb=document.getElementById('adm');admCb.checked=store.get('adm',false);if(admCb.checked)ad.addTo(map);
+admCb.onchange=e=>{e.target.checked?ad.addTo(map):map.removeLayer(ad);store.set('adm',e.target.checked)};
 function lireHash(){const m=location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+\.\d+)\/(-?\d+\.\d+)/);return m?[+m[2],+m[3],+m[1]]:null}
 const h=lireHash()||store.get('vue',null)||[48.98,2.08,11];map.setView([h[0],h[1]],h[2]);
 map.on('moveend',()=>{const c=map.getCenter(),z=map.getZoom();history.replaceState(null,'',`#${z}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`);store.set('vue',[c.lat,c.lng,z])});
