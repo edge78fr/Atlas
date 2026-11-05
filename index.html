@@ -83,6 +83,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <label><input type="radio" name="b" value="t"> Carte IGN</label>
    <label><input type="radio" name="b" value="p"> OSM</label>
    <label><input type="radio" name="b" value="l"> Relief LiDAR</label>
+   <label><input type="radio" name="b" value="s"> Pentes LiDAR</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <div id="rlt"><div class="tl-lab">🕰️ Remonter le temps</div><div id="chips"></div><button id="epqc" style="display:none">⇔ Comparer avec aujourd'hui</button></div>
    <div class="opf">Opacité <input id="fondo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité du fond"></div>
@@ -120,9 +121,17 @@ const B={o:L.tileLayer(g('ORTHOIMAGERY.ORTHOPHOTOS','normal','image/jpeg'),{...f
 t:L.tileLayer(g('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2','normal','image/png'),{...fondOpt,maxNativeZoom:19,attribution:'IGN'}),
 l:L.tileLayer(g('IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW','normal','image/png'),{...fondOpt,attribution:'IGN'}),
 p:L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{...fondOpt,maxNativeZoom:19,attribution:'© OpenStreetMap'}),
+s:L.layerGroup([L.tileLayer(g('IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW','normal','image/png'),{...fondOpt,attribution:'IGN'})]),
 w:L.tileLayer('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',{maxZoom:22})};
 let fond=store.get('fond','o');if(!B[fond])fond='o';B[fond].addTo(map);
 document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onchange=()=>{Object.values(B).forEach(x=>map.removeLayer(x));B[r.value].addTo(map);store.set('fond',r.value)}});
+
+// Pentes : couche détectée dans le catalogue IGN (priorité LiDAR HD), posée sur l'ombrage LiDAR
+(async()=>{let id='ELEVATION.SLOPES',st='normal',f='image/png';try{const t=await fetch('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities').then(r=>r.text());const x=new DOMParser().parseFromString(t,'text/xml');let best=null;
+ for(const ly of x.getElementsByTagName('Layer')){const i=ly.getElementsByTagName('ows:Identifier')[0]?.textContent||'';if(!/SLOPE|PENTE/i.test(i))continue;if(![...ly.getElementsByTagName('TileMatrixSet')].some(e=>e.textContent==='PM'))continue;
+  const sc=(/LIDAR/i.test(i)?2:0)+(/HIGHRES|HD/i.test(i)?1:0);if(!best||sc>best[0])best=[sc,i,ly.getElementsByTagName('Style')[0]?.getElementsByTagName('ows:Identifier')[0]?.textContent||'normal',ly.getElementsByTagName('Format')[0]?.textContent||'image/png']}
+ if(best)[,id,st,f]=best}catch(e){}
+ B.s.addLayer(L.tileLayer(g(id,st,f),{...fondOpt,opacity:.55,op0:.55,attribution:'IGN pentes'}))})();
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
@@ -176,7 +185,7 @@ function majOp(){document.querySelectorAll('.cou').forEach(d=>{const c=d.querySe
 document.querySelectorAll('.cou input[type=checkbox]').forEach(c=>c.addEventListener('change',majOp));majOp();
 function opV(id,d=1){return +(store.get(id,d))}
 const opApply={
- fondo:v=>Object.values(B).forEach(x=>x.setOpacity(v)),
+ fondo:v=>Object.values(B).forEach(x=>x.setOpacity?x.setOpacity(v):x.eachLayer(l=>l.setOpacity(v*(l.options.op0||1)))),
  cado:v=>cd.setOpacity(v),
  cad2o:v=>ch.setOpacity(v*0.8),
  admo:v=>{adR.setOpacity(v);adV.setStyle({opacity:.95*v})},
