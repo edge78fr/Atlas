@@ -11,6 +11,7 @@ html,body,#m{height:100%;margin:0}
 .sec{border-top:1px solid #ddd;margin-top:7px;padding-top:6px}
 .sec h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;color:#666;letter-spacing:.04em}
 .fonds{display:grid;grid-template-columns:1fr 1fr;gap:1px 6px}.fonds label{margin:1px 0}
+.depbar{display:flex;gap:4px;margin:3px 0 4px 14px}.depbar button{font-size:11px;padding:1px 6px;border:1px solid #ccc;background:#f6f6f6;border-radius:4px;cursor:pointer}.depbar button:hover{background:#e8e8e8}
 .sec h5{margin:7px 0 2px;font-size:10.5px;font-weight:600;color:#888}
 .opf{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;margin:2px 0 2px}
 .cou{margin:1px 0}.cou label{display:block}
@@ -219,6 +220,13 @@ function initPlans(j){
   const ps=P.filter(p=>p.dep===dep).sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));
   det.innerHTML=`<summary><span>${dep}</span><span style="color:#999;font-weight:400">${ps.length}</span></summary>`;
   det.ontoggle=()=>{ouverts[dep]=det.open;store.set('deps',ouverts)};
+  const bar=document.createElement('div');bar.className='depbar';
+  bar.innerHTML='<button title="Charger tous les plans de ce département">Tout charger</button><button title="Décharger les plans de ce département">Tout décharger</button><button title="Cadrer la carte sur ce département">Voir</button>';
+  const [bOn,bOff,bVoir]=bar.children;
+  bOn.onclick=()=>ps.forEach(p=>p.ui.row.style.display!=='none'&&charge(p,false));
+  bOff.onclick=()=>ps.forEach(p=>p.layer&&decharge(p));
+  bVoir.onclick=()=>{const b=ps.reduce((a,p)=>[Math.min(a[0],p.bbox[0]),Math.min(a[1],p.bbox[1]),Math.max(a[2],p.bbox[2]),Math.max(a[3],p.bbox[3])],[180,90,-180,-90]);map.fitBounds([[b[1],b[0]],[b[3],b[2]]])};
+  det.appendChild(bar);
   ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;
    const r=document.createElement('div');r.className='plan';r.dataset.nom=(p.nom+' '+dep).toLowerCase();
    r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
