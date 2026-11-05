@@ -54,6 +54,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
    <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label>
    <input id="igcpo" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité de l'atlas IGC Paris" style="width:90px;vertical-align:middle"><br>
+   <label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label><br>
    <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><br>
    <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
@@ -93,6 +94,13 @@ const igcpCb=document.getElementById('igcp');igcpCb.checked=store.get('igcp',fal
 const igcpO=document.getElementById('igcpo');igcpO.value=store.get('igcpo',0.9);igcp.setOpacity(+igcpO.value);
 igcpO.oninput=e=>{igcp.setOpacity(+e.target.value);store.set('igcpo',+e.target.value)};
 igcpCb.onchange=e=>{e.target.checked?igcp.addTo(map):map.removeLayer(igcp);store.set('igcp',e.target.checked)};
+const zCol={'PPR':'#e00000','R111-3':'#222','PAC':'#0050ff','NON-REGL':'#ff9900'};let zonL=null;
+async function zonOn(){if(!zonL){const b=await lire('zonages.json.gz');if(!b)return;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+ zonL=L.geoJSON(JSON.parse(t),{pane:'cadp',style:f=>({color:zCol[f.properties.z]||'#888',weight:f.properties.z==='NON-REGL'?1.5:2.5,dashArray:f.properties.z==='NON-REGL'?'5 4':null,fillColor:zCol[f.properties.z]||'#888',fillOpacity:.08,opacity:.9}),
+ onEachFeature:(f,l)=>l.bindTooltip(`${f.properties.c} – ${f.properties.m} – ${f.properties.z}`,{sticky:true})})}
+ if(document.getElementById('zon').checked)zonL.addTo(map)}
+const zonCb=document.getElementById('zon');zonCb.checked=store.get('zon',false);
+zonCb.onchange=e=>{store.set('zon',e.target.checked);e.target.checked?zonOn():(zonL&&map.removeLayer(zonL))};
 const ch=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.HISTO.2008-2013.PARCELS&STYLE=bdparcellaire&FORMAT=image/png&TILEMATRIXSET=PM_0_20&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:22,maxNativeZoom:20,pane:'cadp',opacity:.8,keepBuffer:1});
 const chCb=document.getElementById('cad2');chCb.checked=store.get('cad2',false);if(chCb.checked)ch.addTo(map);
 chCb.onchange=e=>{e.target.checked?ch.addTo(map):map.removeLayer(ch);store.set('cad2',e.target.checked)};
@@ -137,7 +145,7 @@ const CTile=L.GridLayer.extend({createTile(c,done){const img=document.createElem
  lire(`${this.options.d}/${c.z}/${c.x}/${c.y}`).then(buf=>{if(!buf){done(null,img);return}const u=URL.createObjectURL(new Blob([buf],{type:'image/webp'}));
   img.onload=()=>{URL.revokeObjectURL(u);img.style.visibility='';done(null,img)};img.onerror=()=>done(null,img);img.src=u}).catch(()=>done(null,img));return img}});
 const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
-async function demarre(dk){await cles(dk);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';initPlans(JSON.parse(new TextDecoder().decode(buf)))}
+async function demarre(dk){await cles(dk);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();initPlans(JSON.parse(new TextDecoder().decode(buf)))}
 document.getElementById('lockf').onsubmit=async e=>{e.preventDefault();const err=document.getElementById('lerr');err.textContent='Vérification…';
  try{const dk=await deverrouille(document.getElementById('code').value.trim().toUpperCase());const s=b64e(dk);
   try{(document.getElementById('memo').checked?localStorage:sessionStorage).setItem('atlas_dk',s)}catch(_){}
