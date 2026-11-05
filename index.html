@@ -126,12 +126,28 @@ w:L.tileLayer('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAA
 let fond=store.get('fond','o');if(!B[fond])fond='o';B[fond].addTo(map);
 document.querySelectorAll('[name=b]').forEach(r=>{r.checked=r.value===fond;r.onchange=()=>{Object.values(B).forEach(x=>map.removeLayer(x));B[r.value].addTo(map);store.set('fond',r.value)}});
 
-// Pentes : couche détectée dans le catalogue IGN (priorité LiDAR HD), posée sur l'ombrage LiDAR
-(async()=>{let id='ELEVATION.SLOPES',st='normal',f='image/png';try{const t=await fetch('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities').then(r=>r.text());const x=new DOMParser().parseFromString(t,'text/xml');let best=null;
- for(const ly of x.getElementsByTagName('Layer')){const i=ly.getElementsByTagName('ows:Identifier')[0]?.textContent||'';if(!/SLOPE|PENTE/i.test(i))continue;if(![...ly.getElementsByTagName('TileMatrixSet')].some(e=>e.textContent==='PM'))continue;
-  const sc=(/LIDAR/i.test(i)?2:0)+(/HIGHRES|HD/i.test(i)?1:0);if(!best||sc>best[0])best=[sc,i,ly.getElementsByTagName('Style')[0]?.getElementsByTagName('ows:Identifier')[0]?.textContent||'normal',ly.getElementsByTagName('Format')[0]?.textContent||'image/png']}
- if(best)[,id,st,f]=best}catch(e){}
- B.s.addLayer(L.tileLayer(g(id,st,f),{...fondOpt,opacity:.55,op0:.55,attribution:'IGN pentes'}))})();
+// Pentes : calculées dans le navigateur à partir de l'altitude brute IGN (format BIL), couleur selon la pente
+const PenteL=L.GridLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=256;
+ if(!this.options.src){setTimeout(()=>done(null,cv),0);return cv}
+ const z=c.z>this.options.maxNat?this.options.maxNat:c.z,f=2**(c.z-z),tx=Math.floor(c.x/f),ty=Math.floor(c.y/f),ox=(c.x-tx*f)*256/f,oy=(c.y-ty*f)*256/f;
+ const k=`${z}/${tx}/${ty}`;const src=this.options.src.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
+ (this._c=this._c||{});const pr=this._c[k]||(this._c[k]=fetch(src).then(r=>r.ok?r.arrayBuffer():null).then(buf=>{if(!buf||buf.byteLength<256*256*4)return null;
+  const dv=new DataView(buf);let le=true;const t=dv.getFloat32(0,true);if(!(t>-500&&t<5000))le=false;const a=new Float32Array(65536);for(let i=0;i<65536;i++)a[i]=dv.getFloat32(i*4,le);return a}).catch(()=>null));
+ pr.then(a=>{if(!a){done(null,cv);return}const lat=Math.atan(Math.sinh(Math.PI*(1-2*(ty+.5)/2**z))),px=40075016*Math.cos(lat)/2**z/256;
+  const img=cv.getContext('2d').createImageData(256,256),d=img.data;
+  for(let y=0;y<256;y++)for(let x=0;x<256;x++){const sx=Math.min(255,Math.floor(ox+x/f)),sy=Math.min(255,Math.floor(oy+y/f));
+   const g=(i,j)=>{i=Math.max(0,Math.min(255,i));j=Math.max(0,Math.min(255,j));const v=a[j*256+i];return v<-1000?a[sy*256+sx]:v};
+   const dzx=(g(sx+1,sy)-g(sx-1,sy))/(2*px),dzy=(g(sx,sy+1)-g(sx,sy-1))/(2*px);const p=Math.atan(Math.hypot(dzx,dzy))*57.3;
+   const t=Math.min(1,p/45),o=(y*256+x)*4;d[o]=255;d[o+1]=Math.round(255*(1-t)**0.7);d[o+2]=Math.round(80*(1-t));d[o+3]=Math.round(230*Math.min(1,Math.pow(p/8,1.3)))}
+  cv.getContext('2d').putImageData(img,0,0);done(null,cv)});return cv}});
+const penteL=new PenteL({...fondOpt,maxNat:17,op0:1,attribution:'IGN altitude'});B.s.addLayer(penteL);
+(async()=>{let id='ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',st='normal',f='image/x-bil;bits=32',mx=17;try{const t=await fetch('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities').then(r=>r.text());const x=new DOMParser().parseFromString(t,'text/xml');let best=null;
+ for(const ly of x.getElementsByTagName('Layer')){const i=ly.getElementsByTagName('ows:Identifier')[0]?.textContent||'';const fm=[...ly.getElementsByTagName('Format')].map(e=>e.textContent).find(v=>/bil/i.test(v));if(!fm||!/ELEVATION/i.test(i))continue;
+  const tl=[...ly.getElementsByTagName('TileMatrixSetLink')].find(e=>e.getElementsByTagName('TileMatrixSet')[0]?.textContent==='PM');if(!tl)continue;
+  const lim=[...tl.getElementsByTagName('TileMatrix')].map(e=>+e.textContent).filter(n=>!isNaN(n));const m=lim.length?Math.max(...lim):17;
+  const sc=(/LIDAR/i.test(i)?3:0)+(/MNT|HIGHRES/i.test(i)?1:0)+m/100;if(!best||sc>best[0])best=[sc,i,ly.getElementsByTagName('Style')[0]?.getElementsByTagName('ows:Identifier')[0]?.textContent||'normal',fm,m]}
+ if(best)[,id,st,f,mx]=best}catch(e){}
+ penteL.options.src=g(id,st,encodeURIComponent(f));penteL.options.maxNat=Math.min(mx,18);penteL.redraw()})();
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
 const cadCb=document.getElementById('cad');cadCb.checked=store.get('cad',false);if(cadCb.checked)cd.addTo(map);
 cadCb.onchange=e=>{e.target.checked?cd.addTo(map):map.removeLayer(cd);store.set('cad',e.target.checked)};
