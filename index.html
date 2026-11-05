@@ -51,15 +51,21 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input type="radio" name="b" value="l"> Relief LiDAR</label>
    <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
-   <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
+   <div style="font-size:12px;color:#666">Opacité du fond <input id="fondo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"></div>
+   <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label>
+   <input id="cado" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
    <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label>
    <input id="igcpo" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité de l'atlas IGC Paris" style="width:90px;vertical-align:middle"><br>
    <label><input id="gir" type="checkbox"> Carrières de Gironde (SIG 33, en direct)</label>
    <input id="giro" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité des carrières de Gironde" style="width:90px;vertical-align:middle"><br>
-   <label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label><br>
-   <label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label><br>
-   <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><br>
-   <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label><br>
+   <label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label>
+   <input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
+   <label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label>
+   <input id="zono" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
+   <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label>
+   <input id="cad2o" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
+   <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label>
+   <input id="admo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité" style="width:90px;vertical-align:middle"><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
   <div class="sec"><h4>Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
    <input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div>
@@ -108,16 +114,17 @@ girCb.onchange=e=>{e.target.checked?girL.addTo(map):map.removeLayer(girL);store.
 let aquL=null;async function aquOn(){if(!aquL){const b=await lire('aqueducs.json.gz');if(!b)return;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
  aquL=L.geoJSON(JSON.parse(t),{pane:'cadp',style:f=>{const n=f.properties.n.toLowerCase();return{color:/aqueduc|ligne des puits/.test(n)?'#c000ff':/etang/.test(n)?'#0090ff':'#00b4d8',weight:/aqueduc|ligne des puits/.test(n)?4:3,opacity:.9}},
  onEachFeature:(f,l)=>l.bindTooltip(f.properties.n.replace(/^(SityTrail - )+/,''),{sticky:true})})}
- if(document.getElementById('aqu').checked)aquL.addTo(map)}
+ opApply.aquo(opV('aquo'));if(document.getElementById('aqu').checked)aquL.addTo(map)}
 const aquCb=document.getElementById('aqu');aquCb.checked=store.get('aqu',false);
 aquCb.onchange=e=>{store.set('aqu',e.target.checked);e.target.checked?aquOn():(aquL&&map.removeLayer(aquL))};
 const zCol={'PPR':'#e00000','R111-3':'#222','PAC':'#0050ff','NON-REGL':'#ff9900'};let zonL=null;
 async function zonOn(){if(!zonL){const b=await lire('zonages.json.gz');if(!b)return;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
  zonL=L.geoJSON(JSON.parse(t),{pane:'cadp',style:f=>({color:zCol[f.properties.z]||'#888',weight:f.properties.z==='NON-REGL'?1.5:2.5,dashArray:f.properties.z==='NON-REGL'?'5 4':null,fillColor:zCol[f.properties.z]||'#888',fillOpacity:.08,opacity:.9}),
  onEachFeature:(f,l)=>l.bindTooltip(`${f.properties.c} – ${f.properties.m} – ${f.properties.z}`,{sticky:true})})}
- if(document.getElementById('zon').checked)zonL.addTo(map)}
+ opApply.zono(opV('zono'));if(document.getElementById('zon').checked)zonL.addTo(map)}
 const zonCb=document.getElementById('zon');zonCb.checked=store.get('zon',false);
 zonCb.onchange=e=>{store.set('zon',e.target.checked);e.target.checked?zonOn():(zonL&&map.removeLayer(zonL))};
+
 const ch=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.HISTO.2008-2013.PARCELS&STYLE=bdparcellaire&FORMAT=image/png&TILEMATRIXSET=PM_0_20&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:22,maxNativeZoom:20,pane:'cadp',opacity:.8,keepBuffer:1});
 const chCb=document.getElementById('cad2');chCb.checked=store.get('cad2',false);if(chCb.checked)ch.addTo(map);
 chCb.onchange=e=>{e.target.checked?ch.addTo(map):map.removeLayer(ch);store.set('cad2',e.target.checked)};
@@ -133,6 +140,17 @@ async function adLoad(){if(!adOn)return;const z=map.getZoom();
 map.on('moveend',()=>{clearTimeout(adT);adT=setTimeout(adLoad,300)});
 function adSet(on){adOn=on;store.set('adm',on);if(on)adLoad();else{map.removeLayer(adR);map.removeLayer(adV)}}
 const admCb=document.getElementById('adm');admCb.checked=store.get('adm',false);adSet(admCb.checked);admCb.onchange=e=>adSet(e.target.checked);
+// ---- opacités des couches ----
+function opV(id,d=1){return +(store.get(id,d))}
+const opApply={
+ fondo:v=>Object.values(B).forEach(x=>x.setOpacity(v)),
+ cado:v=>cd.setOpacity(v),
+ cad2o:v=>ch.setOpacity(v*0.8),
+ admo:v=>{adR.setOpacity(v);adV.setStyle({opacity:.95*v})},
+ aquo:v=>{aquL&&aquL.setStyle({opacity:.9*v})},
+ zono:v=>{zonL&&zonL.setStyle({opacity:.9*v,fillOpacity:.08*v})}};
+for(const id in opApply){const el=document.getElementById(id);if(!el)continue;el.value=opV(id);opApply[id](+el.value);
+ el.oninput=e=>{opApply[id](+e.target.value);store.set(id,+e.target.value)}}
 function lireHash(){const m=location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+\.\d+)\/(-?\d+\.\d+)/);return m?[+m[2],+m[3],+m[1]]:null}
 const h=lireHash()||store.get('vue',null)||[48.98,2.08,11];map.setView([h[0],h[1]],h[2]);
 map.on('moveend',()=>{const c=map.getCenter(),z=map.getZoom();history.replaceState(null,'',`#${z}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`);store.set('vue',[c.lat,c.lng,z])});
