@@ -52,7 +52,8 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
    <label><input type="radio" name="b" value="p"> Plan</label>
    <label><input type="radio" name="b" value="w"> Fond blanc</label></div>
    <label><input id="cad" type="checkbox"> Cadastre (parcelles IGN)</label><br>
-   <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label><br>
+   <label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label>
+   <input id="igcpo" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité de l'atlas IGC Paris" style="width:90px;vertical-align:middle"><br>
    <label><input id="cad2" type="checkbox"> Cadastre 2008-2013 (scans)</label><br>
    <label><input id="adm" type="checkbox"> Limites de communes (cadastre)</label><br>
    <label><input id="cont" type="checkbox" checked> Contours des plans</label></div>
@@ -89,6 +90,8 @@ const IGCP=L.TileLayer.extend({getTileUrl(c){const C=2*Math.PI*6378137,t=C/2**c.
  return 'https://capgeo2.paris.fr/public/rest/services/IGC/IGC_Atlas_v2/MapServer/export?bbox='+b+'&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image'}});
 const igcp=new IGCP('',{maxZoom:22,maxNativeZoom:20,minZoom:12,pane:'plans',opacity:.9,keepBuffer:1,bounds:[[48.76,2.18],[48.99,2.62]],attribution:'Atlas IGC © Ville de Paris'});
 const igcpCb=document.getElementById('igcp');igcpCb.checked=store.get('igcp',false);if(igcpCb.checked)igcp.addTo(map);
+const igcpO=document.getElementById('igcpo');igcpO.value=store.get('igcpo',0.9);igcp.setOpacity(+igcpO.value);
+igcpO.oninput=e=>{igcp.setOpacity(+e.target.value);store.set('igcpo',+e.target.value)};
 igcpCb.onchange=e=>{e.target.checked?igcp.addTo(map):map.removeLayer(igcp);store.set('igcp',e.target.checked)};
 const ch=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.HISTO.2008-2013.PARCELS&STYLE=bdparcellaire&FORMAT=image/png&TILEMATRIXSET=PM_0_20&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:22,maxNativeZoom:20,pane:'cadp',opacity:.8,keepBuffer:1});
 const chCb=document.getElementById('cad2');chCb.checked=store.get('cad2',false);if(chCb.checked)ch.addTo(map);
