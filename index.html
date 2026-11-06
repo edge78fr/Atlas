@@ -106,6 +106,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="cou"><label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label><input id="igcpo" class="op" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité"></div>
    <div class="cou"><label><input id="gir" type="checkbox"> Carrières de Gironde (en direct)</label><input id="giro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label><input id="zono" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="eur" type="checkbox"> Cavités de l'Eure (indices DDTM 27)</label><input id="euro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <h5>Divers</h5>
    <div class="cou"><label><input id="bss" type="checkbox"> Points BRGM « Dossiers du sous-sol »</label></div>
    <div class="cou"><label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label><input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
@@ -167,6 +168,15 @@ async function zonOn(){if(!zonL){const b=await lire('zonages.json.gz');if(!b)ret
  zonL=L.geoJSON(JSON.parse(t),{pane:'cadp',style:f=>({color:zCol[f.properties.z]||'#888',weight:f.properties.z==='NON-REGL'?1.5:2.5,dashArray:f.properties.z==='NON-REGL'?'5 4':null,fillColor:zCol[f.properties.z]||'#888',fillOpacity:.08,opacity:.9}),
  onEachFeature:(f,l)=>l.bindTooltip(`${f.properties.c} – ${f.properties.m} – ${f.properties.z}`,{sticky:true})})}
  opApply.zono(opV('zono'));if(document.getElementById('zon').checked)zonL.addTo(map)}
+
+let eurL=null;const eurSt=f=>{const p=f.properties;return p.k==='t'?{color:'#ff7a00',weight:1.5,dashArray:'4 3',fillOpacity:0,opacity:.85}:p.r?{color:'#8a5cc2',weight:1,dashArray:'3 3',fillOpacity:.03,fillColor:'#8a5cc2',opacity:.6}:{color:'#d1007a',weight:2.5,fillColor:'#d1007a',fillOpacity:.12,opacity:.95}};
+async function eurOn(){if(!eurL){const b=await lire('eure.json.gz');if(!b)return;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+ eurL=L.geoJSON(JSON.parse(t),{pane:'cadp',style:eurSt,onEachFeature:(f,l)=>{const p=f.properties;l.bindTooltip(p.k==='t'?`Rayon de sécurité (forme particulière)${p.ray?' – '+p.ray+' m':''}`:[p.r?'Indice (cercle)':'Indice – contour',p.ind,p.obs,p.loc].filter(Boolean).join(' – '),{sticky:true})}});
+ const v=+document.getElementById('euro').value;eurL.eachLayer(l=>{const s=eurSt(l.feature);l.setStyle({opacity:s.opacity*v,fillOpacity:s.fillOpacity*v})})}
+ if(document.getElementById('eur').checked)eurL.addTo(map)}
+const eurCb=document.getElementById('eur');eurCb.checked=store.get('eur',false);
+eurCb.onchange=e=>{store.set('eur',e.target.checked);e.target.checked?eurOn():(eurL&&map.removeLayer(eurL))};
+{const o=document.getElementById('euro');o.value=store.get('euro',1);o.oninput=e=>{store.set('euro',+e.target.value);eurL&&eurL.eachLayer(l=>{const s=eurSt(l.feature);l.setStyle({opacity:s.opacity*e.target.value,fillOpacity:s.fillOpacity*e.target.value})})}}
 const zonCb=document.getElementById('zon');zonCb.checked=store.get('zon',false);
 zonCb.onchange=e=>{store.set('zon',e.target.checked);e.target.checked?zonOn():(zonL&&map.removeLayer(zonL))};
 
@@ -233,7 +243,7 @@ const CTile=L.GridLayer.extend({createTile(c,done){const img=document.createElem
  lire(`${this.options.d}/${c.z}/${c.x}/${c.y}`).then(buf=>{if(!buf){done(null,img);return}const u=URL.createObjectURL(new Blob([buf],{type:'image/webp'}));
   img.onload=()=>{URL.revokeObjectURL(u);img.style.visibility='';done(null,img)};img.onerror=()=>done(null,img);img.src=u}).catch(()=>done(null,img));return img}});
 const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
-async function demarre(dk){await cles(dk);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(aquCb.checked)aquOn();initPlans(JSON.parse(new TextDecoder().decode(buf)))}
+async function demarre(dk){await cles(dk);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(aquCb.checked)aquOn();initPlans(JSON.parse(new TextDecoder().decode(buf)))}
 document.getElementById('lockf').onsubmit=async e=>{e.preventDefault();const err=document.getElementById('lerr');err.textContent='Vérification…';
  try{const dk=await deverrouille(document.getElementById('code').value.trim().toUpperCase());const s=b64e(dk);
   try{(document.getElementById('memo').checked?localStorage:sessionStorage).setItem('atlas_dk',s)}catch(_){}
