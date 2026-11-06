@@ -45,9 +45,9 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 #chips{display:flex;gap:4px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
 #chips button{flex:0 0 auto;border-radius:12px!important;padding:2px 9px!important;white-space:nowrap}
 #chips button.on{background:#2a6;color:#fff;border-color:#2a6}#epqc{margin-top:5px;width:100%}
-#fiche{position:absolute;z-index:1500;right:10px;top:10px;bottom:10px;width:min(520px,calc(100% - 20px));display:none;flex-direction:column;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.45));-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.9)}
+#fiche{position:absolute;z-index:1500;right:10px;top:10px;max-height:calc(100% - 20px);width:min(520px,calc(100% - 20px));display:none;flex-direction:column;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.45));-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.9)}
 #fh{display:flex;align-items:center;gap:8px;padding:10px 14px;font:14px system-ui}#fh b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fh a{font-size:13px;color:#1a5fb4;text-decoration:none}#fh button{border:0;background:rgba(255,255,255,.6);border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer}
-#fi{flex:1;border:0;background:#fff;border-radius:0 0 22px 22px}
+#fi{flex:1;overflow:auto;padding:4px 14px 14px;font:14px system-ui}#fi table{width:100%;border-collapse:collapse}#fi td{padding:5px 4px;border-bottom:1px solid rgba(0,0,0,.08);vertical-align:top}#fi td:first-child{color:#555;width:42%}#fi .big{display:block;margin:12px 0 4px;padding:10px;text-align:center;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);color:#1a5fb4;text-decoration:none;font-weight:600}
 /* Liquid Glass */
 #p{background:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.32));-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,.65);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(255,255,255,.25)}
 #p button,.depbar button{background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
@@ -76,14 +76,14 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p.ferme{left:auto;right:14px;width:auto;padding:0;background:transparent;box-shadow:none;border-radius:50%;opacity:.7;overflow:visible}
 #p.ferme #tete{margin:0;padding:0;background:transparent;position:static;min-height:0}#p.ferme #tete b{display:none}
 #p.ferme{-webkit-backdrop-filter:none;backdrop-filter:none;border:0}#p.ferme #pli{width:56px;height:56px;border-radius:50%!important;padding:0!important;font-size:26px!important;background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(255,255,255,.4));-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 #fff}
-#fiche{left:6px;right:6px;top:6px;bottom:6px;width:auto}
+#fiche{left:6px;right:6px;top:auto;bottom:6px;width:auto;max-height:70%}
 }
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2><p>Accès réservé. Entre le code d'accès.</p>
 <input id="code" type="password" autocomplete="current-password" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autofocus>
 <label style="display:block;margin-top:8px;font-size:13px"><input id="memo" type="checkbox"> Se souvenir sur cet appareil</label>
 <button type="submit">Déverrouiller</button><div class="err" id="lerr"></div></form></div>
-<div id="m"></div><div id="fiche"><div id="fh"><b id="ft">Fiche BRGM</b><a id="fo" target="_blank" rel="noopener">↗ Onglet</a><button id="fx">✕</button></div><iframe id="fi" referrerpolicy="no-referrer"></iframe></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
+<div id="m"></div><div id="fiche"><div id="fh"><b id="ft">Fiche BRGM</b><a id="fo" target="_blank" rel="noopener">↗ Onglet</a><button id="fx">✕</button></div><div id="fi"></div></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
 <div id="p">
  <div id="tete"><b>Atlas</b><button id="pli" title="Replier / déplier le menu">☰</button></div>
  <div id="corps">
@@ -332,16 +332,19 @@ const bssCb=document.getElementById('bss');bssCb.checked=store.get('bss',false);
 function bssOn(){bssL=L.tileLayer.wms(BRGM,{layers:bssLay,format:'image/png',transparent:true,version:'1.3.0',pane:'cont',minZoom:13,maxZoom:22,attribution:'BSS © BRGM'}).addTo(map)}
 bssCb.onchange=e=>{store.set('bss',e.target.checked);if(e.target.checked)bssOn();else if(bssL){map.removeLayer(bssL);bssL=null}};if(bssCb.checked)bssOn();
 const fiche=document.getElementById('fiche'),fi=document.getElementById('fi'),ft=document.getElementById('ft'),fo=document.getElementById('fo');
-document.getElementById('fx').onclick=()=>{fiche.style.display='none';fi.src='about:blank'};
+document.getElementById('fx').onclick=()=>{fiche.style.display='none'};
 L.DomEvent.disableClickPropagation(fiche);L.DomEvent.disableScrollPropagation(fiche);
-const ficheUrl=id=>'https://ficheinfoterre.brgm.fr/InfoterreFiche/ficheBss.action?id='+encodeURIComponent(id);
-function ouvreFiche(id){ft.textContent='Fiche BRGM '+id;fo.href=ficheUrl(id);fi.src=ficheUrl(id);fiche.style.display='flex';pan.classList.contains('ferme')||plier()}
+const ficheUrl=id=>'http://ficheinfoterre.brgm.fr/InfoterreFiche/ficheBss.action?id='+encodeURIComponent(id);
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ouvreFiche(id,attrs){ft.textContent=id;fo.href=ficheUrl(id);
+ const rows=attrs.filter(([k,v])=>v&&v!=='null'&&!/^(gid|fid|the_geom|geom|msGeometry|x|y)$/i.test(k)).map(([k,v])=>`<tr><td>${esc(k.replace(/_/g,' ').toLowerCase())}</td><td>${/^https?:/.test(v)?`<a href="${esc(v)}" target="_blank" rel="noopener">lien</a>`:esc(v)}</td></tr>`).join('');
+ fi.innerHTML=`<a class="big" href="${ficheUrl(id)}" target="_blank" rel="noopener">📄 Fiche complète et documents (site BRGM)</a><table>${rows}</table>`;fiche.style.display='flex';setTimeout(()=>map.closePopup(),0);pan.classList.contains('ferme')||plier()}
 map.on('click',async e=>{if(!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
  const p=map.latLngToContainerPoint(e.latlng),r=12,sw=map.containerPointToLatLng([p.x-r,p.y+r]),ne=map.containerPointToLatLng([p.x+r,p.y-r]);
  const A=L.CRS.EPSG3857.project(sw),Bp=L.CRS.EPSG3857.project(ne);
  const u=BRGM+`?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=${bssLay}&QUERY_LAYERS=${bssLay}&CRS=EPSG:3857&BBOX=${A.x},${A.y},${Bp.x},${Bp.y}&WIDTH=25&HEIGHT=25&I=12&J=12&INFO_FORMAT=text/plain&FEATURE_COUNT=5`;
  try{const t=await fetch(u).then(r=>r.text());const m=t.match(/BSS\d{3}[A-Z0-9]{4}/)||t.match(/\d{5}X\d{4}(\/[A-Z0-9_-]+)?/);
-  if(m)ouvreFiche(m[0]);}catch(err){info.textContent='Point BRGM : fiche non joignable depuis l\'atlas.'}});
+  if(m){const attrs=[...t.matchAll(/^\s*([\w.]+)\s*=\s*'?(.*?)'?\s*$/gm)].map(a=>[a[1],a[2]]);ouvreFiche(m[0].startsWith('BSS')?m[0]:m[0],attrs)}}catch(err){info.textContent='Point BRGM : fiche non joignable depuis l\'atlas.'}});
 // ---------- Remonter le temps ----------
 map.createPane('epoq').style.zIndex=220;
 let EPQ=[['','Aujourd\'hui'],['ORTHOIMAGERY.ORTHOPHOTOS2011-2015','2011-15','normal','image/jpeg'],['ORTHOIMAGERY.ORTHOPHOTOS2006-2010','2006-10','normal','image/jpeg'],['ORTHOIMAGERY.ORTHOPHOTOS2000-2005','2000-05','normal','image/jpeg'],['ORTHOIMAGERY.ORTHOPHOTOS.1965-1980','1965-80','normal','image/png'],['ORTHOIMAGERY.ORTHOPHOTOS.1950-1965','1950-65','normal','image/png'],['GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40','1850 (carte)','normal','image/jpeg']];
