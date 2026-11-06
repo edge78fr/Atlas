@@ -300,7 +300,7 @@ function adjDebut(){const q=P.find(p=>p.adj&&p.layer);if(!q)return;adjEd=q;q.adj
 function adjFin(ok){const q=adjEd;if(!q)return;if(!ok&&q.adjAvant){q.layer.p=q.adjAvant;q.layer.redraw()}
  adjEd=null;adjP.style.display='none';map.dragging.enable();map.getContainer().classList.remove('adjEdit');adjMaj()}
 adjB.onclick=adjDebut;document.getElementById('adjNo').onclick=()=>adjFin(false);
-document.getElementById('adjOk').onclick=()=>{store.set('adj_'+adjEd.id,adjEd.layer.p);document.getElementById('adjMsg').textContent='Enregistré sur cet appareil.';adjEd.adjAvant=null;setTimeout(()=>adjFin(true),700)};
+document.getElementById('adjOk').onclick=()=>{store.set('adj2_'+adjEd.id,adjEd.layer.p);document.getElementById('adjMsg').textContent='Enregistré sur cet appareil.';adjEd.adjAvant=null;setTimeout(()=>adjFin(true),700)};
 document.getElementById('adjDef').onclick=()=>{adjEd.layer.p=adjDef(adjEd);adjAff()};
 document.getElementById('adjCp').onclick=async()=>{const t='CALAGE '+adjEd.id+' '+JSON.stringify(adjEd.layer.p);try{await navigator.clipboard.writeText(t);document.getElementById('adjMsg').textContent='Copié ! Colle-le dans la discussion avec Claude.'}catch(e){prompt('Copie ce texte :',t)}};
 adjP.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>{const p=adjEd.layer.p,v=+b.dataset.v,a=b.dataset.a;
@@ -324,7 +324,7 @@ const contCb=document.getElementById('cont');contCb.checked=store.get('cont',tru
 contCb.onchange=()=>{contCb.checked?contours.addTo(map):map.removeLayer(contours);store.set('cont',contCb.checked)};
 function sauve(){const o={};P.forEach(p=>{if(p.layer||p.op!==1)o[p.id]={on:!!p.layer,op:p.op}});store.set('plans',o)}
 function charge(p,aller){
- if(!p.layer&&p.adj){p.layer=new AdjL(store.get('adj_'+p.id,null)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
+ if(!p.layer&&p.adj){p.layer=new AdjL(store.get('adj2_'+p.id,null)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(!p.layer){p.layer=new CTile({d:p.d,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
   p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(p.extra&&!p.xl)chargeExtra(p);
