@@ -48,6 +48,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 #fiche{position:absolute;z-index:1500;right:10px;top:10px;max-height:calc(100% - 20px);width:min(520px,calc(100% - 20px));display:none;flex-direction:column;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.45));-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.9)}
 #fh{display:flex;align-items:center;gap:8px;padding:10px 14px;font:14px system-ui}#fh b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fh a{font-size:13px;color:#1a5fb4;text-decoration:none}#fh button{border:0;background:rgba(255,255,255,.6);border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer}
 #fi{flex:1;overflow:auto;padding:4px 14px 14px;font:14px system-ui}#fi table{width:100%;border-collapse:collapse}#fi td{padding:5px 4px;border-bottom:1px solid rgba(0,0,0,.08);vertical-align:top}#fi td:first-child{color:#555;width:42%}#fi .big{display:block;margin:12px 0 4px;padding:10px;text-align:center;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);color:#1a5fb4;text-decoration:none;font-weight:600}
+#fi .sous{color:#444;font-size:13px;margin:2px 0 8px}#fi .nb{font-size:12px;color:#666;margin-bottom:6px}#fi .doc{display:flex;gap:10px;align-items:center;padding:8px;margin:0 0 8px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);text-decoration:none;color:#222}#fi .doc img{width:120px;height:90px;object-fit:contain;background:#fff;border-radius:8px;flex:0 0 auto}#fi .noimg{width:120px;height:90px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;border-radius:8px}#fi .dt{display:flex;flex-direction:column;gap:3px;min-width:0}#fi .dt small{color:#666;word-break:break-all}
 /* Liquid Glass */
 #p{background:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.32));-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,.65);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 0 rgba(255,255,255,.25)}
 #p button,.depbar button{background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
@@ -336,9 +337,23 @@ document.getElementById('fx').onclick=()=>{fiche.style.display='none'};
 L.DomEvent.disableClickPropagation(fiche);L.DomEvent.disableScrollPropagation(fiche);
 const ficheUrl=id=>'http://ficheinfoterre.brgm.fr/InfoterreFiche/ficheBss.action?id='+encodeURIComponent(id);
 const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function ouvreFiche(id,attrs){ft.textContent=id;fo.href=ficheUrl(id);
- const rows=attrs.filter(([k,v])=>v&&v!=='null'&&!/^(gid|fid|the_geom|geom|msGeometry|x|y)$/i.test(k)).map(([k,v])=>`<tr><td>${esc(k.replace(/_/g,' ').toLowerCase())}</td><td>${/^https?:/.test(v)?`<a href="${esc(v)}" target="_blank" rel="noopener">lien</a>`:esc(v)}</td></tr>`).join('');
- fi.innerHTML=`<a class="big" href="${ficheUrl(id)}" target="_blank" rel="noopener">📄 Fiche complète et documents (site BRGM)</a><table>${rows}</table>`;fiche.style.display='flex';setTimeout(()=>map.closePopup(),0);pan.classList.contains('ferme')||plier()}
+const RELAIS='https://brgm1.robinmorgue.workers.dev/?u=',viaR=u=>RELAIS+encodeURIComponent(u);
+async function docsBss(id){const base=ficheUrl(id),vus=new Set(),docs=[],pages=[base];
+ for(let n=0;n<pages.length&&n<5;n++){const pu=pages[n];if(vus.has(pu))continue;vus.add(pu);
+  let html;try{const r=await fetch(viaR(pu));if(!r.ok)continue;html=await r.text()}catch(e){continue}
+  const d=new DOMParser().parseFromString(html,'text/html');const abs=h=>{try{return new URL(h,pu).href}catch(e){return null}};
+  d.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(/document|numeris/i.test(a.textContent+h)&&!/^javascript|^#/.test(h)){const u=abs(h);if(u&&/brgm\.fr/.test(u)&&!vus.has(u))pages.push(u)}});
+  d.querySelectorAll('tr').forEach(tr=>{const a=[...tr.querySelectorAll('a[href]')].find(a=>/\.(tif|tiff|pdf|jpe?g|png)\b/i.test(a.textContent+a.getAttribute('href')))||(tr.querySelector('img')&&tr.querySelector('a[href]'));if(!a)return;
+   const u=abs(a.getAttribute('href'));if(!u||docs.some(x=>x.u===u))return;const im=tr.querySelector('img');const tds=[...tr.querySelectorAll('td')].map(t=>t.textContent.trim()).filter(Boolean);
+   docs.push({u,nom:a.textContent.trim()||u.split('/').pop(),img:im?abs(im.getAttribute('src')):null,type:tds.find(t=>/[A-Z]{3,}/.test(t)&&!/\.(tif|pdf)/i.test(t)&&!/Ko|Mo/.test(t))||'',poids:tds.find(t=>/\d\s*(Ko|Mo|Go)/i.test(t))||''})})}
+ return docs}
+async function ouvreFiche(id,attrs){ft.textContent=id;fo.href=ficheUrl(id);
+ const g=k=>(attrs.find(([a])=>new RegExp(k,'i').test(a))||[])[1];const sous=[g('nature'),g('prof')&&('prof. '+g('prof')+' m'),g('commune')].filter(Boolean).join(' · ');
+ fi.innerHTML=`<div class="sous">${esc(sous||'')}</div><div class="docs">Recherche des documents numérisés…</div>`;fiche.style.display='flex';setTimeout(()=>map.closePopup(),0);pan.classList.contains('ferme')||plier();
+ const docs=await docsBss(id);if(ft.textContent!==id)return;const box=fi.querySelector('.docs');
+ if(!docs.length){box.innerHTML=`Aucun document numérisé trouvé.<a class="big" href="${ficheUrl(id)}" target="_blank" rel="noopener">📄 Ouvrir la fiche complète</a>`;return}
+ box.innerHTML=`<div class="nb">${docs.length} document(s) numérisé(s)</div>`+docs.map(d=>`<a class="doc" href="${viaR(d.u)}" target="_blank" rel="noopener">${d.img?`<img loading="lazy" src="${viaR(d.img)}" alt="">`:'<span class="noimg">📄</span>'}<span class="dt"><b>${esc(d.type||d.nom)}</b><small>${esc(d.nom)}${d.poids?' · '+esc(d.poids):''}</small></span></a>`).join('');}
+
 map.on('click',async e=>{if(!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
  const p=map.latLngToContainerPoint(e.latlng),r=12,sw=map.containerPointToLatLng([p.x-r,p.y+r]),ne=map.containerPointToLatLng([p.x+r,p.y-r]);
  const A=L.CRS.EPSG3857.project(sw),Bp=L.CRS.EPSG3857.project(ne);
