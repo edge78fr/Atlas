@@ -16,7 +16,7 @@ html,body,#m{height:100%;margin:0}
 .opf{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;margin:2px 0 2px}
 .cou{margin:1px 0}.cou label{display:block}
 input.op{width:100%;max-width:200px;height:14px;margin:0 0 3px 20px;display:block}.opf input.op{margin:0;flex:1}
-.cou input.op{display:none}.cou.on input.op{display:block}
+.cou input.op,.cou .leg{display:none}.cou.on input.op,.cou.on .leg{display:block}
 details.dep{margin:2px 0;border-radius:5px}
 details.dep>summary{cursor:pointer;padding:3px 4px;font-weight:600;background:#f3f3f3;border-radius:5px;list-style:none;display:flex;justify-content:space-between}
 details.dep>summary::-webkit-details-marker{display:none}
@@ -106,7 +106,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="cou"><label><input id="igcp" type="checkbox"> Atlas IGC Paris (en direct)</label><input id="igcpo" class="op" type="range" min="0.1" max="1" step="0.05" value="0.9" title="Opacité"></div>
    <div class="cou"><label><input id="gir" type="checkbox"> Carrières de Gironde (en direct)</label><input id="giro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="zon" type="checkbox"> Zonages carrières IGC (78/95/91)</label><input id="zono" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
-   <div class="cou"><label><input id="eur" type="checkbox"> Cavités de l'Eure (indices DDTM 27)</label><input id="euro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
+   <div class="cou"><label><input id="eur" type="checkbox"> Cavités de l'Eure (indices DDTM 27)</label><input id="euro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"><div class="leg" style="font-size:11.5px;margin:2px 0 4px 22px;line-height:1.5">🔴 Rayon de sécurité de forme particulière<br>🩷 Emprise de cavité relevée<br>🟣 Indice (forme inconnue)<br>🟠 Rayon de sécurité découpé</div></div>
    <h5>Divers</h5>
    <div class="cou"><label><input id="bss" type="checkbox"> Points BRGM « Dossiers du sous-sol »</label></div>
    <div class="cou"><label><input id="aqu" type="checkbox"> Aqueducs et rigoles de Versailles</label><input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
@@ -171,7 +171,12 @@ async function zonOn(){if(!zonL){const b=await lire('zonages.json.gz');if(!b)ret
 
 let eurL=null;const eurSt=f=>{const p=f.properties;return p.k==='t'?(p.c==='l'?{color:'#e8000b',weight:2.5,fillColor:'#ff2a2a',fillOpacity:.22,opacity:1}:{color:'#ff7a00',weight:1,dashArray:'4 3',fillOpacity:0,opacity:.6}):p.r?{color:'#8a5cc2',weight:1,dashArray:'3 3',fillOpacity:.03,fillColor:'#8a5cc2',opacity:.6}:{color:'#d1007a',weight:2.5,fillColor:'#d1007a',fillOpacity:.12,opacity:.95}};
 async function eurOn(){if(!eurL){const b=await lire('eure.json.gz');if(!b)return;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
- eurL=L.geoJSON(JSON.parse(t),{pane:'cadp',filter:f=>true,style:eurSt,onEachFeature:(f,l)=>{const p=f.properties;l.bindTooltip(p.k==='t'?`${p.c==='l'?'Rayon de sécurité – forme particulière (plusieurs cavités)':'Rayon de sécurité (découpé)'}${p.ray?' – '+p.ray+' m':''}`:[p.r?'Indice (cercle)':'Indice – contour',p.ind,p.obs,p.loc].filter(Boolean).join(' – '),{sticky:true})}});
+ eurL=L.geoJSON(JSON.parse(t),{pane:'cadp',filter:f=>true,style:eurSt,onEachFeature:(f,l)=>{const p=f.properties;const T={l:['🔴 Rayon de sécurité – forme particulière','Zone de sécurité qui n\'est pas un simple cercle : elle suit le contour d\'une cavité étendue, ou réunit plusieurs cavités très proches (souvent une même marnière avec plusieurs puits ou galeries). La cavité est à l\'intérieur.'],
+ x:['🟠 Rayon de sécurité découpé','Cercle de sécurité autour d\'une cavité, coupé par une limite (commune, zone d\'étude). La cavité est au centre du cercle d\'origine.'],
+ p:['🩷 Emprise de cavité relevée','Contour dessiné à la main d\'après le terrain ou les archives : l\'étendue connue de la cavité (marnière, carrière, effondrement).'],
+ c:['🟣 Indice de cavité (position approximative)','Cercle par défaut autour d\'un indice : on sait qu\'il y a (ou qu\'il y a eu) une cavité ici, sans connaître sa forme exacte.']};
+ const t=p.k==='t'?T[p.c]:(p.r?T.c:T.p);const det=[p.ind&&'N° d\'indice : <b>'+p.ind+'</b>',p.obs&&'Observation : '+p.obs,p.loc&&'Lieu : '+p.loc,p.ray&&'Rayon de sécurité : '+p.ray+' m'].filter(Boolean).join('<br>');
+ l.options.bubblingMouseEvents=false;l.bindTooltip(t[0],{sticky:true});l.bindPopup(`<div style="max-width:260px;font:13px system-ui"><b>${t[0]}</b><div style="margin:6px 0;color:#444">${t[1]}</div>${det?'<div style="font-size:12px">'+det+'</div>':''}<div style="font-size:11px;color:#888;margin-top:6px">Source : Atlas des cavités souterraines de l'Eure (DDTM 27)</div></div>`)}});;
  const v=+document.getElementById('euro').value;eurL.eachLayer(l=>{const s=eurSt(l.feature);l.setStyle({opacity:s.opacity*v,fillOpacity:s.fillOpacity*v})})}
  if(document.getElementById('eur').checked)eurL.addTo(map)}
 const eurCb=document.getElementById('eur');eurCb.checked=store.get('eur',false);
