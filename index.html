@@ -289,7 +289,7 @@ function initPlans(j){
  if(contCb.checked)contours.addTo(map);majNb();
  if(new URLSearchParams(location.search).get('plan')){const p=P.find(x=>x.id===new URLSearchParams(location.search).get('plan'));p&&charge(p,true)}
 }
-document.getElementById('filtre').oninput=e=>{const q=e.target.value.toLowerCase().trim();document.querySelectorAll('details.dep').forEach(d=>{let n=0;d.querySelectorAll('.plan').forEach(r=>{const ok=!q||r.dataset.nom.includes(q);r.style.display=ok?'':'none';n+=ok});d.style.display=n?'':'none';if(q)d.open=true})};
+let filtreAvant=null;document.getElementById('filtre').oninput=e=>{const q=e.target.value.toLowerCase().trim();const deps=[...document.querySelectorAll('details.dep')];if(q&&filtreAvant===null)filtreAvant=deps.map(d=>d.open);deps.forEach((d,i)=>{let n=0;d.querySelectorAll('.plan').forEach(r=>{const ok=!q||r.dataset.nom.includes(q);r.style.display=ok?'':'none';n+=ok});d.style.display=n?'':'none';if(q)d.open=true;else if(filtreAvant)d.open=filtreAvant[i]});if(!q)filtreAvant=null};
 document.getElementById('tout0').onclick=()=>P.forEach(p=>p.layer&&decharge(p));
 
 // ---------- recherche ----------
