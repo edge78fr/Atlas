@@ -195,8 +195,10 @@ L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan)
 const info=document.getElementById('info');
 
 const mobile=()=>window.innerWidth<=640,plier=()=>{if(mobile()){pan.classList.add('ferme');store.set('ferme',true)}};
-const bulle=document.getElementById('bulle');new MutationObserver(()=>{const t=info.textContent;bulle.textContent=t;bulle.style.display=(mobile()&&pan.classList.contains('ferme')&&t)?'block':'none'}).observe(info,{childList:true,characterData:true,subtree:true});
-document.getElementById('pli').addEventListener('click',()=>{bulle.style.display=(mobile()&&pan.classList.contains('ferme')&&info.textContent)?'block':'none'});
+const bulle=document.getElementById('bulle');let bulleT=null;
+const majBulle=()=>{const t=info.textContent.trim();bulle.textContent=t;const v=mobile()&&pan.classList.contains('ferme')&&t.length>0;bulle.style.display=v?'block':'none';clearTimeout(bulleT);let mes=false;try{mes=!!mesure}catch(e){}if(v&&!mes)bulleT=setTimeout(()=>bulle.style.display='none',5000)};
+new MutationObserver(majBulle).observe(info,{childList:true,characterData:true,subtree:true});
+document.getElementById('pli').addEventListener('click',majBulle);
 const copier=t=>{try{navigator.clipboard.writeText(t);return true}catch(e){return false}};
 
 
