@@ -21,9 +21,9 @@ details.dep{margin:2px 0;border-radius:5px}
 details.dep>summary{cursor:pointer;padding:3px 4px;font-weight:600;background:#f3f3f3;border-radius:5px;list-style:none;display:flex;justify-content:space-between}
 details.dep>summary::-webkit-details-marker{display:none}
 details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:before{content:'▾ '}
-.plan{display:grid;grid-template-columns:18px 1fr auto auto auto;align-items:center;gap:4px;margin:3px 0 3px 6px}
+.plan{display:grid;grid-template-columns:18px 1fr auto auto auto auto;align-items:center;gap:4px;margin:3px 0 3px 6px}
 .plan .aj{padding:2px 5px;border:1px solid #ccd;background:#fff;border-radius:7px;cursor:pointer;font-size:12px}.plan .aj.lk{background:#fff4d6}.plan .nom{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.plan .nom:hover{text-decoration:underline}
-.plan input[type=range]{grid-column:2/7;width:100%;height:14px;margin:0;display:none}.plan.actif input[type=range]{display:block}
+.plan input[type=range]{grid-column:2/8;width:100%;height:14px;margin:0;display:none}.plan.actif input[type=range]{display:block}
 .badge{font-size:11px;cursor:help}
 #filtre{width:100%;box-sizing:border-box;font:12px system-ui;padding:3px 5px;border:1px solid #bbb;border-radius:4px;margin-bottom:4px}
 #rech{display:flex;gap:4px}#rech input{flex:1;min-width:0;font:12px system-ui;padding:3px 5px;border:1px solid #bbb;border-radius:4px}
@@ -74,7 +74,7 @@ details.dep>summary,#rlt{background:rgba(255,255,255,.38)!important}
 #p input[type=checkbox],#p input[type=radio]{width:20px;height:20px;vertical-align:-4px;margin:2px 6px 2px 0}
 .fonds{gap:4px 8px}.fonds label,.cou label{padding:4px 0}
 input.op,.plan input[type=range]{height:26px;max-width:none}
-.plan{grid-template-columns:26px 1fr auto auto auto;gap:6px;margin:6px 0 6px 2px}
+.plan{grid-template-columns:26px 1fr auto auto auto auto;gap:6px;margin:6px 0 6px 2px}
 details.dep>summary{padding:9px 8px;font-size:15px}
 #filtre,#rech input{font-size:16px;padding:7px 8px}
 .sec h4{font-size:12px}.sec h5{font-size:12px}
@@ -379,10 +379,11 @@ function initPlans(j){
   bOff.onclick=()=>ps.forEach(p=>p.layer&&decharge(p));
   bVoir.onclick=()=>{const b=ps.reduce((a,p)=>[Math.min(a[0],p.bbox[0]),Math.min(a[1],p.bbox[1]),Math.max(a[2],p.bbox[2]),Math.max(a[3],p.bbox[3])],[180,90,-180,-90]);map.fitBounds([[b[1],b[0]],[b[3],b[2]]])};
   det.appendChild(bar);
-  ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;
+  ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;if(p.nomO===undefined)p.nomO=p.nom;{const nn=store.get('nom_'+p.id,null);if(nn)p.nom=nn}
    const r=document.createElement('div');r.className='plan';r.dataset.nom=(p.nom+' '+dep).toLowerCase();
-   r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
-   const [cb,nm,,bt,aj,rg]=r.children;p.ui={cb,row:r,aj};ajBtn(p);
+   r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
+   const [cb,nm,,bt,aj,rn,rg]=r.children;p.ui={cb,row:r,aj};ajBtn(p);
+   rn.onclick=()=>{const v=prompt('Nouveau nom (vide = nom d\'origine) :',p.nom);if(v===null)return;const t=v.trim();store.set('nom_'+p.id,t&&t!==p.nomO?t:null);p.nom=t||p.nomO;nm.textContent=p.nom;nm.title='Aller sur '+p.nom;r.dataset.nom=(p.nom+' '+dep).toLowerCase();p.poly&&p.poly.setTooltipContent(p.nom)};
    aj.onclick=()=>{if(verrou(p)){if(confirm('« '+p.nom+' » est verrouillé. Le déverrouiller pour l\'ajuster ?')){store.set('lock_'+p.id,false);ajBtn(p)}return}if(adjEd)adjFin(false);adjDebut(p);plier()};
    cb.onchange=()=>cb.checked?charge(p,false):decharge(p);
    nm.onclick=bt.onclick=()=>{charge(p,true);plier()};
