@@ -243,7 +243,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="ordre"></div><input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
   <div class="sec"><h4>✏️ Terrain</h4>
-   <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bSurf" title="Pose les coins de la zone : la surface se calcule en direct">📐 Surface</button><button id="bAlt" title="Touche la carte : altitude IGN du point">⛰️ Altitude</button></div></details>
+   <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bSurf" title="Pose les coins de la zone : la surface se calcule en direct">📐 Surface</button><button id="bAlt" title="Touche la carte : altitude du sol, et du toit ou de l’arbre s’il y en a un (LiDAR HD IGN)">⛰️ Altitude</button></div></details>
    <details class="tgH" id="tgPlans" open><summary><span>🗂️ Mes plans de terrain</span><button id="grpNew" class="tgNew">➕ Nouveau plan</button></summary><div id="grpList"></div></details>
    <div style="display:none"><button id="anAdd"></button><button id="trNew"></button><button id="trIco"></button><button id="bRid"></button><div id="visBox"><input type="checkbox" id="visAn"><input type="checkbox" id="visTr"><input type="checkbox" id="visDot"></div><div id="trBox"><div id="trList"></div></div><div id="anList"></div></div>
    <div class="tgSync"><span id="trEtat"></span><span id="anSync"></span></div></div>
@@ -1208,8 +1208,14 @@ bAlt.onclick=()=>outBascule('a','Touche la carte : l’altitude IGN s’affiche 
 map.on('click',async e=>{if(!mesure||!OUT[mesure.k])return;e.anFait=true;const k=mesure.k;if(/^Touche la carte/.test(info.textContent))info.textContent='';
  if(k==='d'||k==='s'){outCoin(k,e.latlng);return}
  const m=L.circleMarker(e.latlng,{radius:5,color:'#fff',weight:2,fillColor:'#7a4b1d',fillOpacity:1}).addTo(OUT.a.g);m.bindTooltip('⏳',{permanent:true,direction:'top',offset:[0,-6],className:'surfT'}).openTooltip();
- try{const r=await fetch('https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+e.latlng.lng.toFixed(6)+'&lat='+e.latlng.lat.toFixed(6)+'&resource=ign_rge_alti_wld&zonly=true');const j=await r.json();const z=j.elevations&&j.elevations[0];
-  m.setTooltipContent('⛰️ '+((typeof z==='number'&&z>-1000)?z.toFixed(1).replace('.',',')+' m':'?'))}catch(er){m.setTooltipContent('⛰️ ? (pas de réseau)')}});
+ m.setTooltipContent(await altiTexte(e.latlng))});
+// sol (MNT) + ce qui est posé dessus (MNS : toit, arbre) avec le LiDAR HD IGN ; repli sur le RGE ALTI si pas de LiDAR
+async function altiTexte(ll){const f=v=>v.toFixed(1).replace('.',','),ok=v=>typeof v==='number'&&v>-1000,u=r=>'https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+ll.lng.toFixed(6)+'&lat='+ll.lat.toFixed(6)+'&resource='+r;
+ try{const j=await (await fetch(u('ign_lidar_hd_mnx_mono_wld')+'&zonly=false&measures=true')).json();const ms=(j.elevations&&j.elevations[0]&&j.elevations[0].measures)||[];
+  const v=t=>{const x=ms.find(m=>(m.title||'').includes(t));return x&&x.z};const sol=v('MNT'),sur=v('MNS');
+  if(ok(sol)){let t='⛰️ sol '+f(sol)+' m';if(ok(sur)&&sur-sol>=1.5)t+=' · dessus '+f(sur)+' m (+'+f(sur-sol)+' m)';return t}}catch(e){}
+ try{const j=await (await fetch(u('ign_rge_alti_wld')+'&zonly=true')).json();const z=j.elevations&&j.elevations[0];if(ok(z))return '⛰️ sol '+f(z)+' m'}catch(e){return '⛰️ ? (pas de réseau)'}
+ return '⛰️ ?'}
 map.on('dblclick',()=>{if(mesure&&(mesure.k==='d'||mesure.k==='s'))finMesure()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&OUT[mesure.k])finMesure()});
 
