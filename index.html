@@ -1291,6 +1291,8 @@ function anRows(el,g){const c=anCache();
   el.appendChild(d)})}
 const anCache=()=>new Set(store.get('anCache',[]));
 function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];const c=anCache();ANN.filter(a=>!a.del&&grpVu(a.g)&&!c.has(a.id)).forEach(anPose)}
+// à l'ouverture de l'Atlas : tous les plans de terrain sont désactivés (on coche ceux qu'on veut)
+store.set('grpCache',['',...store.get('traces',[]).filter(x=>x.k==='g'&&!x.del).map(x=>x.id)]);store.set('grpOuv',[]);
 anRefait();anListe();
 // ---------- partage des annotations (dépôt GitHub, contenu chiffré) ----------
 const NREPO='edge78fr/atlas-notes',NSITE='atlas',GH='https://api.github.com/repos/'+NREPO+'/contents/';
@@ -1549,7 +1551,7 @@ function visInit(){const a=document.getElementById('visAn'),t=document.getElemen
 document.getElementById('trIco').onclick=()=>trIcones();
 function trEtat(t){const e=document.getElementById('trEtat');if(e)e.innerHTML=t}
 async function trSync(){if(!NTOK){trEtat('⚠️ Tracés visibles sur cet appareil seulement (partage inactif).');return}for(let k=0;k<3;k++){const f=await nGet(NSITE+'.traces');const rem=f?await nDec(f.content):[];trSha=f&&f.sha;const mer=fusion(TRC,rem);
-  if(sig(mer)!==sig(TRC)){TRC=mer;store.set('traces',TRC);trDessine();trListe();try{anRefait();anListe()}catch(e){}}
+  if(sig(mer)!==sig(TRC)){const av=new Set(TRC.filter(x=>x.k==='g').map(x=>x.id)),nv=mer.filter(x=>x.k==='g'&&!av.has(x.id)).map(x=>x.id);if(nv.length){const k=grpCache();nv.forEach(i=>k.add(i));store.set('grpCache',[...k])}TRC=mer;store.set('traces',TRC);trDessine();trListe();try{anRefait();anListe()}catch(e){}}
   if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.traces',await nEnc(mer),trSha,'tracés');if(r==='conflit')continue;trSha=r}break}
  trEtat('☁️ Partagé · synchro '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' <button id="trRf" style="font-size:11px;padding:0 6px">↻</button>');const rf=document.getElementById('trRf');if(rf)rf.onclick=()=>trSync().catch(()=>{})}
 setInterval(()=>{if(NTOK&&!document.hidden&&!trMode)trSync().catch(()=>{})},20000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NTOK)trSync().catch(()=>{})});
