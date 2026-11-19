@@ -123,6 +123,12 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 #fi{flex:1;overflow:auto;padding:4px 14px 14px;font:14px system-ui}#fi table{width:100%;border-collapse:collapse}#fi td{padding:5px 4px;border-bottom:1px solid rgba(0,0,0,.08);vertical-align:top}#fi td:first-child{color:#555;width:42%}#fi .big{display:block;margin:12px 0 4px;padding:10px;text-align:center;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);color:#1a5fb4;text-decoration:none;font-weight:600}
 #fi .sous{color:#444;font-size:13px;margin:2px 0 8px}#fi .nb{font-size:12px;color:#666;margin-bottom:6px}#fi .doc{display:flex;gap:10px;align-items:center;padding:8px;margin:0 0 8px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);text-decoration:none;color:#222}#fi .doc img{width:120px;height:90px;object-fit:contain;background:#fff;border-radius:8px;flex:0 0 auto}#fi .noimg{width:120px;height:90px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;border-radius:8px}#fi .dt{display:flex;flex-direction:column;gap:3px;min-width:0}#fi .dt small{color:#666;word-break:break-all}
 .anStar{font-size:24px;line-height:24px;text-align:center;color:#f5b400;text-shadow:0 0 2px #000,0 0 4px #000a}
+.tg{margin:1px 0}.tg>summary{display:flex;align-items:center;gap:6px;cursor:pointer;list-style:none;padding:5px 1px;font-size:12.5px;color:#333;user-select:none}
+.tg>summary::-webkit-details-marker{display:none}.tg>summary::before{content:'▸';color:#888;flex:none;width:9px}.tg[open]>summary::before{content:'▾'}
+.tg>summary input{margin:0}.tg .tgN{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tg.cour>summary .tgN{font-weight:600}
+.tg>summary .tgB{border:0!important;background:none!important;box-shadow:none!important;padding:0 3px!important;min-width:0!important;cursor:pointer;font-size:12px;opacity:.55}.tg .tgB:hover{opacity:1}
+.tg-b{padding:0 0 4px 16px;font-size:12.5px}.tg-b .an{display:flex;align-items:center;gap:6px;padding:2px 0}.tg-b .an span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.tg-b .an button{padding:0 6px}
+.tgCour{font-size:11px;color:#1a6fd6;margin:1px 0 3px}.tgVide{font-size:11px;color:#888;margin:2px 0}
 #grpList .gr{display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:6px}#grpList .gr.cour{background:#e8f1ff}#grpList .gr span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}#grpList .gr button{padding:0 5px;border:0;background:none;cursor:pointer;font-size:13px}
 #anList .an{display:flex;align-items:center;gap:6px;padding:3px 0}#anList .an span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}#anList .an button{padding:0 6px}
 .anPop textarea{width:230px;height:90px;font:13px system-ui;box-sizing:border-box}.anPop .txt{white-space:pre-wrap;max-width:240px;font:13px system-ui;margin-bottom:6px}.anPop button{margin-right:4px}
@@ -227,8 +233,8 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="outils"><button id="anAdd" title="Ajouter un point (puis touche la carte)" >📍 Nouveau point</button><button id="trNew" title="Tracer une ligne point par point">〰️ Nouveau tracé</button><button id="trIco" title="Poser un point de couleur sur un tracé">● Point sur un tracé</button>
    <button id="bPos">⌖ Suivre ma position</button><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button>
    <button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bRid" title="Comparer le plan et le fond avec une barre à glisser">⇔ Rideau</button></div>
-   <div id="grpBox" style="margin:8px 0 4px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px"><b>🗂️ Plans de terrain</b><button id="grpNew" style="font-size:12px;padding:2px 8px">➕ Nouveau plan</button></div><div id="grpList" style="font-size:12.5px;margin-top:3px"></div></div>
-   <div id="visBox" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;margin:6px 0 2px"><span style="color:#666">Afficher :</span><label><input type="checkbox" id="visAn"> 📍 Points</label><label><input type="checkbox" id="visTr"> 〰️ Tracés</label><label><input type="checkbox" id="visDot"> ● Ronds</label></div><div id="anSync" style="font-size:11px;color:#666;margin:6px 0 2px"></div><div id="trBox"><div id="trEtat" style="font-size:11px;color:#666;margin:0 0 3px"></div><div id="trList" style="font-size:12.5px"></div></div><div id="anList" style="font-size:12.5px"></div></div>
+   <div id="grpBox" style="margin:8px 0 4px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;color:#666;font-size:12px;font-weight:600;padding:4px 1px">🗂️ Plans de terrain<button id="grpNew" style="font-size:11.5px;padding:2px 8px;font-weight:500">➕ Nouveau plan</button></div><div id="grpList" style="font-size:12.5px;margin-top:3px"></div></div>
+   <div id="visBox" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;margin:6px 0 2px"><span style="color:#666">Afficher :</span><label><input type="checkbox" id="visAn"> 📍 Points</label><label><input type="checkbox" id="visTr"> 〰️ Tracés</label><label><input type="checkbox" id="visDot"> ● Ronds</label></div><div id="anSync" style="font-size:11px;color:#666;margin:6px 0 2px"></div><div id="trBox"><div id="trEtat" style="font-size:11px;color:#666;margin:0 0 3px"></div><div id="trList" style="display:none"></div></div><div id="anList" style="display:none"></div></div>
   <div class="sec"><h4>📥 Hors ligne</h4>
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
   <div class="sec"><h4>⚙️ Compte et réglages</h4>
@@ -1231,8 +1237,9 @@ window.anStyle=id=>{const a=ANN.find(x=>x.id===id);map.closePopup();const k=anFm
  const maj=()=>{a.d=Date.now();anSave();anMk[id].setIcon(anIconDe(a))};
  trBarre('Forme, couleur et taille du point',c=>{a.c=c;maj()},true);trBar.insertBefore(trFormes(k.f,f=>{a.f=f;maj()}),trBar.lastElementChild);trBar.insertBefore(trTailles(k.r,r=>{a.r=r;maj()}),trBar.lastElementChild);trMode='c'};
 window.anSuppr=id=>{const a=ANN.find(x=>x.id===id);if(a.t&&!window.confirm('Supprimer ce point ?'))return;a.del=1;a.d=Date.now();a.t='';anLay.removeLayer(anMk[id]);delete anMk[id];anSave()};
-function anListe(){const el=document.getElementById('anList');
- const vis=ANN.filter(a=>!a.del&&(a.g||'')===grpCour());el.innerHTML=vis.length?'':'<div style="color:#888;font-size:11.5px">Aucun point dans ce plan. Touche 📍 puis la carte.</div>';try{grpListe()}catch(e){}
+function anListe(){try{grpListe()}catch(e){}}
+function anRows(el,g){
+ const vis=ANN.filter(a=>!a.del&&(a.g||'')===g);
  vis.forEach(a=>{const d=document.createElement('div');d.className='an';d.innerHTML=`<b style="display:inline-flex">${trSvg(anFmt(a).f,6,anFmt(a).c,'#999')}</b><span title="Aller sur ce point">${anEsc((a.t||'Point sans texte').split('\n')[0])}</span><button title="Éditer">✏️</button>`;
   d.children[1].onclick=()=>{if(!store.get('vis_an',true)){store.set('vis_an',true);visInit()}grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anMk[a.id].openPopup();plier()};d.children[2].onclick=()=>{grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anEdit(a.id);plier()};el.appendChild(d)})}
 function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];ANN.filter(a=>!a.del&&grpVu(a.g)).forEach(anPose)}
@@ -1337,7 +1344,8 @@ function trDessine(){trLay.clearLayers();for(const k in trObj)delete trObj[k];
  for(const x of trVis().filter(x=>x.k==='i'&&store.get('vis_dot',true)&&(!trFind(x.l)||trMontre(trFind(x.l))))){const lg=trFind(x.l),fc=x.dc||(lg&&lg.c)||'#333',m=trForme(x.ll,x.f||'o',x.r||TR_W*2,fc).addTo(trLay);
   if(x.t)m.bindTooltip(anEsc(x.t),{direction:'top'});m.bindPopup(()=>`<div class="anPop"><div><span style="display:inline-block;vertical-align:middle">${trSvg(x.f||'o',7,fc,'#999')}</span> Point</div><div class="txt">${anEsc(x.t)||'<i style="color:#888">(sans texte)</i>'}</div><div style="font-size:11px;color:#888">${x.ll[0].toFixed(6)}, ${x.ll[1].toFixed(6)}</div><button onclick="trIcTxt('${x.id}')">✏️ Texte</button><button onclick="trDotCoul('${x.id}')">🎨 Couleur / taille / forme</button><button onclick="trSup('${x.id}')">🗑</button></div>`)}}
 function trLong(p){let d=0;for(let i=1;i<p.length;i++)d+=map.distance(p[i-1],p[i]);return d<1000?Math.round(d)+' m':(d/1000).toFixed(2)+' km'}
-function trListe(){const el=document.getElementById('trList');if(!el)return;const ls=trVis().filter(x=>x.k==='l'&&(x.g||'')===grpCour());el.innerHTML='';try{grpListe()}catch(e){}
+function trListe(){try{grpListe()}catch(e){}}
+function trRows(el,g){const ls=trVis().filter(x=>x.k==='l'&&(x.g||'')===g);
  ls.forEach(x=>{const d=document.createElement('div');d.className='an';const cach=trCache().has(x.id);d.style.opacity=cach?.5:1;d.innerHTML=`<button onclick="trOeil('${x.id}')" title="${cach?'Afficher':'Masquer'} ce tracé" style="border:0;background:none;padding:0 4px;cursor:pointer;font-size:14px">${cach?'🙈':'👁️'}</button><b style="color:${x.c};text-shadow:0 0 1px #000">━</b><span title="Aller sur ce tracé">${anEsc(x.t||'Tracé')} <span style="color:#999">(${trLong(x.p)}, ${trVis().filter(i=>i.k==='i'&&i.l===x.id).length} point(s))</span></span>`;
   d.children[2].onclick=()=>{if(cach)trOeil(x.id);grpMontre(x.g);if(!store.get('vis_tr',true)){store.set('vis_tr',true);visInit();trDessine()}map.fitBounds(L.latLngBounds(x.p),{maxZoom:19});trObj[x.id]&&trObj[x.id].openPopup();plier()};el.appendChild(d)})}
 const trFind=id=>TRC.find(x=>x.id===id);const trId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -1351,24 +1359,30 @@ function grpMontre(g){const c=grpCache();if(c.delete(g||'')){store.set('grpCache
 function grpTout(){trDessine();trListe();anRefait();anListe()}
 function grpCompte(g){return {t:TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).length,p:ANN.filter(a=>!a.del&&(a.g||'')===g).length}}
 function grpZoom(g){const pts=[];TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).forEach(x=>pts.push(...x.p));ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>pts.push([a.lat,a.lng]));if(pts.length)map.fitBounds(L.latLngBounds(pts),{maxZoom:18,padding:[30,30]})}
-function grpListe(){const el=document.getElementById('grpList');if(!el)return;const cour=grpCour(),c=grpCache();el.innerHTML='';
- const ls=grpL().map(x=>x.id);const s=grpCompte('');if(!ls.length||s.t||s.p)ls.push('');
- ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('div');d.className='gr'+(g===cour?' cour':'');d.style.opacity=cach?.55:1;
-  d.innerHTML=`<button title="${cach?'Activer':'Désactiver'} ce plan">${cach?'🙈':'👁️'}</button><span title="Travailler dans ce plan">${g===cour?'✎ ':''}${anEsc(grpNom(g))} <span style="color:#999">(${n.t} tracé${n.t>1?'s':''}, ${n.p} point${n.p>1?'s':''})</span></span>`+(g?`<button title="Renommer">✏️</button><button title="Supprimer ce plan">🗑</button>`:'');
-  const b=d.querySelectorAll('button');
-  b[0].onclick=()=>{const k=grpCache();k.has(g)?k.delete(g):k.add(g);store.set('grpCache',[...k]);grpTout()};
-  d.children[1].onclick=()=>{store.set('grpCour',g);grpMontre(g);grpTout();grpZoom(g)};
-  if(g){b[1].onclick=()=>{const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()};
-   b[2].onclick=()=>{const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
+function grpListe(){const el=document.getElementById('grpList');if(!el)return;const cour=grpCour(),c=grpCache(),ouv=new Set(store.get('grpOuv',[]));el.innerHTML='';
+ const ls=grpL().map(x=>x.id);const s0=grpCompte('');if(!ls.length||s0.t||s0.p)ls.push('');
+ ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('details');d.className='tg'+(g===cour?' cour':'');d.open=ouv.has(g);
+  const sm=document.createElement('summary');sm.innerHTML=`<input type="checkbox" title="Afficher ce plan sur la carte"${cach?'':' checked'}><span class="tgN">${anEsc(grpNom(g))} <span class="cpt">(${n.t+n.p})</span></span>`+(g?`<button class="tgB" title="Renommer">✏️</button><button class="tgB" title="Supprimer ce plan">🗑</button>`:'');
+  const body=document.createElement('div');body.className='tg-b';d.append(sm,body);
+  if(g===cour){const t=document.createElement('div');t.className='tgCour';t.textContent='✎ Plan en cours : tes nouveaux tracés et points vont ici.';body.appendChild(t)}
+  const bt=document.createElement('div'),bp=document.createElement('div');body.append(bt,bp);trRows(bt,g);anRows(bp,g);
+  if(!n.t&&!n.p){const v=document.createElement('div');v.className='tgVide';v.textContent='Vide : ouvre ce plan puis touche 〰️ Nouveau tracé ou 📍 Nouveau point.';body.appendChild(v)}
+  const cb=sm.querySelector('input'),bs=sm.querySelectorAll('button');
+  cb.onclick=e=>e.stopPropagation();
+  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait()};
+  d.addEventListener('toggle',()=>{const o=new Set(store.get('grpOuv',[]));d.open?o.add(g):o.delete(g);store.set('grpOuv',[...o])});
+  sm.addEventListener('click',e=>{if(e.target.closest('input,button'))return;setTimeout(()=>{if(d.open&&grpCour()!==g){store.set('grpOuv',[...new Set([...store.get('grpOuv',[]),g])]);store.set('grpCour',g);grpMontre(g);grpListe();grpZoom(g)}},0)});
+  if(g){bs[0].onclick=e=>{e.preventDefault();e.stopPropagation();const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()};
+   bs[1].onclick=e=>{e.preventDefault();e.stopPropagation();const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
     const now=Date.now();TRC.filter(i=>i.k==='l'&&!i.del&&(i.g||'')===g).forEach(i=>{if(tout){i.del=1;TRC.filter(j=>j.k==='i'&&j.l===i.id).forEach(j=>{j.del=1;j.d=now})}else delete i.g;i.d=now});
     ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>{if(tout){a.del=1;a.t=''}else delete a.g;a.d=now});
-    x.del=1;x.d=now;if(grpCour()===g||store.get('grpCour','')===g)store.set('grpCour','');trSave();anSave();grpTout()}}
+    x.del=1;x.d=now;if(store.get('grpCour','')===g)store.set('grpCour','');trSave();anSave();grpTout()}}
   el.appendChild(d)})}
 document.getElementById('grpNew').onclick=()=>{const v=prompt('Nom du nouveau plan (ex. « Carrière de Montmagny ») :','');if(v===null||!v.trim())return;
  const g={id:trId(),k:'g',t:v.trim(),d:Date.now()};const premier=!grpL().length;TRC.push(g);
  const s=grpCompte('');if(premier&&(s.t||s.p)&&confirm('Mettre dans « '+g.t+' » tes '+s.t+' tracé(s) et '+s.p+' point(s) existants ?')){const now=Date.now();
   TRC.filter(i=>i.k==='l'&&!i.del&&!i.g).forEach(i=>{i.g=g.id;i.d=now});ANN.filter(a=>!a.del&&!a.g).forEach(a=>{a.g=g.id;a.d=now});anSave()}
- store.set('grpCour',g.id);trSave();grpTout();info.textContent='Plan « '+g.t+' » créé : tes nouveaux tracés et points iront dedans.'};
+ store.set('grpCour',g.id);store.set('grpOuv',[...new Set([...store.get('grpOuv',[]),g.id])]);trSave();grpTout();info.textContent='Plan « '+g.t+' » créé : tes nouveaux tracés et points iront dedans.'};
 window.grpDeplace=(k,id)=>{const ls=grpL(),opts=[['','Sans plan'],...ls.map(x=>[x.id,x.t||'Plan sans nom'])];
  const v=prompt('Mettre dans quel plan ? Tape le numéro :\n'+opts.map((o,i)=>(i)+' – '+o[1]).join('\n'),'');if(v===null)return;const o=opts[parseInt(v,10)];if(!o){alert('Numéro inconnu.');return}
  map.closePopup();const now=Date.now();if(k==='t'){const x=trFind(id);if(o[0])x.g=o[0];else delete x.g;x.d=now;trSave()}else{const a=ANN.find(y=>y.id===id);if(o[0])a.g=o[0];else delete a.g;a.d=now;anSave()}grpTout()};
