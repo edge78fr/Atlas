@@ -1178,46 +1178,40 @@ map.on('dragstart',()=>{if(PDR.on)PDR.suit=false});pdrB.ondblclick=()=>{if(PDR.p
 function ecranMaj(){const m=document.getElementById('m'),h=Math.max(innerHeight,document.documentElement.clientHeight,(screen&&navigator.standalone)?screen.height:0);if(navigator.standalone||matchMedia('(display-mode: standalone)').matches){m.style.height=Math.max(h,m.getBoundingClientRect().height)+'px'}document.getElementById('app').style.height=m.getBoundingClientRect().height+'px';map.invalidateSize()}
 addEventListener('resize',ecranMaj);setTimeout(ecranMaj,300);addEventListener('orientationchange',()=>setTimeout(()=>map.invalidateSize(),300));
 
-// ---------- mesure ----------
-const bMes=document.getElementById('bMes');let couches=[];
-function finMesure(){bMes.textContent='📏 Mesurer';bSurf.textContent='📐 Surface';bAlt.textContent='⛰️ Altitude';if(!mesure)return;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();[bMes,bSurf,bAlt].forEach(b=>b.classList.remove('on'));mesure=null}
+// ---------- outils de mesure : distance, surface, altitude (résultats sur la carte, effacés seuls après 5 min) ----------
+const bMes=document.getElementById('bMes'),bSurf=document.getElementById('bSurf'),bAlt=document.getElementById('bAlt');let couches=[];
+const OUT_MS=5*60*1000;
 const dist=pts=>{let s=0;for(let i=1;i<pts.length;i++)s+=pts[i-1].distanceTo(pts[i]);return s};
-const fmt=m=>m<1000?m.toFixed(1)+' m':(m/1000).toFixed(2)+' km';
-bMes.onclick=()=>{if(mesure&&mesure.k){finMesure()}if(mesure){if(mesure.pts.length>1)info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure();bMes.textContent='📏 Mesurer';return}couches.forEach(c=>map.removeLayer(c));couches=[];
- mesure={pts:[],ligne:L.polyline([],{color:'#e30',weight:3,dashArray:'6 4'}).addTo(map)};couches.push(mesure.ligne);
- map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();bMes.classList.add('on');info.textContent=mobile()?'Touche la carte pour poser des points. Re-touche 📏 pour finir.':'Clique pour poser des points, double-clic ou Échap pour finir.';if(mobile()){bMes.textContent='✔ Terminer';plier()}};
-map.on('click',e=>{if(!mesure||mesure.k)return;mesure.pts.push(e.latlng);mesure.ligne.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent='Distance : '+fmt(dist(mesure.pts))});
-map.on('dblclick',()=>{if(mesure&&!mesure.k){info.textContent='Distance totale : '+fmt(dist(mesure.pts))+' (re-clique 📏 pour effacer)';finMesure()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&!mesure.k){info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure()}});
-
-// ---------- surface (m²) et altitude ----------
-const bSurf=document.getElementById('bSurf'),bAlt=document.getElementById('bAlt');
+const fmt=m=>m<1000?m.toFixed(1).replace('.',',')+' m':(m/1000).toFixed(2).replace('.',',')+' km';
 function aire(pts){if(pts.length<3)return 0;const R=6378137,rd=Math.PI/180;let a=0;for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];a+=(q.lng-p.lng)*rd*(2+Math.sin(p.lat*rd)+Math.sin(q.lat*rd))}return Math.abs(a*R*R/2)}
 const fmtA=m=>m<10000?Math.round(m).toLocaleString('fr-FR')+' m²':(m/10000).toFixed(2).replace('.',',')+' ha ('+Math.round(m).toLocaleString('fr-FR')+' m²)';
-const txtSurf=()=>{const p=mesure.pts;return p.length<3?'Pose encore '+(3-p.length)+' coin(s)…':'Surface : '+fmtA(aire(p))+' · périmètre '+fmt(dist([...p,p[0]]))};
-function debutOutil(k,b,msg){finMesure();couches.forEach(c=>map.removeLayer(c));couches=[];mesure={k,pts:[]};map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();b.classList.add('on');b.textContent='✔ Terminer';info.textContent=msg;plier()}
-// la zone reste modifiable (coins à glisser) et s'efface seule 5 min après la dernière retouche
-let SURF=null;
-function surfEfface(){if(!SURF)return;clearTimeout(SURF.t);[SURF.poly,...SURF.mk].forEach(l=>map.removeLayer(l));SURF=null}
-function surfMaj(){if(!SURF)return;const p=SURF.mk.map(m=>m.getLatLng());SURF.poly.setLatLngs(p);
- if(p.length>2){const t=fmtA(aire(p));SURF.poly.getTooltip()?SURF.poly.setTooltipContent(t):SURF.poly.bindTooltip(t,{permanent:true,direction:'center',className:'surfT'});SURF.poly.openTooltip(SURF.poly.getCenter())}
- if(!SURF.edit){clearTimeout(SURF.t);SURF.t=setTimeout(surfEfface,5*60*1000)}}
-function surfCoin(ll){const m=L.marker(ll,{draggable:true,icon:L.divIcon({className:'',html:'<div class="surfC"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
- m.on('drag',()=>{surfMaj();if(SURF&&SURF.edit)info.textContent=txtSurfP(SURF.mk.map(x=>x.getLatLng()))});m.on('dragend',()=>{surfMaj();info.textContent=txtSurfP(SURF.mk.map(x=>x.getLatLng()))});SURF.mk.push(m);surfMaj()}
-const txtSurfP=p=>p.length<3?'Pose encore '+(3-p.length)+' coin(s)…':'Surface : '+fmtA(aire(p))+' · périmètre '+fmt(dist([...p,p[0]]));
-bSurf.onclick=()=>{if(mesure&&mesure.k==='s'){const p=SURF?SURF.mk.map(m=>m.getLatLng()):[];finMesure();
-  if(p.length>2){SURF.edit=false;surfMaj();info.textContent=txtSurfP(p)+' — coins déplaçables, effacée dans 5 min'}else{surfEfface();info.textContent=''}return}
- surfEfface();debutOutil('s',bSurf,'Touche la carte pour poser les coins de la zone, dans l’ordre. Tu peux glisser les coins. Re-touche ✔ Terminer pour finir.');
- SURF={edit:true,mk:[],poly:L.polygon([],{color:'#e30',weight:3,dashArray:'6 4',fillColor:'#e30',fillOpacity:.15,interactive:false}).addTo(map)}};
-bAlt.onclick=()=>{if(mesure&&mesure.k==='a'){finMesure();info.textContent='';return}debutOutil('a',bAlt,'Touche la carte : l’altitude IGN du point s’affiche. Re-touche ✔ Terminer pour finir.')};
-map.on('click',async e=>{if(!mesure||!mesure.k)return;e.anFait=true;
- if(mesure.k==='s'){if(!SURF)return;surfCoin(e.latlng);info.textContent=txtSurfP(SURF.mk.map(m=>m.getLatLng()));return}
- if(mesure.k==='a'){const m=L.circleMarker(e.latlng,{radius:5,color:'#fff',weight:2,fillColor:'#7a4b1d',fillOpacity:1}).addTo(map);couches.push(m);m.bindTooltip('⏳',{permanent:true,direction:'top',offset:[0,-6]}).openTooltip();
-  try{const r=await fetch('https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+e.latlng.lng.toFixed(6)+'&lat='+e.latlng.lat.toFixed(6)+'&resource=ign_rge_alti_wld&zonly=true');const j=await r.json();const z=j.elevations&&j.elevations[0];
-   const t=(typeof z==='number'&&z>-1000)?z.toFixed(1).replace('.',',')+' m':'?';m.setTooltipContent('⛰️ '+t);info.textContent='Altitude : '+t+' (IGN, terrain naturel)'}catch(er){m.setTooltipContent('⛰️ ?');info.textContent='Altitude indisponible (pas de réseau ?)'}}});
-map.on('dblclick',()=>{if(mesure&&mesure.k==='s')bSurf.click()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&mesure.k){if(mesure.k==='s')bSurf.click();else finMesure()}});
-
+const BTN={d:[bMes,'📏 Mesurer'],s:[bSurf,'📐 Surface'],a:[bAlt,'⛰️ Altitude']};
+// chaque outil garde ses dessins dans son groupe, avec son minuteur
+const OUT={d:{g:L.layerGroup().addTo(map),mk:[],t:null},s:{g:L.layerGroup().addTo(map),mk:[],t:null},a:{g:L.layerGroup().addTo(map),mk:[],t:null}};
+function outEfface(k){const o=OUT[k];clearTimeout(o.t);o.t=null;o.g.clearLayers();o.mk=[];o.ligne=null}
+function outMinuteur(k){const o=OUT[k];clearTimeout(o.t);o.t=setTimeout(()=>outEfface(k),OUT_MS)}
+function finMesure(){for(const k in BTN){BTN[k][0].textContent=BTN[k][1];BTN[k][0].classList.remove('on')}if(!mesure)return;const k=mesure.k;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();mesure=null;
+ if(/^Touche la carte/.test(info.textContent))info.textContent='';if(k&&OUT[k]&&OUT[k].g.getLayers().length)outMinuteur(k)}
+function outDebut(k,msg){finMesure();outEfface(k);mesure={k};clearTimeout(OUT[k].t);map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();BTN[k][0].classList.add('on');BTN[k][0].textContent='✔ Terminer';info.textContent=msg;plier()}
+function outBascule(k,msg){if(mesure&&mesure.k===k){finMesure();return}outDebut(k,msg)}
+// coins / points déplaçables
+function outCoin(k,ll){const o=OUT[k],m=L.marker(ll,{draggable:true,icon:L.divIcon({className:'',html:'<div class="surfC"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(o.g);
+ m.on('drag',()=>outMaj(k));m.on('dragend',()=>{outMaj(k);if(!(mesure&&mesure.k===k))outMinuteur(k)});o.mk.push(m);outMaj(k)}
+function outMaj(k){const o=OUT[k],p=o.mk.map(m=>m.getLatLng());
+ if(k==='d'){if(!o.ligne)o.ligne=L.polyline([],{color:'#e30',weight:3,dashArray:'6 4',interactive:false}).addTo(o.g);o.ligne.setLatLngs(p);
+  if(p.length>1){const t=fmt(dist(p));o.ligne.getTooltip()?o.ligne.setTooltipContent(t):o.ligne.bindTooltip(t,{permanent:true,direction:'center',className:'surfT'});o.ligne.openTooltip(o.ligne.getCenter())}}
+ if(k==='s'){if(!o.ligne)o.ligne=L.polygon([],{color:'#e30',weight:3,dashArray:'6 4',fillColor:'#e30',fillOpacity:.15,interactive:false}).addTo(o.g);o.ligne.setLatLngs(p);
+  if(p.length>2){const t=fmtA(aire(p));o.ligne.getTooltip()?o.ligne.setTooltipContent(t):o.ligne.bindTooltip(t,{permanent:true,direction:'center',className:'surfT'});o.ligne.openTooltip(o.ligne.getCenter())}}}
+bMes.onclick=()=>outBascule('d','Touche la carte pour poser les points de la mesure (déplaçables). ✔ Terminer pour finir.');
+bSurf.onclick=()=>outBascule('s','Touche la carte pour poser les coins de la zone, dans l’ordre (déplaçables). ✔ Terminer pour finir.');
+bAlt.onclick=()=>outBascule('a','Touche la carte : l’altitude IGN s’affiche sur le point. ✔ Terminer pour finir.');
+map.on('click',async e=>{if(!mesure||!OUT[mesure.k])return;e.anFait=true;const k=mesure.k;if(/^Touche la carte/.test(info.textContent))info.textContent='';
+ if(k==='d'||k==='s'){outCoin(k,e.latlng);return}
+ const m=L.circleMarker(e.latlng,{radius:5,color:'#fff',weight:2,fillColor:'#7a4b1d',fillOpacity:1}).addTo(OUT.a.g);m.bindTooltip('⏳',{permanent:true,direction:'top',offset:[0,-6],className:'surfT'}).openTooltip();
+ try{const r=await fetch('https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+e.latlng.lng.toFixed(6)+'&lat='+e.latlng.lat.toFixed(6)+'&resource=ign_rge_alti_wld&zonly=true');const j=await r.json();const z=j.elevations&&j.elevations[0];
+  m.setTooltipContent('⛰️ '+((typeof z==='number'&&z>-1000)?z.toFixed(1).replace('.',',')+' m':'?'))}catch(er){m.setTooltipContent('⛰️ ? (pas de réseau)')}});
+map.on('dblclick',()=>{if(mesure&&(mesure.k==='d'||mesure.k==='s'))finMesure()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&OUT[mesure.k])finMesure()});
 
 // ---------- Points BRGM (Banque du sous-sol) ----------
 // petite mémoire locale pour les listes lourdes à télécharger (évite de les reprendre à chaque ouverture)
