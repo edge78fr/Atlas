@@ -1404,11 +1404,11 @@ function grpListe(){const el=document.getElementById('grpList');if(!el)return;co
   trRows(body,g);anRows(body,g);
   if(!n.t&&!n.p){const v=document.createElement('div');v.className='tgVide';v.textContent='Vide pour l’instant : utilise les boutons ci-dessus.';body.appendChild(v)}
   const cb=sm.querySelector('input');cb.onclick=e=>e.stopPropagation();
-  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait();d.style.opacity=cb.checked?1:.6};
+  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait();d.style.opacity=cb.checked?1:.6;if(!cb.checked)d.open=false};
   d.addEventListener('toggle',()=>{const o=new Set(store.get('grpOuv',[]));d.open?o.add(g):o.delete(g);store.set('grpOuv',[...o])});
   sm.querySelector('.dots').onclick=e=>{e.preventDefault();e.stopPropagation();const it=[['🔍 Zoomer dessus',()=>{grpMontre(g);grpZoom(g);plier()}],
     ['👁️ Tout afficher',()=>{const tc=trCache(),ac=anCache();TRC.filter(x=>x.k==='l'&&(x.g||'')===g).forEach(x=>tc.delete(x.id));ANN.filter(a=>(a.g||'')===g).forEach(a=>ac.delete(a.id));store.set('trCache',[...tc]);store.set('anCache',[...ac]);grpMontre(g);grpTout()}],
-    ['🙈 Tout cacher',()=>{const k=grpCache();k.add(g);store.set('grpCache',[...k]);grpTout()}]];
+    ['🙈 Tout cacher',()=>{const k=grpCache();k.add(g);store.set('grpCache',[...k]);const o=new Set(store.get('grpOuv',[]));o.delete(g);store.set('grpOuv',[...o]);grpTout()}]];
    if(g){it.unshift(['✏️ Renommer',()=>{const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()}]);
     it.push(['🗑 Supprimer le plan…',()=>{const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
      const now=Date.now();TRC.filter(i=>i.k==='l'&&!i.del&&(i.g||'')===g).forEach(i=>{if(tout){i.del=1;TRC.filter(j=>j.k==='i'&&j.l===i.id).forEach(j=>{j.del=1;j.d=now})}else delete i.g;i.d=now});
