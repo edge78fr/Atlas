@@ -241,7 +241,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="ordre"></div><input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
   <div class="sec"><h4>✏️ Terrain</h4>
-   <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPos">⌖ Suivre ma position</button><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button></div></details>
+   <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bSurf" title="Pose les coins de la zone : la surface se calcule en direct">📐 Surface</button><button id="bAlt" title="Touche la carte : altitude IGN du point">⛰️ Altitude</button></div></details>
    <details class="tgH" id="tgPlans" open><summary><span>🗂️ Mes plans de terrain</span><button id="grpNew" class="tgNew">➕ Nouveau plan</button></summary><div id="grpList"></div></details>
    <div style="display:none"><button id="anAdd"></button><button id="trNew"></button><button id="trIco"></button><button id="bRid"></button><div id="visBox"><input type="checkbox" id="visAn"><input type="checkbox" id="visTr"><input type="checkbox" id="visDot"></div><div id="trBox"><div id="trList"></div></div><div id="anList"></div></div>
    <div class="tgSync"><span id="trEtat"></span><span id="anSync"></span></div></div>
@@ -1116,7 +1116,7 @@ function gpsStop(){if(GPS.id!==null)navigator.geolocation.clearWatch(GPS.id);GPS
 gpsB.onclick=()=>{if(GPS.id===null)gpsStart();else if(!GPS.suit){GPS.suit=true;gpsDessine()}else gpsStop()};
 map.on('dragstart',()=>{if(GPS.suit){GPS.suit=false;gpsUI()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&GPS.id!==null)gpsVeille(true)});
-document.getElementById('bPos').onclick=()=>{gpsB.click();plier()};
+
 // ---------- navigation à l'estime : pas (accéléromètre) + boussole, sans GPS ----------
 const PDR={on:false,pos:null,cap:0,corr:store.get('pdr_corr',0),pas:0,dist:0,depuis:0,lg:+store.get('pdr_lg',0.7),seuil:+store.get('pdr_seuil',1.2),trace:[],mk:null,cc:null,ln:null,attente:null,
  f:9.81,s:9.81,haut:false,t:0};
@@ -1178,15 +1178,33 @@ addEventListener('resize',ecranMaj);setTimeout(ecranMaj,300);addEventListener('o
 
 // ---------- mesure ----------
 const bMes=document.getElementById('bMes');let couches=[];
-function finMesure(){bMes.textContent='📏 Mesurer';if(!mesure)return;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();bMes.classList.remove('on');mesure=null}
+function finMesure(){bMes.textContent='📏 Mesurer';bSurf.textContent='📐 Surface';bAlt.textContent='⛰️ Altitude';if(!mesure)return;map.getContainer().classList.remove('mesure');map.doubleClickZoom.enable();[bMes,bSurf,bAlt].forEach(b=>b.classList.remove('on'));mesure=null}
 const dist=pts=>{let s=0;for(let i=1;i<pts.length;i++)s+=pts[i-1].distanceTo(pts[i]);return s};
 const fmt=m=>m<1000?m.toFixed(1)+' m':(m/1000).toFixed(2)+' km';
-bMes.onclick=()=>{if(mesure){if(mesure.pts.length>1)info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure();bMes.textContent='📏 Mesurer';return}couches.forEach(c=>map.removeLayer(c));couches=[];
+bMes.onclick=()=>{if(mesure&&mesure.k){finMesure()}if(mesure){if(mesure.pts.length>1)info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure();bMes.textContent='📏 Mesurer';return}couches.forEach(c=>map.removeLayer(c));couches=[];
  mesure={pts:[],ligne:L.polyline([],{color:'#e30',weight:3,dashArray:'6 4'}).addTo(map)};couches.push(mesure.ligne);
  map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();bMes.classList.add('on');info.textContent=mobile()?'Touche la carte pour poser des points. Re-touche 📏 pour finir.':'Clique pour poser des points, double-clic ou Échap pour finir.';if(mobile()){bMes.textContent='✔ Terminer';plier()}};
-map.on('click',e=>{if(!mesure)return;mesure.pts.push(e.latlng);mesure.ligne.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent='Distance : '+fmt(dist(mesure.pts))});
-map.on('dblclick',()=>{if(mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts))+' (re-clique 📏 pour effacer)';finMesure()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure){info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure()}});
+map.on('click',e=>{if(!mesure||mesure.k)return;mesure.pts.push(e.latlng);mesure.ligne.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent='Distance : '+fmt(dist(mesure.pts))});
+map.on('dblclick',()=>{if(mesure&&!mesure.k){info.textContent='Distance totale : '+fmt(dist(mesure.pts))+' (re-clique 📏 pour effacer)';finMesure()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&!mesure.k){info.textContent='Distance totale : '+fmt(dist(mesure.pts));finMesure()}});
+
+// ---------- surface (m²) et altitude ----------
+const bSurf=document.getElementById('bSurf'),bAlt=document.getElementById('bAlt');
+function aire(pts){if(pts.length<3)return 0;const R=6378137,rd=Math.PI/180;let a=0;for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];a+=(q.lng-p.lng)*rd*(2+Math.sin(p.lat*rd)+Math.sin(q.lat*rd))}return Math.abs(a*R*R/2)}
+const fmtA=m=>m<10000?Math.round(m).toLocaleString('fr-FR')+' m²':(m/10000).toFixed(2).replace('.',',')+' ha ('+Math.round(m).toLocaleString('fr-FR')+' m²)';
+const txtSurf=()=>{const p=mesure.pts;return p.length<3?'Pose encore '+(3-p.length)+' coin(s)…':'Surface : '+fmtA(aire(p))+' · périmètre '+fmt(dist([...p,p[0]]))};
+function debutOutil(k,b,msg){finMesure();couches.forEach(c=>map.removeLayer(c));couches=[];mesure={k,pts:[]};map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();b.classList.add('on');b.textContent='✔ Terminer';info.textContent=msg;plier()}
+bSurf.onclick=()=>{if(mesure&&mesure.k==='s'){const p=mesure.pts;info.textContent=p.length>2?txtSurf()+' (re-touche 📐 pour effacer)':'';finMesure();return}
+ debutOutil('s',bSurf,'Touche la carte pour poser les coins de la zone, dans l’ordre. Re-touche ✔ Terminer pour finir.');
+ mesure.poly=L.polygon([],{color:'#e30',weight:3,dashArray:'6 4',fillColor:'#e30',fillOpacity:.15}).addTo(map);couches.push(mesure.poly)};
+bAlt.onclick=()=>{if(mesure&&mesure.k==='a'){finMesure();info.textContent='';return}debutOutil('a',bAlt,'Touche la carte : l’altitude IGN du point s’affiche. Re-touche ✔ Terminer pour finir.')};
+map.on('click',async e=>{if(!mesure||!mesure.k)return;e.anFait=true;
+ if(mesure.k==='s'){mesure.pts.push(e.latlng);mesure.poly.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent=txtSurf();return}
+ if(mesure.k==='a'){const m=L.circleMarker(e.latlng,{radius:5,color:'#fff',weight:2,fillColor:'#7a4b1d',fillOpacity:1}).addTo(map);couches.push(m);m.bindTooltip('⏳',{permanent:true,direction:'top',offset:[0,-6]}).openTooltip();
+  try{const r=await fetch('https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+e.latlng.lng.toFixed(6)+'&lat='+e.latlng.lat.toFixed(6)+'&resource=ign_rge_alti_wld&zonly=true');const j=await r.json();const z=j.elevations&&j.elevations[0];
+   const t=(typeof z==='number'&&z>-1000)?z.toFixed(1).replace('.',',')+' m':'?';m.setTooltipContent('⛰️ '+t);info.textContent='Altitude : '+t+' (IGN, terrain naturel)'}catch(er){m.setTooltipContent('⛰️ ?');info.textContent='Altitude indisponible (pas de réseau ?)'}}});
+map.on('dblclick',()=>{if(mesure&&mesure.k==='s'){info.textContent=mesure.pts.length>2?txtSurf():'';finMesure()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&mesure.k){if(mesure.k==='s'&&mesure.pts.length>2)info.textContent=txtSurf();finMesure()}});
 
 
 // ---------- Points BRGM (Banque du sous-sol) ----------
