@@ -48,6 +48,17 @@ html,body{height:100%;min-height:100vh;min-height:100lvh;margin:0;background:#1d
 .favS{cursor:pointer;font-size:14px;line-height:1;padding:0 4px 0 0;color:#bbb;user-select:none;flex:none}.favS.on{color:#e6a800}
 body.favMode .cou>label{display:flex;align-items:center}
 #favEd.on{background:#e6a800;color:#fff;border-color:#e6a800}
+.tgH{margin:2px 0}.tgH>summary{display:flex;align-items:center;gap:6px;cursor:pointer;list-style:none;padding:7px 1px;color:#666;font-size:12px;font-weight:600;user-select:none}
+.tgH>summary::-webkit-details-marker{display:none}.tgH>summary::before{content:'▸';color:#888;width:9px;flex:none}.tgH[open]>summary::before{content:'▾'}.tgH>summary>span{flex:1}
+.tgH-b{padding:2px 0 6px 14px}.tgNew{font-size:11.5px!important;padding:2px 8px!important;font-weight:500}
+#grpList{padding-left:8px}
+.tgTools{display:flex;flex-wrap:wrap;gap:5px;margin:3px 0 5px}.tgTools button{font-size:11px!important;padding:2px 7px!important;border:1px dashed #9ab!important;border-radius:7px!important;color:#246!important;background:#f2f7ff!important}
+.tg-b .it{display:flex;align-items:center;gap:6px;padding:3px 0}.tg-b .it input{margin:0}.tg-b .it .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.tg-b .it .m{color:#999;font-size:11px;white-space:nowrap}
+.tg-b .it.off .n{color:#999}.tg-b .rd{padding:1px 0 1px 26px;font-size:12px;color:#444;cursor:pointer;display:flex;align-items:center;gap:5px}
+.dots{border:0!important;background:none!important;box-shadow:none!important;padding:0 4px!important;min-width:0!important;color:#999;font-size:15px;letter-spacing:1px;cursor:pointer;line-height:1}
+.pmenu{font-family:-apple-system,system-ui,sans-serif;color:#222;position:fixed;z-index:3000;background:#fff;border-radius:10px;box-shadow:0 3px 16px #0003;padding:5px 0;font-size:13px;min-width:190px;max-width:260px}
+.pmenu div{padding:7px 12px;cursor:pointer}.pmenu div:hover{background:#f0f4ff}.pmenu .rouge{color:#c33;border-top:1px solid #eee}.pmenu .sub{padding:4px 12px 4px 26px;font-size:12px;color:#444}.pmenu .tit{cursor:default;color:#888;font-size:11px;padding:4px 12px 2px}.pmenu .tit:hover{background:none}
+.tgSync{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:#777;padding:8px 2px 2px}.tgSync button{font-size:11px;padding:0 6px}
 #filmTag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:950;background:#0008;color:#fff;font:600 15px system-ui;padding:3px 10px;border-radius:8px;pointer-events:none;display:none;white-space:nowrap}
 #filmTag small{font-size:11px;font-weight:500;opacity:.8;margin-left:6px}
 .rub{margin:0;padding:0}
@@ -230,11 +241,10 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="ordre"></div><input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
   <div class="sec"><h4>✏️ Terrain</h4>
-   <div class="outils"><button id="anAdd" title="Ajouter un point (puis touche la carte)" >📍 Nouveau point</button><button id="trNew" title="Tracer une ligne point par point">〰️ Nouveau tracé</button><button id="trIco" title="Poser un point de couleur sur un tracé">● Point sur un tracé</button>
-   <button id="bPos">⌖ Suivre ma position</button><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button>
-   <button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bRid" title="Comparer le plan et le fond avec une barre à glisser">⇔ Rideau</button></div>
-   <div id="grpBox" style="margin:8px 0 4px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;color:#666;font-size:12px;font-weight:600;padding:4px 1px">🗂️ Plans de terrain<button id="grpNew" style="font-size:11.5px;padding:2px 8px;font-weight:500">➕ Nouveau plan</button></div><div id="grpList" style="font-size:12.5px;margin-top:3px"></div></div>
-   <div id="visBox" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;margin:6px 0 2px"><span style="color:#666">Afficher :</span><label><input type="checkbox" id="visAn"> 📍 Points</label><label><input type="checkbox" id="visTr"> 〰️ Tracés</label><label><input type="checkbox" id="visDot"> ● Ronds</label></div><div id="anSync" style="font-size:11px;color:#666;margin:6px 0 2px"></div><div id="trBox"><div id="trEtat" style="font-size:11px;color:#666;margin:0 0 3px"></div><div id="trList" style="display:none"></div></div><div id="anList" style="display:none"></div></div>
+   <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPos">⌖ Suivre ma position</button><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button></div></details>
+   <details class="tgH" id="tgPlans" open><summary><span>🗂️ Mes plans de terrain</span><button id="grpNew" class="tgNew">➕ Nouveau plan</button></summary><div id="grpList"></div></details>
+   <div style="display:none"><button id="anAdd"></button><button id="trNew"></button><button id="trIco"></button><button id="bRid"></button><div id="visBox"><input type="checkbox" id="visAn"><input type="checkbox" id="visTr"><input type="checkbox" id="visDot"></div><div id="trBox"><div id="trList"></div></div><div id="anList"></div></div>
+   <div class="tgSync"><span id="trEtat"></span><span id="anSync"></span></div></div>
   <div class="sec"><h4>📥 Hors ligne</h4>
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
   <div class="sec"><h4>⚙️ Compte et réglages</h4>
@@ -1238,11 +1248,19 @@ window.anStyle=id=>{const a=ANN.find(x=>x.id===id);map.closePopup();const k=anFm
  trBarre('Forme, couleur et taille du point',c=>{a.c=c;maj()},true);trBar.insertBefore(trFormes(k.f,f=>{a.f=f;maj()}),trBar.lastElementChild);trBar.insertBefore(trTailles(k.r,r=>{a.r=r;maj()}),trBar.lastElementChild);trMode='c'};
 window.anSuppr=id=>{const a=ANN.find(x=>x.id===id);if(a.t&&!window.confirm('Supprimer ce point ?'))return;a.del=1;a.d=Date.now();a.t='';anLay.removeLayer(anMk[id]);delete anMk[id];anSave()};
 function anListe(){try{grpListe()}catch(e){}}
-function anRows(el,g){
- const vis=ANN.filter(a=>!a.del&&(a.g||'')===g);
- vis.forEach(a=>{const d=document.createElement('div');d.className='an';d.innerHTML=`<b style="display:inline-flex">${trSvg(anFmt(a).f,6,anFmt(a).c,'#999')}</b><span title="Aller sur ce point">${anEsc((a.t||'Point sans texte').split('\n')[0])}</span><button title="Éditer">✏️</button>`;
-  d.children[1].onclick=()=>{if(!store.get('vis_an',true)){store.set('vis_an',true);visInit()}grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anMk[a.id].openPopup();plier()};d.children[2].onclick=()=>{grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anEdit(a.id);plier()};el.appendChild(d)})}
-function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];ANN.filter(a=>!a.del&&grpVu(a.g)).forEach(anPose)}
+function anRows(el,g){const c=anCache();
+ ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>{const off=c.has(a.id),d=document.createElement('div');d.className='it'+(off?' off':'');
+  d.innerHTML=`<input type="checkbox"${off?'':' checked'} title="Afficher ce point"><span style="display:inline-flex">${trSvg(anFmt(a).f,6,anFmt(a).c,'#999')}</span><span class="n" title="Aller sur ce point">${anEsc((a.t||'Point sans texte').split('\n')[0])}</span><span class="m">point</span><button class="dots" title="Options">⋯</button>`;
+  const vis=v=>{const k=anCache();v?k.delete(a.id):k.add(a.id);store.set('anCache',[...k]);anRefait();grpListe()};
+  d.querySelector('input').onchange=e=>vis(e.target.checked);
+  const va=()=>{if(anCache().has(a.id))vis(true);grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));plier()};
+  d.querySelector('.n').onclick=()=>{va();anMk[a.id]&&anMk[a.id].openPopup()};
+  d.querySelector('.dots').onclick=e=>{e.stopPropagation();popMenu(e.currentTarget,[
+   ['✏️ Modifier le texte',()=>{va();anEdit(a.id)}],['🎨 Forme / couleur',()=>{va();anStyle(a.id)}],
+   ...grpChoix(a.g,v=>{if(v)a.g=v;else delete a.g;a.d=Date.now();anSave();grpTout()}),['🗑 Supprimer…',()=>{if(confirm('Supprimer ce point ?')){a.t='';anSuppr(a.id);grpListe()}},1]])};
+  el.appendChild(d)})}
+const anCache=()=>new Set(store.get('anCache',[]));
+function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];const c=anCache();ANN.filter(a=>!a.del&&grpVu(a.g)&&!c.has(a.id)).forEach(anPose)}
 anRefait();anListe();
 // ---------- partage des annotations (dépôt GitHub, contenu chiffré) ----------
 const NREPO='edge78fr/atlas-notes',NSITE='atlas',GH='https://api.github.com/repos/'+NREPO+'/contents/';
@@ -1257,7 +1275,7 @@ async function nGet(p){const h={Accept:'application/vnd.github+json'};if(NTOK)h.
  return j}
 async function nPut(p,b64,sha,msg){const r=await fetch(GH+p,{method:'PUT',headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+NTOK,'Content-Type':'application/json'},body:JSON.stringify({message:msg,content:b64,...(sha?{sha}:{})})});
  if(r.status===409||r.status===422)return 'conflit';if(!r.ok)throw new Error('GitHub '+r.status);return (await r.json()).content.sha}
-function nEtat(t,err){const e=nEl();if(!e)return;e.innerHTML=(err?'⚠️ ':'')+t+(NTOK?'':' <button id="anKey" style="font-size:11px;padding:1px 6px">🔑 Activer le partage</button>');const k=document.getElementById('anKey');if(k)k.onclick=anCle}
+function nEtat(t,err){const e=nEl();if(!e)return;e.style.display=(err||!NTOK)?'':'none';e.innerHTML=(err?'⚠️ ':'')+t+(NTOK?'':' <button id="anKey" style="font-size:11px;padding:1px 6px">🔑 Activer le partage</button>');const k=document.getElementById('anKey');if(k)k.onclick=anCle}
 async function anCle(){const t=(prompt('Colle la clé GitHub (fine-grained, accès au dépôt atlas-notes, Contents : lecture/écriture). Elle sera chiffrée avec le code d\'accès et partagée avec les autres appareils.')||'').trim();if(!t)return;
  NTOK=t;try{const k=await nGet(NSITE+'.key');await nPut(NSITE+'.key',await nEnc({tok:t}),k&&k.sha,'clé');memSet(TOK_KEY,t);nEtat('🔑 Partage activé.');cptAff();anSync()}catch(e){NTOK=null;nEtat('Clé refusée par GitHub ('+e.message+').',1)}}
 function fusion(a,b){const m=new Map();[...a,...b].forEach(x=>{const y=m.get(x.id);if(!y||(x.d||0)>(y.d||0))m.set(x.id,x)});const lim=Date.now()-90*864e5;return [...m.values()].filter(x=>!(x.del&&x.d<lim))}
@@ -1346,9 +1364,26 @@ function trDessine(){trLay.clearLayers();for(const k in trObj)delete trObj[k];
 function trLong(p){let d=0;for(let i=1;i<p.length;i++)d+=map.distance(p[i-1],p[i]);return d<1000?Math.round(d)+' m':(d/1000).toFixed(2)+' km'}
 function trListe(){try{grpListe()}catch(e){}}
 function trRows(el,g){const ls=trVis().filter(x=>x.k==='l'&&(x.g||'')===g);
- ls.forEach(x=>{const d=document.createElement('div');d.className='an';const cach=trCache().has(x.id);d.style.opacity=cach?.5:1;d.innerHTML=`<button onclick="trOeil('${x.id}')" title="${cach?'Afficher':'Masquer'} ce tracé" style="border:0;background:none;padding:0 4px;cursor:pointer;font-size:14px">${cach?'🙈':'👁️'}</button><b style="color:${x.c};text-shadow:0 0 1px #000">━</b><span title="Aller sur ce tracé">${anEsc(x.t||'Tracé')} <span style="color:#999">(${trLong(x.p)}, ${trVis().filter(i=>i.k==='i'&&i.l===x.id).length} point(s))</span></span>`;
-  d.children[2].onclick=()=>{if(cach)trOeil(x.id);grpMontre(x.g);if(!store.get('vis_tr',true)){store.set('vis_tr',true);visInit();trDessine()}map.fitBounds(L.latLngBounds(x.p),{maxZoom:19});trObj[x.id]&&trObj[x.id].openPopup();plier()};el.appendChild(d)})}
+ ls.forEach(x=>{const cach=trCache().has(x.id),d=document.createElement('div');d.className='it'+(cach?' off':'');
+  d.innerHTML=`<input type="checkbox"${cach?'':' checked'} title="Afficher ce tracé"><b style="color:${x.c};text-shadow:0 0 1px #000">━</b><span class="n" title="Aller sur ce tracé">${anEsc(x.t||'Tracé')}</span><span class="m">${trLong(x.p)}</span><button class="dots" title="Options">⋯</button>`;
+  d.querySelector('input').onchange=()=>trOeil(x.id);
+  d.querySelector('.n').onclick=()=>{if(trCache().has(x.id))trOeil(x.id);grpMontre(x.g);map.fitBounds(L.latLngBounds(x.p),{maxZoom:19});trObj[x.id]&&trObj[x.id].openPopup();plier()};
+  d.querySelector('.dots').onclick=e=>{e.stopPropagation();popMenu(e.currentTarget,[
+   ['✏️ Renommer',()=>trRen(x.id)],['🎨 Couleur',()=>trCoul(x.id)],[x.s==='t'?'━ Trait plein':'┅ Pointillé',()=>trStyle(x.id)],['➕ Continuer le tracé',()=>{grpMontre(x.g);trSuite(x.id);plier()}],
+   ...grpChoix(x.g,v=>{const y=trFind(x.id);if(v)y.g=v;else delete y.g;y.d=Date.now();trSave();grpTout()}),['🗑 Supprimer…',()=>trSup(x.id),1]])};
+  el.appendChild(d);
+  trVis().filter(i=>i.k==='i'&&i.l===x.id).forEach(i=>{const r=document.createElement('div');r.className='rd';r.innerHTML=`<span style="display:inline-flex">${trSvg(i.f||'o',5,i.dc||x.c,'#999')}</span>${anEsc(i.t||'Rond')}`;
+   r.onclick=()=>{grpMontre(x.g);if(trCache().has(x.id))trOeil(x.id);map.setView(i.ll,Math.max(map.getZoom(),18));plier()};el.appendChild(r)})})}
 const trFind=id=>TRC.find(x=>x.id===id);const trId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// ---------- petit menu « ⋯ » ----------
+function popMenu(btn,items){document.querySelectorAll('.pmenu').forEach(m=>m.remove());const m=document.createElement('div');m.className='pmenu';
+ items.forEach(it=>{const d=document.createElement('div');if(it[3]==='tit'){d.className='tit';d.textContent=it[0]}else{d.textContent=it[0];if(it[2])d.className='rouge';if(it[3]==='sub')d.className='sub';d.onclick=()=>{m.remove();it[1]()}}m.appendChild(d)});
+ document.body.appendChild(m);const r=btn.getBoundingClientRect(),w=m.offsetWidth,h=m.offsetHeight;
+ m.style.left=Math.max(6,Math.min(innerWidth-w-6,r.right-w))+'px';m.style.top=(r.bottom+h+6<innerHeight?r.bottom+2:Math.max(6,r.top-h-2))+'px';
+ setTimeout(()=>{const f=e=>{if(!m.contains(e.target)){m.remove();document.removeEventListener('pointerdown',f,true)}};document.addEventListener('pointerdown',f,true)},0)}
+function grpChoix(cur,fn){const ls=[...grpL().map(x=>[x.id,x.t||'Plan sans nom']),['','Sans plan']].filter(o=>o[0]!==(cur||''));if(!ls.length)return [];
+ return [['🗂️ Changer de plan :',null,0,'tit'],...ls.map(o=>['○ '+o[1],()=>fn(o[0]),0,'sub'])]}
+
 // ---------- plans de terrain : ranger tracés et points par projet, à afficher / cacher ----------
 function grpCache(){return new Set(store.get('grpCache',[]))}
 function grpVu(g){return !grpCache().has(g||'')}
@@ -1359,30 +1394,33 @@ function grpMontre(g){const c=grpCache();if(c.delete(g||'')){store.set('grpCache
 function grpTout(){trDessine();trListe();anRefait();anListe()}
 function grpCompte(g){return {t:TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).length,p:ANN.filter(a=>!a.del&&(a.g||'')===g).length}}
 function grpZoom(g){const pts=[];TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).forEach(x=>pts.push(...x.p));ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>pts.push([a.lat,a.lng]));if(pts.length)map.fitBounds(L.latLngBounds(pts),{maxZoom:18,padding:[30,30]})}
-function grpListe(){const el=document.getElementById('grpList');if(!el)return;const cour=grpCour(),c=grpCache(),ouv=new Set(store.get('grpOuv',[]));el.innerHTML='';
- const ls=grpL().map(x=>x.id);const s0=grpCompte('');if(!ls.length||s0.t||s0.p)ls.push('');
- ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('details');d.className='tg'+(g===cour?' cour':'');d.open=ouv.has(g);
-  const sm=document.createElement('summary');sm.innerHTML=`<input type="checkbox" title="Afficher ce plan sur la carte"${cach?'':' checked'}><span class="tgN">${anEsc(grpNom(g))} <span class="cpt">(${n.t+n.p})</span></span>`+(g?`<button class="tgB" title="Renommer">✏️</button><button class="tgB" title="Supprimer ce plan">🗑</button>`:'');
+function grpListe(){const el=document.getElementById('grpList');if(!el)return;const c=grpCache(),ouv=new Set(store.get('grpOuv',[]));el.innerHTML='';
+ const ls=grpL().map(x=>x.id);const s0=grpCompte('');if(s0.t||s0.p||!ls.length)ls.push('');
+ ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('details');d.className='tg';d.open=ouv.has(g);if(cach)d.style.opacity=.6;
+  const sm=document.createElement('summary');sm.innerHTML=`<input type="checkbox" title="Afficher ce plan sur la carte"${cach?'':' checked'}><span class="tgN">${anEsc(grpNom(g))} <span class="cpt">(${n.t+n.p})</span></span><button class="dots" title="Options du plan">⋯</button>`;
   const body=document.createElement('div');body.className='tg-b';d.append(sm,body);
-  if(g===cour){const t=document.createElement('div');t.className='tgCour';t.textContent='✎ Plan en cours : tes nouveaux tracés et points vont ici.';body.appendChild(t)}
-  const bt=document.createElement('div'),bp=document.createElement('div');body.append(bt,bp);trRows(bt,g);anRows(bp,g);
-  if(!n.t&&!n.p){const v=document.createElement('div');v.className='tgVide';v.textContent='Vide : ouvre ce plan puis touche 〰️ Nouveau tracé ou 📍 Nouveau point.';body.appendChild(v)}
-  const cb=sm.querySelector('input'),bs=sm.querySelectorAll('button');
-  cb.onclick=e=>e.stopPropagation();
-  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait()};
+  const tl=document.createElement('div');tl.className='tgTools';tl.innerHTML='<button>〰️ Tracé</button><button>📍 Point</button><button>● Rond sur tracé</button>';body.appendChild(tl);
+  const dans=id=>()=>{store.set('grpCour',g);grpMontre(g);document.getElementById(id).click()};const tb=tl.querySelectorAll('button');tb[0].onclick=dans('trNew');tb[1].onclick=dans('anAdd');tb[2].onclick=dans('trIco');
+  trRows(body,g);anRows(body,g);
+  if(!n.t&&!n.p){const v=document.createElement('div');v.className='tgVide';v.textContent='Vide pour l’instant : utilise les boutons ci-dessus.';body.appendChild(v)}
+  const cb=sm.querySelector('input');cb.onclick=e=>e.stopPropagation();
+  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait();d.style.opacity=cb.checked?1:.6};
   d.addEventListener('toggle',()=>{const o=new Set(store.get('grpOuv',[]));d.open?o.add(g):o.delete(g);store.set('grpOuv',[...o])});
-  sm.addEventListener('click',e=>{if(e.target.closest('input,button'))return;setTimeout(()=>{if(d.open&&grpCour()!==g){store.set('grpOuv',[...new Set([...store.get('grpOuv',[]),g])]);store.set('grpCour',g);grpMontre(g);grpListe();grpZoom(g)}},0)});
-  if(g){bs[0].onclick=e=>{e.preventDefault();e.stopPropagation();const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()};
-   bs[1].onclick=e=>{e.preventDefault();e.stopPropagation();const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
-    const now=Date.now();TRC.filter(i=>i.k==='l'&&!i.del&&(i.g||'')===g).forEach(i=>{if(tout){i.del=1;TRC.filter(j=>j.k==='i'&&j.l===i.id).forEach(j=>{j.del=1;j.d=now})}else delete i.g;i.d=now});
-    ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>{if(tout){a.del=1;a.t=''}else delete a.g;a.d=now});
-    x.del=1;x.d=now;if(store.get('grpCour','')===g)store.set('grpCour','');trSave();anSave();grpTout()}}
+  sm.querySelector('.dots').onclick=e=>{e.preventDefault();e.stopPropagation();const it=[['🔍 Zoomer dessus',()=>{grpMontre(g);grpZoom(g);plier()}],
+    ['👁️ Tout afficher',()=>{const tc=trCache(),ac=anCache();TRC.filter(x=>x.k==='l'&&(x.g||'')===g).forEach(x=>tc.delete(x.id));ANN.filter(a=>(a.g||'')===g).forEach(a=>ac.delete(a.id));store.set('trCache',[...tc]);store.set('anCache',[...ac]);grpMontre(g);grpTout()}],
+    ['🙈 Tout cacher',()=>{const k=grpCache();k.add(g);store.set('grpCache',[...k]);grpTout()}]];
+   if(g){it.unshift(['✏️ Renommer',()=>{const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()}]);
+    it.push(['🗑 Supprimer le plan…',()=>{const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
+     const now=Date.now();TRC.filter(i=>i.k==='l'&&!i.del&&(i.g||'')===g).forEach(i=>{if(tout){i.del=1;TRC.filter(j=>j.k==='i'&&j.l===i.id).forEach(j=>{j.del=1;j.d=now})}else delete i.g;i.d=now});
+     ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>{if(tout){a.del=1;a.t=''}else delete a.g;a.d=now});
+     x.del=1;x.d=now;if(store.get('grpCour','')===g)store.set('grpCour','');trSave();anSave();grpTout()},1])}
+   popMenu(e.currentTarget,it)};
   el.appendChild(d)})}
-document.getElementById('grpNew').onclick=()=>{const v=prompt('Nom du nouveau plan (ex. « Carrière de Montmagny ») :','');if(v===null||!v.trim())return;
+document.getElementById('grpNew').onclick=e=>{if(e){e.preventDefault();e.stopPropagation()}document.getElementById('tgPlans').open=true;const v=prompt('Nom du nouveau plan (ex. « Carrière de Montmagny ») :','');if(v===null||!v.trim())return;
  const g={id:trId(),k:'g',t:v.trim(),d:Date.now()};const premier=!grpL().length;TRC.push(g);
  const s=grpCompte('');if(premier&&(s.t||s.p)&&confirm('Mettre dans « '+g.t+' » tes '+s.t+' tracé(s) et '+s.p+' point(s) existants ?')){const now=Date.now();
   TRC.filter(i=>i.k==='l'&&!i.del&&!i.g).forEach(i=>{i.g=g.id;i.d=now});ANN.filter(a=>!a.del&&!a.g).forEach(a=>{a.g=g.id;a.d=now});anSave()}
- store.set('grpCour',g.id);store.set('grpOuv',[...new Set([...store.get('grpOuv',[]),g.id])]);trSave();grpTout();info.textContent='Plan « '+g.t+' » créé : tes nouveaux tracés et points iront dedans.'};
+ store.set('grpCour',g.id);store.set('grpOuv',[...new Set([...store.get('grpOuv',[]),g.id])]);trSave();grpTout();info.textContent='Plan « '+g.t+' » créé. Utilise ses boutons 〰️ Tracé / 📍 Point pour le remplir.';setTimeout(()=>{if(info.textContent.startsWith('Plan « '))info.textContent=''},6000)};
 window.grpDeplace=(k,id)=>{const ls=grpL(),opts=[['','Sans plan'],...ls.map(x=>[x.id,x.t||'Plan sans nom'])];
  const v=prompt('Mettre dans quel plan ? Tape le numéro :\n'+opts.map((o,i)=>(i)+' – '+o[1]).join('\n'),'');if(v===null)return;const o=opts[parseInt(v,10)];if(!o){alert('Numéro inconnu.');return}
  map.closePopup();const now=Date.now();if(k==='t'){const x=trFind(id);if(o[0])x.g=o[0];else delete x.g;x.d=now;trSave()}else{const a=ANN.find(y=>y.id===id);if(o[0])a.g=o[0];else delete a.g;a.d=now;anSave()}grpTout()};
@@ -1477,13 +1515,13 @@ function visInit(){const a=document.getElementById('visAn'),t=document.getElemen
  a.checked=store.get('vis_an',true);t.checked=store.get('vis_tr',true);d.checked=store.get('vis_dot',true);
  a.checked?anLay.addTo(map):map.removeLayer(anLay);
  a.onchange=()=>{store.set('vis_an',a.checked);visInit()};t.onchange=()=>{store.set('vis_tr',t.checked);trDessine();trListe()};d.onchange=()=>{store.set('vis_dot',d.checked);trDessine()}}
-visInit();
+['vis_an','vis_tr','vis_dot'].forEach(k=>store.set(k,true));visInit();
 document.getElementById('trIco').onclick=()=>trIcones();
 function trEtat(t){const e=document.getElementById('trEtat');if(e)e.innerHTML=t}
 async function trSync(){if(!NTOK){trEtat('⚠️ Tracés visibles sur cet appareil seulement (partage inactif).');return}for(let k=0;k<3;k++){const f=await nGet(NSITE+'.traces');const rem=f?await nDec(f.content):[];trSha=f&&f.sha;const mer=fusion(TRC,rem);
   if(sig(mer)!==sig(TRC)){TRC=mer;store.set('traces',TRC);trDessine();trListe();try{anRefait();anListe()}catch(e){}}
   if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.traces',await nEnc(mer),trSha,'tracés');if(r==='conflit')continue;trSha=r}break}
- trEtat('☁️ Tracés partagés avec tous les comptes · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' <button id="trRf" style="font-size:11px;padding:0 6px">↻</button>');const rf=document.getElementById('trRf');if(rf)rf.onclick=()=>trSync().catch(()=>{})}
+ trEtat('☁️ Partagé · synchro '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' <button id="trRf" style="font-size:11px;padding:0 6px">↻</button>');const rf=document.getElementById('trRf');if(rf)rf.onclick=()=>trSync().catch(()=>{})}
 setInterval(()=>{if(NTOK&&!document.hidden&&!trMode)trSync().catch(()=>{})},20000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NTOK)trSync().catch(()=>{})});
 trDessine();trListe();
 // ---------- HORS LIGNE : secteurs téléchargés (fonds + plans) ----------
