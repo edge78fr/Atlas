@@ -59,6 +59,8 @@ body.favMode .cou>label{display:flex;align-items:center}
 .pmenu{font-family:-apple-system,system-ui,sans-serif;color:#222;position:fixed;z-index:3000;background:#fff;border-radius:10px;box-shadow:0 3px 16px #0003;padding:5px 0;font-size:13px;min-width:190px;max-width:260px}
 .pmenu div{padding:7px 12px;cursor:pointer}.pmenu div:hover{background:#f0f4ff}.pmenu .rouge{color:#c33;border-top:1px solid #eee}.pmenu .sub{padding:4px 12px 4px 26px;font-size:12px;color:#444}.pmenu .tit{cursor:default;color:#888;font-size:11px;padding:4px 12px 2px}.pmenu .tit:hover{background:none}
 .tgSync{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:#777;padding:8px 2px 2px}.tgSync button{font-size:11px;padding:0 6px}
+.surfC{width:14px;height:14px;margin:2px;border-radius:50%;background:#e30;border:2px solid #fff;box-shadow:0 0 3px #000a;cursor:move}
+.surfT{background:#fffffff0;border:2px solid #e30;color:#b20;font:700 14px system-ui;padding:3px 8px;border-radius:8px;box-shadow:0 1px 4px #0004}.surfT::before{display:none}
 #filmTag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:950;background:#0008;color:#fff;font:600 15px system-ui;padding:3px 10px;border-radius:8px;pointer-events:none;display:none;white-space:nowrap}
 #filmTag small{font-size:11px;font-weight:500;opacity:.8;margin-left:6px}
 .rub{margin:0;padding:0}
@@ -1194,17 +1196,27 @@ function aire(pts){if(pts.length<3)return 0;const R=6378137,rd=Math.PI/180;let a
 const fmtA=m=>m<10000?Math.round(m).toLocaleString('fr-FR')+' m²':(m/10000).toFixed(2).replace('.',',')+' ha ('+Math.round(m).toLocaleString('fr-FR')+' m²)';
 const txtSurf=()=>{const p=mesure.pts;return p.length<3?'Pose encore '+(3-p.length)+' coin(s)…':'Surface : '+fmtA(aire(p))+' · périmètre '+fmt(dist([...p,p[0]]))};
 function debutOutil(k,b,msg){finMesure();couches.forEach(c=>map.removeLayer(c));couches=[];mesure={k,pts:[]};map.getContainer().classList.add('mesure');map.doubleClickZoom.disable();b.classList.add('on');b.textContent='✔ Terminer';info.textContent=msg;plier()}
-bSurf.onclick=()=>{if(mesure&&mesure.k==='s'){const p=mesure.pts;info.textContent=p.length>2?txtSurf()+' (re-touche 📐 pour effacer)':'';finMesure();return}
- debutOutil('s',bSurf,'Touche la carte pour poser les coins de la zone, dans l’ordre. Re-touche ✔ Terminer pour finir.');
- mesure.poly=L.polygon([],{color:'#e30',weight:3,dashArray:'6 4',fillColor:'#e30',fillOpacity:.15}).addTo(map);couches.push(mesure.poly)};
+// la zone reste modifiable (coins à glisser) et s'efface seule 5 min après la dernière retouche
+let SURF=null;
+function surfEfface(){if(!SURF)return;clearTimeout(SURF.t);[SURF.poly,...SURF.mk].forEach(l=>map.removeLayer(l));SURF=null}
+function surfMaj(){if(!SURF)return;const p=SURF.mk.map(m=>m.getLatLng());SURF.poly.setLatLngs(p);
+ if(p.length>2){const t=fmtA(aire(p));SURF.poly.getTooltip()?SURF.poly.setTooltipContent(t):SURF.poly.bindTooltip(t,{permanent:true,direction:'center',className:'surfT'});SURF.poly.openTooltip(SURF.poly.getCenter())}
+ if(!SURF.edit){clearTimeout(SURF.t);SURF.t=setTimeout(surfEfface,5*60*1000)}}
+function surfCoin(ll){const m=L.marker(ll,{draggable:true,icon:L.divIcon({className:'',html:'<div class="surfC"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
+ m.on('drag',()=>{surfMaj();if(SURF&&SURF.edit)info.textContent=txtSurfP(SURF.mk.map(x=>x.getLatLng()))});m.on('dragend',()=>{surfMaj();info.textContent=txtSurfP(SURF.mk.map(x=>x.getLatLng()))});SURF.mk.push(m);surfMaj()}
+const txtSurfP=p=>p.length<3?'Pose encore '+(3-p.length)+' coin(s)…':'Surface : '+fmtA(aire(p))+' · périmètre '+fmt(dist([...p,p[0]]));
+bSurf.onclick=()=>{if(mesure&&mesure.k==='s'){const p=SURF?SURF.mk.map(m=>m.getLatLng()):[];finMesure();
+  if(p.length>2){SURF.edit=false;surfMaj();info.textContent=txtSurfP(p)+' — coins déplaçables, effacée dans 5 min'}else{surfEfface();info.textContent=''}return}
+ surfEfface();debutOutil('s',bSurf,'Touche la carte pour poser les coins de la zone, dans l’ordre. Tu peux glisser les coins. Re-touche ✔ Terminer pour finir.');
+ SURF={edit:true,mk:[],poly:L.polygon([],{color:'#e30',weight:3,dashArray:'6 4',fillColor:'#e30',fillOpacity:.15,interactive:false}).addTo(map)}};
 bAlt.onclick=()=>{if(mesure&&mesure.k==='a'){finMesure();info.textContent='';return}debutOutil('a',bAlt,'Touche la carte : l’altitude IGN du point s’affiche. Re-touche ✔ Terminer pour finir.')};
 map.on('click',async e=>{if(!mesure||!mesure.k)return;e.anFait=true;
- if(mesure.k==='s'){mesure.pts.push(e.latlng);mesure.poly.setLatLngs(mesure.pts);couches.push(L.circleMarker(e.latlng,{radius:4,color:'#e30',fillOpacity:1}).addTo(map));info.textContent=txtSurf();return}
+ if(mesure.k==='s'){if(!SURF)return;surfCoin(e.latlng);info.textContent=txtSurfP(SURF.mk.map(m=>m.getLatLng()));return}
  if(mesure.k==='a'){const m=L.circleMarker(e.latlng,{radius:5,color:'#fff',weight:2,fillColor:'#7a4b1d',fillOpacity:1}).addTo(map);couches.push(m);m.bindTooltip('⏳',{permanent:true,direction:'top',offset:[0,-6]}).openTooltip();
   try{const r=await fetch('https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon='+e.latlng.lng.toFixed(6)+'&lat='+e.latlng.lat.toFixed(6)+'&resource=ign_rge_alti_wld&zonly=true');const j=await r.json();const z=j.elevations&&j.elevations[0];
    const t=(typeof z==='number'&&z>-1000)?z.toFixed(1).replace('.',',')+' m':'?';m.setTooltipContent('⛰️ '+t);info.textContent='Altitude : '+t+' (IGN, terrain naturel)'}catch(er){m.setTooltipContent('⛰️ ?');info.textContent='Altitude indisponible (pas de réseau ?)'}}});
-map.on('dblclick',()=>{if(mesure&&mesure.k==='s'){info.textContent=mesure.pts.length>2?txtSurf():'';finMesure()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&mesure.k){if(mesure.k==='s'&&mesure.pts.length>2)info.textContent=txtSurf();finMesure()}});
+map.on('dblclick',()=>{if(mesure&&mesure.k==='s')bSurf.click()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mesure&&mesure.k){if(mesure.k==='s')bSurf.click();else finMesure()}});
 
 
 // ---------- Points BRGM (Banque du sous-sol) ----------
