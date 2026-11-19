@@ -123,6 +123,7 @@ details.dep>summary:before{content:'▸ ';color:#888}details.dep[open]>summary:b
 #fi{flex:1;overflow:auto;padding:4px 14px 14px;font:14px system-ui}#fi table{width:100%;border-collapse:collapse}#fi td{padding:5px 4px;border-bottom:1px solid rgba(0,0,0,.08);vertical-align:top}#fi td:first-child{color:#555;width:42%}#fi .big{display:block;margin:12px 0 4px;padding:10px;text-align:center;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);color:#1a5fb4;text-decoration:none;font-weight:600}
 #fi .sous{color:#444;font-size:13px;margin:2px 0 8px}#fi .nb{font-size:12px;color:#666;margin-bottom:6px}#fi .doc{display:flex;gap:10px;align-items:center;padding:8px;margin:0 0 8px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);text-decoration:none;color:#222}#fi .doc img{width:120px;height:90px;object-fit:contain;background:#fff;border-radius:8px;flex:0 0 auto}#fi .noimg{width:120px;height:90px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;border-radius:8px}#fi .dt{display:flex;flex-direction:column;gap:3px;min-width:0}#fi .dt small{color:#666;word-break:break-all}
 .anStar{font-size:24px;line-height:24px;text-align:center;color:#f5b400;text-shadow:0 0 2px #000,0 0 4px #000a}
+#grpList .gr{display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:6px}#grpList .gr.cour{background:#e8f1ff}#grpList .gr span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}#grpList .gr button{padding:0 5px;border:0;background:none;cursor:pointer;font-size:13px}
 #anList .an{display:flex;align-items:center;gap:6px;padding:3px 0}#anList .an span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}#anList .an button{padding:0 6px}
 .anPop textarea{width:230px;height:90px;font:13px system-ui;box-sizing:border-box}.anPop .txt{white-space:pre-wrap;max-width:240px;font:13px system-ui;margin-bottom:6px}.anPop button{margin-right:4px}
 /* Liquid Glass */
@@ -226,6 +227,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="outils"><button id="anAdd" title="Ajouter un point (puis touche la carte)" >📍 Nouveau point</button><button id="trNew" title="Tracer une ligne point par point">〰️ Nouveau tracé</button><button id="trIco" title="Poser un point de couleur sur un tracé">● Point sur un tracé</button>
    <button id="bPos">⌖ Suivre ma position</button><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button>
    <button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bRid" title="Comparer le plan et le fond avec une barre à glisser">⇔ Rideau</button></div>
+   <div id="grpBox" style="margin:8px 0 4px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px"><b>🗂️ Plans de terrain</b><button id="grpNew" style="font-size:12px;padding:2px 8px">➕ Nouveau plan</button></div><div id="grpList" style="font-size:12.5px;margin-top:3px"></div></div>
    <div id="visBox" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;margin:6px 0 2px"><span style="color:#666">Afficher :</span><label><input type="checkbox" id="visAn"> 📍 Points</label><label><input type="checkbox" id="visTr"> 〰️ Tracés</label><label><input type="checkbox" id="visDot"> ● Ronds</label></div><div id="anSync" style="font-size:11px;color:#666;margin:6px 0 2px"></div><div id="trBox"><div id="trEtat" style="font-size:11px;color:#666;margin:0 0 3px"></div><div id="trList" style="font-size:12.5px"></div></div><div id="anList" style="font-size:12.5px"></div></div>
   <div class="sec"><h4>📥 Hors ligne</h4>
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
@@ -1144,7 +1146,7 @@ async function pdrStart(){
   setTimeout(()=>pdrPlacer('Touche le point d’arrivée sur le plan',b=>{const n=PDR.pas-p0,d=map.distance(a,b);if(n<10){alert('Pas assez de pas comptés ('+n+'). Marche au moins 20 pas.');return}
    PDR.lg=Math.min(1,Math.max(0.4,d/n));store.set('pdr_lg',PDR.lg);q('#pdrL').value=PDR.lg;q('#pdrLv').textContent=PDR.lg.toFixed(2)+' m';PDR.pos=b;PDR.depuis=0;PDR.trace.push(b);pdrDessine();alert(n+' pas pour '+Math.round(d)+' m → '+PDR.lg.toFixed(2)+' m par pas')}),50);PDR.pos=a;PDR.trace.push(a);pdrDessine()});
  q('#pdrS').onclick=()=>{if(PDR.trace.length<2){alert('Parcours trop court.');return}const n=prompt('Nom du parcours :','Parcours '+new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}));if(n===null)return;
-  const pts=PDR.trace.filter((p,i,a)=>i===0||i===a.length-1||i%3===0).map(p=>[+p[0].toFixed(7),+p[1].toFixed(7)]);TRC.push({id:trId(),k:'l',p:pts,c:'#f59e0b',t:n.trim(),d:Date.now()});trSave();trDessine();alert('Parcours enregistré dans tes tracés.')};
+  const pts=PDR.trace.filter((p,i,a)=>i===0||i===a.length-1||i%3===0).map(p=>[+p[0].toFixed(7),+p[1].toFixed(7)]);TRC.push({id:trId(),k:'l',p:pts,c:'#f59e0b',t:n.trim(),g:grpCour()||undefined,d:Date.now()});grpMontre(grpCour());trSave();trDessine();alert('Parcours enregistré dans tes tracés.')};
  q('#pdrX').onclick=pdrStop;q('#pdrI').onclick=()=>{if(PDR.pos){PDR.suit=true;map.panTo(PDR.pos)}};q('#pdrI').style.cursor='pointer';q('#pdrI').title='Recentrer sur moi';
  const st=store.get('pdr_etat',null);
  if(st&&st.pos&&confirm('Reprendre le parcours en cours ('+st.pas+' pas) ?')){Object.assign(PDR,{pos:st.pos,trace:st.trace||[st.pos],pas:st.pas,dist:st.dist,depuis:st.depuis});pdrDessine();map.setView(PDR.pos,Math.max(map.getZoom(),19))}
@@ -1218,7 +1220,7 @@ const AN_DEF={f:'o',c:'#f5b400',r:8};const anFmt=a=>({f:a.f||AN_DEF.f,c:a.c||AN_
 const anIconDe=a=>{const k=anFmt(a),s=k.r*2+6,h=Math.max(s,36);return L.divIcon({className:'trIc',html:`<div style="width:${h}px;height:${h}px;display:flex;align-items:center;justify-content:center">${trSvg(k.f,k.r,k.c,k.c==='#ffffff'?'#333':'#fff')}</div>`,iconSize:[h,h],iconAnchor:[h/2,h/2],popupAnchor:[0,-k.r]})};
 const anEsc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const anSave=()=>{store.set('ann',ANN);anListe();anPlanif()};
-function anVue(a){return `<div class="anPop"><div class="txt">${anEsc(a.t)||'<i style="color:#888">(sans texte)</i>'}</div><div style="font-size:11px;color:#888;margin-bottom:6px">${a.lat.toFixed(6)}, ${a.lng.toFixed(6)}${a.d?' · modifié le '+new Date(a.d).toLocaleDateString('fr-FR'):''}</div><button onclick="anEdit('${a.id}')">✏️ Éditer</button><button onclick="anStyle('${a.id}')">🎨 Forme / couleur</button><button onclick="anSuppr('${a.id}')">🗑</button></div>`}
+function anVue(a){return `<div class="anPop"><div class="txt">${anEsc(a.t)||'<i style="color:#888">(sans texte)</i>'}</div><div style="font-size:11px;color:#888;margin-bottom:6px">${a.lat.toFixed(6)}, ${a.lng.toFixed(6)}${a.d?' · modifié le '+new Date(a.d).toLocaleDateString('fr-FR'):''}</div><button onclick="anEdit('${a.id}')">✏️ Éditer</button><button onclick="anStyle('${a.id}')">🎨 Forme / couleur</button><button onclick="grpDeplace('a','${a.id}')">🗂️ Plan</button><button onclick="anSuppr('${a.id}')">🗑</button></div>`}
 function anEditHtml(a){return `<div class="anPop"><textarea id="anTx">${anEsc(a.t)}</textarea><br><button onclick="anOk('${a.id}')">✔ Enregistrer</button><button onclick="anAnnule('${a.id}')">Annuler</button></div>`}
 function anPose(a){const m=L.marker([a.lat,a.lng],{icon:anIconDe(a),draggable:true,zIndexOffset:1000}).bindPopup(anVue(a),{minWidth:240}).bindTooltip(()=>anEsc((a.t||'Point').split('\n')[0]),{direction:'top',offset:[0,-10]});
  m.on('dragend',()=>{const p=m.getLatLng();a.lat=p.lat;a.lng=p.lng;a.d=Date.now();anSave();m.setPopupContent(anVue(a))});anLay.addLayer(m);anMk[a.id]=m}
@@ -1230,10 +1232,11 @@ window.anStyle=id=>{const a=ANN.find(x=>x.id===id);map.closePopup();const k=anFm
  trBarre('Forme, couleur et taille du point',c=>{a.c=c;maj()},true);trBar.insertBefore(trFormes(k.f,f=>{a.f=f;maj()}),trBar.lastElementChild);trBar.insertBefore(trTailles(k.r,r=>{a.r=r;maj()}),trBar.lastElementChild);trMode='c'};
 window.anSuppr=id=>{const a=ANN.find(x=>x.id===id);if(a.t&&!window.confirm('Supprimer ce point ?'))return;a.del=1;a.d=Date.now();a.t='';anLay.removeLayer(anMk[id]);delete anMk[id];anSave()};
 function anListe(){const el=document.getElementById('anList');
- const vis=ANN.filter(a=>!a.del);el.innerHTML=vis.length?'':'<div style="color:#888;font-size:11.5px">Aucun point. Touche ＋ puis la carte.</div>';
+ const vis=ANN.filter(a=>!a.del&&(a.g||'')===grpCour());el.innerHTML=vis.length?'':'<div style="color:#888;font-size:11.5px">Aucun point dans ce plan. Touche 📍 puis la carte.</div>';try{grpListe()}catch(e){}
  vis.forEach(a=>{const d=document.createElement('div');d.className='an';d.innerHTML=`<b style="display:inline-flex">${trSvg(anFmt(a).f,6,anFmt(a).c,'#999')}</b><span title="Aller sur ce point">${anEsc((a.t||'Point sans texte').split('\n')[0])}</span><button title="Éditer">✏️</button>`;
-  d.children[1].onclick=()=>{if(!store.get('vis_an',true)){store.set('vis_an',true);visInit()}map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anMk[a.id].openPopup();plier()};d.children[2].onclick=()=>{map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anEdit(a.id);plier()};el.appendChild(d)})}
-ANN.filter(a=>!a.del).forEach(anPose);anListe();
+  d.children[1].onclick=()=>{if(!store.get('vis_an',true)){store.set('vis_an',true);visInit()}grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anMk[a.id].openPopup();plier()};d.children[2].onclick=()=>{grpMontre(a.g);map.setView([a.lat,a.lng],Math.max(map.getZoom(),17));anEdit(a.id);plier()};el.appendChild(d)})}
+function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];ANN.filter(a=>!a.del&&grpVu(a.g)).forEach(anPose)}
+anRefait();anListe();
 // ---------- partage des annotations (dépôt GitHub, contenu chiffré) ----------
 const NREPO='edge78fr/atlas-notes',NSITE='atlas',GH='https://api.github.com/repos/'+NREPO+'/contents/';
 let NTOK=null,nSha=null,nTimer=null,nBusy=false,nLast=0;
@@ -1255,7 +1258,7 @@ const sig=l=>JSON.stringify([...l].sort((x,y)=>x.id<y.id?-1:1));
 async function anSync(){if(!NTOK||nBusy)return;nBusy=true;try{for(let k=0;k<3;k++){
   const f=await nGet(NSITE+'.notes');const rem=f?await nDec(f.content):[];nSha=f&&f.sha;
   const loc=ANN,mer=fusion(loc,rem);
-  if(sig(mer)!==sig(loc)){ANN=mer;store.set('ann',ANN);anLay.clearLayers();for(const id in anMk)delete anMk[id];ANN.filter(a=>!a.del).forEach(anPose);anListe()}
+  if(sig(mer)!==sig(loc)){ANN=mer;store.set('ann',ANN);anRefait();anListe();try{grpListe()}catch(e){}}
   if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.notes',await nEnc(mer),nSha,'annotations');if(r==='conflit')continue;nSha=r}
   break}
   await pmSync();await trSync().catch(()=>{});
@@ -1325,19 +1328,52 @@ const TR_COUL=['#e53935','#fb8c00','#fdd835','#43a047','#00acc1','#1e88e5','#8e2
 const TR_ICO=[['⚠️','Danger'],['🕳️','Puits / trou'],['🚪','Entrée'],['⛔','Effondrement / bouché'],['💧','Eau'],['🔦','Galerie'],['🪜','Échelle / accès'],['📷','Photo'],['⭐','Intéressant'],['❓','À vérifier'],['🦇','Chauves-souris'],['🧱','Mur / maçonnerie']];
 let TRC=store.get('traces',[]),trSha=null,trTimer=null;const trLay=L.layerGroup().addTo(map),trObj={};
 const trVis=()=>TRC.filter(x=>!x.del);
-const trCache=()=>new Set(store.get('trCache',[]));const trMontre=x=>store.get('vis_tr',true)&&!trCache().has(x.id);
+const trCache=()=>new Set(store.get('trCache',[]));const trMontre=x=>store.get('vis_tr',true)&&!trCache().has(x.id)&&grpVu(x.g);
 window.trOeil=id=>{const c=trCache();c.has(id)?c.delete(id):c.add(id);store.set('trCache',[...c]);trDessine();trListe()};
 function trSave(){store.set('traces',TRC);trListe();if(NTOK){clearTimeout(trTimer);trTimer=setTimeout(()=>trSync().catch(()=>{}),1500)}}
 function trDessine(){trLay.clearLayers();for(const k in trObj)delete trObj[k];
  for(const x of trVis().filter(x=>x.k==='l'&&trMontre(x))){const da=x.s==='t'?'10 8':null;const pl=L.polyline(x.p,{color:x.c,weight:TR_W,opacity:.95,dashArray:da}).addTo(trLay);const halo=L.polyline(x.p,{color:x.c==='#ffffff'?'#000':'#fff',weight:TR_W+3,opacity:.45,interactive:false,dashArray:da});trLay.addLayer(halo);halo.bringToBack();
-  pl.bindTooltip(anEsc(x.t||'Tracé'),{sticky:true});pl.bindPopup(()=>`<div class="anPop"><b>${anEsc(x.t||'Tracé')}</b><div style="font-size:11px;color:#888">${x.p.length} points · ${trLong(x.p)}</div><button onclick="trRen('${x.id}')">✏️ Renommer</button><button onclick="trCoul('${x.id}')">🎨 Couleur</button><button onclick="trStyle('${x.id}')">${x.s==='t'?'━ Plein':'┅ Pointillé'}</button><button onclick="trSuite('${x.id}')">➕ Continuer</button><button onclick="map.closePopup();trIcones()">● Point</button><button onclick="trSup('${x.id}')">🗑</button></div>`);trObj[x.id]=pl}
+  pl.bindTooltip(anEsc(x.t||'Tracé'),{sticky:true});pl.bindPopup(()=>`<div class="anPop"><b>${anEsc(x.t||'Tracé')}</b><div style="font-size:11px;color:#888">${x.p.length} points · ${trLong(x.p)}</div><button onclick="trRen('${x.id}')">✏️ Renommer</button><button onclick="trCoul('${x.id}')">🎨 Couleur</button><button onclick="trStyle('${x.id}')">${x.s==='t'?'━ Plein':'┅ Pointillé'}</button><button onclick="trSuite('${x.id}')">➕ Continuer</button><button onclick="grpDeplace('t','${x.id}')">🗂️ Plan</button><button onclick="map.closePopup();trIcones()">● Point</button><button onclick="trSup('${x.id}')">🗑</button></div>`);trObj[x.id]=pl}
  for(const x of trVis().filter(x=>x.k==='i'&&store.get('vis_dot',true)&&(!trFind(x.l)||trMontre(trFind(x.l))))){const lg=trFind(x.l),fc=x.dc||(lg&&lg.c)||'#333',m=trForme(x.ll,x.f||'o',x.r||TR_W*2,fc).addTo(trLay);
   if(x.t)m.bindTooltip(anEsc(x.t),{direction:'top'});m.bindPopup(()=>`<div class="anPop"><div><span style="display:inline-block;vertical-align:middle">${trSvg(x.f||'o',7,fc,'#999')}</span> Point</div><div class="txt">${anEsc(x.t)||'<i style="color:#888">(sans texte)</i>'}</div><div style="font-size:11px;color:#888">${x.ll[0].toFixed(6)}, ${x.ll[1].toFixed(6)}</div><button onclick="trIcTxt('${x.id}')">✏️ Texte</button><button onclick="trDotCoul('${x.id}')">🎨 Couleur / taille / forme</button><button onclick="trSup('${x.id}')">🗑</button></div>`)}}
 function trLong(p){let d=0;for(let i=1;i<p.length;i++)d+=map.distance(p[i-1],p[i]);return d<1000?Math.round(d)+' m':(d/1000).toFixed(2)+' km'}
-function trListe(){const el=document.getElementById('trList');if(!el)return;const ls=trVis().filter(x=>x.k==='l');el.innerHTML='';
+function trListe(){const el=document.getElementById('trList');if(!el)return;const ls=trVis().filter(x=>x.k==='l'&&(x.g||'')===grpCour());el.innerHTML='';try{grpListe()}catch(e){}
  ls.forEach(x=>{const d=document.createElement('div');d.className='an';const cach=trCache().has(x.id);d.style.opacity=cach?.5:1;d.innerHTML=`<button onclick="trOeil('${x.id}')" title="${cach?'Afficher':'Masquer'} ce tracé" style="border:0;background:none;padding:0 4px;cursor:pointer;font-size:14px">${cach?'🙈':'👁️'}</button><b style="color:${x.c};text-shadow:0 0 1px #000">━</b><span title="Aller sur ce tracé">${anEsc(x.t||'Tracé')} <span style="color:#999">(${trLong(x.p)}, ${trVis().filter(i=>i.k==='i'&&i.l===x.id).length} point(s))</span></span>`;
-  d.children[2].onclick=()=>{if(cach)trOeil(x.id);if(!store.get('vis_tr',true)){store.set('vis_tr',true);visInit();trDessine()}map.fitBounds(L.latLngBounds(x.p),{maxZoom:19});trObj[x.id]&&trObj[x.id].openPopup();plier()};el.appendChild(d)})}
+  d.children[2].onclick=()=>{if(cach)trOeil(x.id);grpMontre(x.g);if(!store.get('vis_tr',true)){store.set('vis_tr',true);visInit();trDessine()}map.fitBounds(L.latLngBounds(x.p),{maxZoom:19});trObj[x.id]&&trObj[x.id].openPopup();plier()};el.appendChild(d)})}
 const trFind=id=>TRC.find(x=>x.id===id);const trId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// ---------- plans de terrain : ranger tracés et points par projet, à afficher / cacher ----------
+function grpCache(){return new Set(store.get('grpCache',[]))}
+function grpVu(g){return !grpCache().has(g||'')}
+function grpL(){return TRC.filter(x=>x.k==='g'&&!x.del).sort((a,b)=>(a.t||'').localeCompare(b.t||'','fr'))}
+function grpCour(){const g=store.get('grpCour','')||'';try{return g&&!TRC.some(x=>x.k==='g'&&x.id===g&&!x.del)?'':g}catch(e){return g}}
+function grpNom(g){if(!g)return 'Sans plan';const x=trFind(g);return x?x.t||'Plan sans nom':'Sans plan'}
+function grpMontre(g){const c=grpCache();if(c.delete(g||'')){store.set('grpCache',[...c]);grpTout()}}
+function grpTout(){trDessine();trListe();anRefait();anListe()}
+function grpCompte(g){return {t:TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).length,p:ANN.filter(a=>!a.del&&(a.g||'')===g).length}}
+function grpZoom(g){const pts=[];TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g).forEach(x=>pts.push(...x.p));ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>pts.push([a.lat,a.lng]));if(pts.length)map.fitBounds(L.latLngBounds(pts),{maxZoom:18,padding:[30,30]})}
+function grpListe(){const el=document.getElementById('grpList');if(!el)return;const cour=grpCour(),c=grpCache();el.innerHTML='';
+ const ls=grpL().map(x=>x.id);const s=grpCompte('');if(!ls.length||s.t||s.p)ls.push('');
+ ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('div');d.className='gr'+(g===cour?' cour':'');d.style.opacity=cach?.55:1;
+  d.innerHTML=`<button title="${cach?'Activer':'Désactiver'} ce plan">${cach?'🙈':'👁️'}</button><span title="Travailler dans ce plan">${g===cour?'✎ ':''}${anEsc(grpNom(g))} <span style="color:#999">(${n.t} tracé${n.t>1?'s':''}, ${n.p} point${n.p>1?'s':''})</span></span>`+(g?`<button title="Renommer">✏️</button><button title="Supprimer ce plan">🗑</button>`:'');
+  const b=d.querySelectorAll('button');
+  b[0].onclick=()=>{const k=grpCache();k.has(g)?k.delete(g):k.add(g);store.set('grpCache',[...k]);grpTout()};
+  d.children[1].onclick=()=>{store.set('grpCour',g);grpMontre(g);grpTout();grpZoom(g)};
+  if(g){b[1].onclick=()=>{const x=trFind(g),v=prompt('Nom du plan :',x.t||'');if(v===null||!v.trim())return;x.t=v.trim();x.d=Date.now();trSave()};
+   b[2].onclick=()=>{const x=trFind(g);if(!confirm('Supprimer le plan « '+(x.t||'')+' » ?'))return;const tout=(n.t||n.p)&&confirm('Supprimer aussi ses '+n.t+' tracé(s) et '+n.p+' point(s) ?\n\nOK = tout supprimer\nAnnuler = les garder dans « Sans plan »');
+    const now=Date.now();TRC.filter(i=>i.k==='l'&&!i.del&&(i.g||'')===g).forEach(i=>{if(tout){i.del=1;TRC.filter(j=>j.k==='i'&&j.l===i.id).forEach(j=>{j.del=1;j.d=now})}else delete i.g;i.d=now});
+    ANN.filter(a=>!a.del&&(a.g||'')===g).forEach(a=>{if(tout){a.del=1;a.t=''}else delete a.g;a.d=now});
+    x.del=1;x.d=now;if(grpCour()===g||store.get('grpCour','')===g)store.set('grpCour','');trSave();anSave();grpTout()}}
+  el.appendChild(d)})}
+document.getElementById('grpNew').onclick=()=>{const v=prompt('Nom du nouveau plan (ex. « Carrière de Montmagny ») :','');if(v===null||!v.trim())return;
+ const g={id:trId(),k:'g',t:v.trim(),d:Date.now()};const premier=!grpL().length;TRC.push(g);
+ const s=grpCompte('');if(premier&&(s.t||s.p)&&confirm('Mettre dans « '+g.t+' » tes '+s.t+' tracé(s) et '+s.p+' point(s) existants ?')){const now=Date.now();
+  TRC.filter(i=>i.k==='l'&&!i.del&&!i.g).forEach(i=>{i.g=g.id;i.d=now});ANN.filter(a=>!a.del&&!a.g).forEach(a=>{a.g=g.id;a.d=now});anSave()}
+ store.set('grpCour',g.id);trSave();grpTout();info.textContent='Plan « '+g.t+' » créé : tes nouveaux tracés et points iront dedans.'};
+window.grpDeplace=(k,id)=>{const ls=grpL(),opts=[['','Sans plan'],...ls.map(x=>[x.id,x.t||'Plan sans nom'])];
+ const v=prompt('Mettre dans quel plan ? Tape le numéro :\n'+opts.map((o,i)=>(i)+' – '+o[1]).join('\n'),'');if(v===null)return;const o=opts[parseInt(v,10)];if(!o){alert('Numéro inconnu.');return}
+ map.closePopup();const now=Date.now();if(k==='t'){const x=trFind(id);if(o[0])x.g=o[0];else delete x.g;x.d=now;trSave()}else{const a=ANN.find(y=>y.id===id);if(o[0])a.g=o[0];else delete a.g;a.d=now;anSave()}grpTout()};
+grpListe();
+
 window.trRen=id=>{const x=trFind(id),v=prompt('Nom du tracé :',x.t||'');if(v===null)return;x.t=v.trim();x.d=Date.now();trSave();trDessine()};
 window.trIcTxt=id=>{const x=trFind(id),v=prompt('Texte du point :',x.t||'');if(v===null)return;x.t=v.trim();x.d=Date.now();trSave();trDessine()};
 window.trSup=id=>{if(!confirm('Supprimer ?'))return;const x=trFind(id);x.del=1;x.d=Date.now();if(x.k==='l')TRC.filter(i=>i.k==='i'&&i.l===id).forEach(i=>{i.del=1;i.d=Date.now()});map.closePopup();trSave();trDessine()};
@@ -1378,7 +1414,7 @@ function trDebut(suite){if(trMode)trFin();if(adjEd||anMode)return;trMode='l';trE
  trBar.querySelector('#trOkI').onclick=()=>trValide(true);
  trMaj()}
 function trValide(puisIcones){const e=trEnCours;trEnCours=null;trFin();if(!e)return;if(e.p.length<2){if(e.p.length)alert('Il faut au moins 2 points pour un tracé.');return}
- if(e.suite){const x=trFind(e.id);x.p=e.p;x.c=trCour;x.s=trSt;x.d=Date.now()}else{const n=prompt('Nom du tracé (facultatif) :','');TRC.push({id:e.id,k:'l',p:e.p,c:trCour,s:trSt,t:(n||'').trim(),d:Date.now()})}
+ if(e.suite){const x=trFind(e.id);x.p=e.p;x.c=trCour;x.s=trSt;x.d=Date.now()}else{const n=prompt('Nom du tracé (facultatif) :','');grpMontre(grpCour());TRC.push({id:e.id,k:'l',p:e.p,c:trCour,s:trSt,g:grpCour()||undefined,t:(n||'').trim(),d:Date.now()})}
  if(!store.get('vis_tr',true)){store.set('vis_tr',true);visInit()}trSave();trDessine();if(puisIcones)trIcones()}
 function trFin(){if(trProv){map.removeLayer(trProv.m);trProv=null}trTmp&&map.removeLayer(trTmp);trTmp=null;trEnCours=null;trMode=null;trBar.style.display='none';trBar.innerHTML='';map.getContainer().style.cursor='';map.doubleClickZoom.enable();info.textContent=''}
 function trIcones(){if(trMode)trFin();if(!trVis().some(x=>x.k==='l')){alert('Dessine d\'abord un tracé (〰️ Nouveau tracé).');return}trMode='i';plier();map.getContainer().style.cursor='crosshair';
@@ -1431,7 +1467,7 @@ visInit();
 document.getElementById('trIco').onclick=()=>trIcones();
 function trEtat(t){const e=document.getElementById('trEtat');if(e)e.innerHTML=t}
 async function trSync(){if(!NTOK){trEtat('⚠️ Tracés visibles sur cet appareil seulement (partage inactif).');return}for(let k=0;k<3;k++){const f=await nGet(NSITE+'.traces');const rem=f?await nDec(f.content):[];trSha=f&&f.sha;const mer=fusion(TRC,rem);
-  if(sig(mer)!==sig(TRC)){TRC=mer;store.set('traces',TRC);trDessine();trListe()}
+  if(sig(mer)!==sig(TRC)){TRC=mer;store.set('traces',TRC);trDessine();trListe();try{anRefait();anListe()}catch(e){}}
   if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.traces',await nEnc(mer),trSha,'tracés');if(r==='conflit')continue;trSha=r}break}
  trEtat('☁️ Tracés partagés avec tous les comptes · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' <button id="trRf" style="font-size:11px;padding:0 6px">↻</button>');const rf=document.getElementById('trRf');if(rf)rf.onclick=()=>trSync().catch(()=>{})}
 setInterval(()=>{if(NTOK&&!document.hidden&&!trMode)trSync().catch(()=>{})},20000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NTOK)trSync().catch(()=>{})});
@@ -1688,7 +1724,7 @@ anAdd.onclick=()=>{if(anMode){anFin();return}if(!store.get('vis_an',true)){store
 anCap.addEventListener('click',e=>{const r=map.getContainer().getBoundingClientRect();const ll=map.containerPointToLatLng([e.clientX-r.left,e.clientY-r.top]);anFin();
  const k={f:store.get('anF',AN_DEF.f),c:store.get('anC',AN_DEF.c),r:store.get('anR',AN_DEF.r)};
  placer({ll,...k,titre:'📍 Nouveau point',memo:o=>{store.set('anF',o.f);store.set('anC',o.c);store.set('anR',o.r)},onOk:o=>{
-  const a={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),lat:o.ll.lat,lng:o.ll.lng,f:o.f,c:o.c,r:o.r,t:'',d:Date.now()};ANN.push(a);anSave();anPose(a);anEdit(a.id)}})});
+  const a={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),lat:o.ll.lat,lng:o.ll.lng,f:o.f,c:o.c,r:o.r,t:'',g:grpCour()||undefined,d:Date.now()};grpMontre(a.g);ANN.push(a);anSave();anPose(a);anEdit(a.id)}})});
 
 
 // ---------- Cavités France (BDCavité BRGM / Géorisques) ----------
