@@ -811,14 +811,15 @@ let DKraw=null;async function cles(dk){DKraw=new Uint8Array(dk);const base=await
  NK=await crypto.subtle.deriveKey(prm('name'),base,{name:'HMAC',hash:'SHA-256',length:256},false,['sign']);
  NoteK=await crypto.subtle.deriveKey(prm('notes'),base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);PRET_R()}
 async function nomF(s){await PRET;const h=new Uint8Array(await crypto.subtle.sign('HMAC',NK,te.encode(s)));return [...h.slice(0,16)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function lire(s){const n=await nomF(s);const r=await fetch(`t/${n.slice(0,2)}/${n}`,s=="plans.json"?{cache:"no-cache"}:{});if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
+const ORIG=['','https://edge78fr.github.io/data2/','https://edge78fr.github.io/data3/','https://edge78fr.github.io/Data1/'];const tUrl=(n,o)=>`${ORIG[o||0]||''}t/${n.slice(0,2)}/${n}`;
+async function lire(s,o){const n=await nomF(s);const r=await fetch(tUrl(n,o),s=="plans.json"?{cache:"no-cache"}:{});if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
  return crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},EK,b.slice(12))}
 async function deverrouille(code){const L_=await (await fetch('lock.json',{cache:'no-store'})).json();
  const pk=await crypto.subtle.importKey('raw',te.encode(code),'PBKDF2',false,['deriveKey']);
  const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:b64d(L_.salt),iterations:L_.iter},pk,{name:'AES-GCM',length:256},false,['decrypt']);
  return crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(L_.iv),additionalData:te.encode('atlas-lock')},kek,b64d(L_.wrapped))}
 const CTile=L.GridLayer.extend({createTile(c,done){const img=document.createElement('img');img.alt='';img.style.visibility='hidden';
- lire(`${this.options.d}/${c.z}/${c.x}/${c.y}`).then(buf=>{if(!buf){done(null,img);return}const u=URL.createObjectURL(new Blob([buf],{type:'image/webp'}));
+ lire(`${this.options.d}/${c.z}/${c.x}/${c.y}`,this.options.o).then(buf=>{if(!buf){done(null,img);return}const u=URL.createObjectURL(new Blob([buf],{type:'image/webp'}));
   img.onload=()=>{URL.revokeObjectURL(u);img.style.visibility='';done(null,img)};img.onerror=()=>done(null,img);img.src=u}).catch(()=>done(null,img));return img}});
 const AdjL=L.Layer.extend({initialize(p,op){this.p=p;this.op=op;this.img=null},
  onAdd(m){this._m=m;const c=this._c=L.DomUtil.create('canvas','leaflet-zoom-hide');c.style.position='absolute';c.style.pointerEvents='none';m.getPane('plans').appendChild(c);m.on('move zoomend viewreset resize',this.redraw,this);this.redraw()},
@@ -834,7 +835,7 @@ const TAdjL=L.Layer.extend({initialize(pl,p,op){this.pl=pl;this.p=p;this.op=op;t
  onAdd(m){this._m=m;const c=this._c=L.DomUtil.create('canvas','leaflet-zoom-hide');c.style.position='absolute';c.style.pointerEvents='none';m.getPane('plans').appendChild(c);m.on('move zoomend viewreset resize',this.redraw,this);this.redraw()},
  onRemove(m){this._c.remove();m.off('move zoomend viewreset resize',this.redraw,this);this._m=null},
  setOpacity(o){this.op=o;this.redraw()},
- tuile(k){const t=this.cache[k];if(t!==undefined)return t;this.cache[k]=null;lire(k).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){this.cache[k]=im;this._rd||(this._rd=requestAnimationFrame(()=>{this._rd=0;this.redraw()}))}else this.cache[k]=false}).catch(()=>{this.cache[k]=false});return null},
+ tuile(k){const t=this.cache[k];if(t!==undefined)return t;this.cache[k]=null;lire(k,this.pl&&this.pl.o).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){this.cache[k]=im;this._rd||(this._rd=requestAnimationFrame(()=>{this._rd=0;this.redraw()}))}else this.cache[k]=false}).catch(()=>{this.cache[k]=false});return null},
  redraw(){const m=this._m,c=this._c;if(!m||!c)return;const sz=m.getSize(),dp=window.devicePixelRatio||1;L.DomUtil.setPosition(c,m.containerPointToLayerPoint([0,0]));
   if(c.width!==Math.round(sz.x*dp)||c.height!==Math.round(sz.y*dp)){c.width=Math.round(sz.x*dp);c.height=Math.round(sz.y*dp);c.style.width=sz.x+'px';c.style.height=sz.y+'px'}
   const g=c.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);
@@ -1011,7 +1012,7 @@ function sauve(){const o={};P.forEach(p=>{if(p.layer||p.op!==1)o[p.id]={on:!!p.l
 function charge(p,aller){
  if(!p.layer&&p.adj){p.layer=new AdjL(adjGet(p)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(!p.layer&&!p.adj){const sv=adjGet(p);if(sv&&!estNeutre(p,sv)){p.layer=new TAdjL(p,sv,p.op).addTo(map);p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}}
- if(!p.layer){p.layer=new CTile({d:p.d,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
+ if(!p.layer){p.layer=new CTile({d:p.d,o:p.o,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
   p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(p.extra&&!p.xl)chargeExtra(p);
  if(aller)map.fitBounds([[p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]],{maxZoom:17});
@@ -1573,7 +1574,7 @@ function* hlTaches(s){const F=hlFonds();
  for(const f of F.filter(f=>s.fonds.includes(f.id))){let bb=s.bbox;const b=f.ly.options.bounds;if(b){const B=L.latLngBounds(b);bb=hlInter(bb,[B.getWest(),B.getSouth(),B.getEast(),B.getNorth()]);if(bb[0]>=bb[2]||bb[1]>=bb[3])continue}
   const [z0,z1]=hlZ(f.ly,s.zmax);for(let z=z0;z<=z1;z++){const [x0,y0]=hlT(bb[3],bb[0],z),[x1,y1]=hlT(bb[1],bb[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield {k:'u',u:hlUrl(f.ly,x,y,z),ko:f.ko}}}
  for(const id of s.plans){const p=P.find(q=>q.id===id);if(!p)continue;const bb=hlInter(s.bbox,p.bbox);if(bb[0]>=bb[2]||bb[1]>=bb[3])continue;
-  for(let z=Math.max(p.minNat||15,12);z<=(p.nat||19);z++){const [x0,y0]=hlT(bb[3],bb[0],z),[x1,y1]=hlT(bb[1],bb[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield {k:'p',n:`${p.d}/${z}/${x}/${y}`,ko:14}}}}
+  for(let z=Math.max(p.minNat||15,12);z<=(p.nat||19);z++){const [x0,y0]=hlT(bb[3],bb[0],z),[x1,y1]=hlT(bb[1],bb[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield {k:'p',n:`${p.d}/${z}/${x}/${y}`,o:p.o,ko:14}}}}
 function hlCompte(s){let n=0,o=0;for(const t of hlTaches(s)){n++;o+=t.ko*1000;if(n>400000)break}return {n,o}}
 // moteur de téléchargement (6 en parallèle, reprend où il s'était arrêté)
 async function hlLancer(s){if(HL.run)return;HL.run={s,stop:false};s.etat='encours';hlSave();hlAff();try{await navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
@@ -1582,8 +1583,8 @@ async function hlLancer(s){if(HL.run)return;HL.run={s,stop:false};s.etat='encour
  const it=hlTaches(s);let i=0,fait=s.fait||0,octets=s.octets||0,err=0;const t0=Date.now();
  for(;i<fait;i++)it.next();       // reprise
  const un=async()=>{while(!HL.run.stop){const r=it.next();if(r.done)return;const t=r.value;const k=i++;
-  try{let url=t.u;if(t.k==='p'){const n=await nomF(t.n);url=`t/${n.slice(0,2)}/${n}`}
-   if(!(await c.match(url,{ignoreVary:true}))){const rp=await fetch(url,{mode:t.k==='p'?'same-origin':'cors'});if(rp.ok){const b=await rp.clone().blob();if(b.size>0){await c.put(url,rp);octets+=b.size}}else if(rp.status>=500)err++}}catch(e){err++}
+  try{let url=t.u;if(t.k==='p'){const n=await nomF(t.n);url=tUrl(n,t.o)}
+   if(!(await c.match(url,{ignoreVary:true}))){const rp=await fetch(url,{mode:t.k==='p'&&!t.o?'same-origin':'cors'});if(rp.ok){const b=await rp.clone().blob();if(b.size>0){await c.put(url,rp);octets+=b.size}}else if(rp.status>=500)err++}}catch(e){err++}
   fait=Math.max(fait,k+1);if(fait%30===0){s.fait=fait;s.octets=octets;hlSave();hlProg(s,fait,octets,err,t0)}}};
  await Promise.all([1,2,3,4,5,6].map(un));s.fait=fait;s.octets=octets;
  if(!HL.run.stop){s.etat=err>s.total*0.05?'incomplet':'ok';s.date=Date.now();s.err=err}else s.etat='pause';hlSave();HL.run=null;hlAff()}
