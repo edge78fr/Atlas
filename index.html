@@ -1010,7 +1010,7 @@ const contCb=document.getElementById('cont');contCb.checked=store.get('cont',tru
 contCb.onchange=()=>{contCb.checked?contours.addTo(map):map.removeLayer(contours);store.set('cont',contCb.checked)};
 function sauve(){const o={};P.forEach(p=>{if(p.layer||p.op!==1)o[p.id]={on:!!p.layer,op:p.op}});store.set('plans',o)}
 function charge(p,aller){
- if(!p.layer&&p.adj){p.layer=new AdjL(adjGet(p)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
+ if(!p.layer&&p.adj){p.layer=new AdjL(adjGet(p)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img,p.o).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(!p.layer&&!p.adj){const sv=adjGet(p);if(sv&&!estNeutre(p,sv)){p.layer=new TAdjL(p,sv,p.op).addTo(map);p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}}
  if(!p.layer){p.layer=new CTile({d:p.d,o:p.o,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
   p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
