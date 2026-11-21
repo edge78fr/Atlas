@@ -180,6 +180,36 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p.ferme{-webkit-backdrop-filter:none;backdrop-filter:none;border:0}#p.ferme #pli{width:56px;height:56px;border-radius:50%!important;padding:0!important;font-size:26px!important;background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(255,255,255,.4));-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 #fff}
 #fiche{left:6px;right:6px;top:auto;bottom:6px;width:auto;max-height:70%}
 }
+
+/* --- lignes harmonisées : couches et fonds --- */
+#rub-couches .cou{padding:5px 4px;margin:0;border-radius:10px;border-top:1px solid rgba(0,0,0,.05)}
+#rub-couches .cou.on{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(0,0,0,.08);border-top-color:transparent}
+#rub-couches .cou>label{display:flex;align-items:flex-start;gap:6px;cursor:pointer}#rub-couches .cou>label>input{margin:2px 0 0;flex:none}
+#rub-couches .cou .cw{min-width:0;flex:1}#rub-couches .cou .cn{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#rub-couches .cou.on .cn{font-weight:600}
+#rub-couches .cou .cm{display:block;font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+#rub-couches .cou input.op{width:calc(100% - 26px);margin:4px 0 1px 24px;height:10px;accent-color:#1a6fd6}
+#rub-couches details.sousrub>summary .sc{margin-left:auto;font-weight:400;color:#999;font-size:11px;text-transform:none;letter-spacing:0}
+#fonds>.fond-item,#fonds>.cou{padding:5px 4px;border-radius:10px;border-top:1px solid rgba(0,0,0,.05);margin:0}
+#fonds>.fond-item.actif{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(0,0,0,.08);border-top-color:transparent}
+#fonds>.fond-item.actif>.fond-ligne .fond-titre span{font-weight:600}
+#fonds>.fond-item>.fond-ligne input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;border:2px solid #bbb;background:#fff;margin:1px 7px 1px 0;flex:none;cursor:pointer}
+#fonds>.fond-item>.fond-ligne input[type=checkbox]:checked{border:5px solid #1a6fd6}
+#fonds>.fond-item>.fond-slider{accent-color:#1a6fd6;height:10px}
+.fond-hist{display:flex!important;flex-wrap:wrap;gap:5px;border-left:0!important;padding:4px 0 6px 4px!important;margin-left:6px!important}
+.fond-hist>.fond-item{flex:0 0 auto;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85)}
+.fond-hist>.fond-item .fond-ligne{display:block}.fond-hist>.fond-item .fond-pct{display:none}
+.fond-hist>.fond-item .fond-titre{padding:4px 10px;font-size:11.5px}.fond-hist>.fond-item .fond-titre input{display:none}
+.fond-hist>.fond-item.actif{flex-basis:100%;background:rgba(255,255,255,.85);border-color:#1a6fd6;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.fond-hist>.fond-item.actif .fond-titre{color:#1a6fd6;font-weight:600}
+.fond-hist>.fond-item.actif .fond-ligne{display:flex;justify-content:space-between;align-items:center}.fond-hist>.fond-item.actif .fond-pct{display:inline;font-size:10.5px;color:#888;padding-right:8px}
+.fond-hist>.fond-item.actif>.fond-slider{display:block;width:calc(100% - 20px);margin:0 10px 6px;accent-color:#1a6fd6;height:10px}
+.fond-hist>#film,.fond-hist>.film{flex-basis:100%}
+@media (max-width:640px){#rub-couches .cou{padding:8px 4px}#rub-couches .cou input.op{height:22px}.fond-hist>.fond-item .fond-titre{padding:7px 12px;font-size:13px}#fonds>.fond-item>.fond-ligne input[type=checkbox]{width:20px;height:20px}#fonds>.fond-item>.fond-ligne input[type=checkbox]:checked{border-width:6px}}
+
+.anc-maitre .fond-item{padding:5px 4px;border-radius:10px;border-top:1px solid rgba(0,0,0,.05)}
+.anc-maitre .fond-item.actif{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(0,0,0,.08);border-top-color:transparent}
+.anc-maitre .fond-item.actif .fond-titre>span{font-weight:600}.anc-maitre .fond-item .cm{display:block;font-size:11px;color:#888;font-weight:400}
+.anc-maitre .fond-item .fond-titre{align-items:flex-start}.anc-maitre .fond-item .fond-slider{accent-color:#1a6fd6;height:10px;width:calc(100% - 26px);margin-left:24px}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -461,11 +491,21 @@ function menuExport(){
  m.querySelector('.ok').onclick=async()=>{try{await navigator.clipboard.writeText(t);m.querySelector('.ok').textContent='✔ Copié'}catch(e){ta.select();document.execCommand('copy');m.querySelector('.ok').textContent='✔ Copié'}};
  m.querySelectorAll('button')[1].onclick=()=>m.remove();
 }
+// lignes de couches : nom court + source/date en petit dessous
+(function couLignes(){document.querySelectorAll('#rub-couches .cou>label').forEach(lab=>{if(lab.querySelector('.mkN'))return;const inp=lab.querySelector(':scope>input');if(!inp)return;
+ const ns=[];let n=inp.nextSibling;while(n){ns.push(n);n=n.nextSibling}if(ns.some(x=>x.nodeType===1))return;
+ let t=ns.map(x=>x.textContent).join('').trim();let meta='';const mp=t.match(/^(.*?)\s*\(([^()]+)\)\s*$/);if(mp){t=mp[1];meta=mp[2]}
+ const md=t.match(/^(.*?)\s+[–-]\s+(.+)$/);if(md&&md[1].length>6){t=md[1];meta=md[2]+(meta?' · '+meta:'')}
+ meta=meta.replace(/\s*,\s*/g,' · ').replace(/\//g,' · ');
+ ns.forEach(x=>x.remove());const a=document.createElement('span');a.className='mkN cn';a.textContent=t;const b=document.createElement('small');b.className='cm';b.textContent=meta;
+ const w=document.createElement('span');w.className='cw';w.append(a);if(meta)w.append(b);lab.append(w)})})();
 mkInit();menuAppliquer();
 document.getElementById('bMenuEd').onclick=()=>{const r=document.getElementById('rub-reglages');menuEdition(true);document.getElementById('p').classList.remove('ferme');mkCorps().scrollTop=0;document.getElementById('mkBar')?.scrollIntoView({block:'start'})};
 function compteurs(){try{const f=document.getElementById('cptF'),c=document.getElementById('cptC');
  if(f){const n=(typeof fondsActifs!=='undefined'?fondsActifs.size:0)+(document.getElementById('pva')?.checked?1:0);f.textContent=n?'('+n+')':''}
- if(c){const n=[...document.querySelectorAll('#rub-couches .cou > label > input[type=checkbox]')].filter(i=>i.checked).length;c.textContent=n?'('+n+')':''}}catch(e){}}
+ if(c){const n=[...document.querySelectorAll('#rub-couches .cou > label > input[type=checkbox]')].filter(i=>i.checked).length;c.textContent=n?'('+n+')':''}
+ document.querySelectorAll('#rub-couches details.sousrub').forEach(d=>{const sm=d.querySelector(':scope>summary');if(!sm)return;let k=sm.querySelector('.sc');if(!k){k=document.createElement('span');k.className='sc';sm.appendChild(k)}
+  const cbs=[...d.querySelectorAll('.cou > label > input[type=checkbox], .fond-item .fond-titre > input[type=checkbox]')];k.textContent=cbs.length?cbs.filter(i=>i.checked).length+' / '+cbs.length:''})}catch(e){}}
 document.addEventListener('change',()=>setTimeout(compteurs,0));setInterval(compteurs,2000);
 {const app=document.createElement('div');app.id='app';document.body.appendChild(app);for(const id of ['p','fiche','adjB','adjP','bulle']){const e=document.getElementById(id);if(e)app.appendChild(e)}}
 const map=L.map('m',{zoomControl:true,maxZoom:22,zoomSnap:0.5,wheelPxPerZoomLevel:90});
@@ -529,7 +569,9 @@ function fondElement(id,titre,container){
  slider.min='0';slider.max='1';slider.step='0.05';slider.value=String(fondOp(id));
  slider.setAttribute('aria-label','Opacité '+titre);
  pct.textContent=Math.round(fondOp(id)*100)+' %';
+ if(container&&container.closest&&container.closest('.fond-hist'))nom.textContent=titre.replace(/^\S+\s/,'').replace(/\s+[–-]\s+(SPOT|Esri)$/,'').replace(/^(\d{4})[–-](\d{2})(\d{2})$/,'$1–$3');
  cb.onchange=()=>{
+  if(cb.checked&&row.parentElement===fondsCont){fondsUI.forEach((r,k)=>{if(k!==id&&r.parentElement===fondsCont)fondsActifs.delete(k)})}
   if(cb.checked){fondsActifs.add(id);fondsOrdre=fondsOrdre.filter(x=>x!==id);fondsOrdre.push(id)}
   else fondsActifs.delete(id);
   fondSync();
@@ -664,7 +706,10 @@ const ANC=[
  const sm=document.createElement('summary');const nm=document.createElement('span');nm.textContent='📜 Cartes anciennes';sm.appendChild(nm);
  const li=document.createElement('div');li.className='sousrub-body';li.dataset.mkc='f:anc';row.append(sm,li);{const dv=document.getElementById('sousrub-divers');dv?dv.parentNode.insertBefore(row,dv):fondsCont.appendChild(row)}
  row.open=!!store.get('sousrub_anc',false);row.addEventListener('toggle',()=>store.set('sousrub_anc',row.open));
- ANC.forEach(([id,nom,mk])=>fondAjouter(id,nom,mk(),li));menuAppliquer();fondSync()}
+ ANC.forEach(([id,nom,mk])=>fondAjouter(id,nom,mk(),li));
+ li.querySelectorAll('.fond-item .fond-titre>span').forEach(sp=>{if(sp.querySelector('.cm'))return;let t=sp.textContent,m='';const a=t.match(/^(.*?)\s*\(([^()]+)\)\s*$/);if(a){t=a[1];m=a[2]}const b=t.match(/^(.*?)\s+[–-]\s+(.+)$/);if(b){t=b[1];m=b[2]+(m?' · '+m:'')}
+  sp.textContent=t;if(m){const k=document.createElement('small');k.className='cm';k.textContent=m.replace(/-/g,'–');sp.appendChild(k)}});
+ menuAppliquer();fondSync()}
 fondAjouter('geol','🪨 Carte géologique BRGM 1/50 000',L.tileLayer(g('BRGM_SCAN_D_GEOL50','normal','image/jpeg'),{...fondOpt,maxNativeZoom:15,attribution:'BRGM'}),fondsCont);
 fondAjouter('hydro','💧 Réseau hydrographique IGN',L.tileLayer(g('HYDROGRAPHY.HYDROGRAPHY','normal','image/png').replace('TILEMATRIXSET=PM','TILEMATRIXSET=PM_6_18'),{...fondOpt,minZoom:6,maxNativeZoom:18,attribution:'IGN – BD TOPO Hydrographie'}),fondsCont);
 fondAjouter('w','⬜ Fond blanc',B.w,fondsCont);
