@@ -241,9 +241,6 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #impBar button{border:1px solid rgba(0,0,0,.1);background:#fff;border-radius:10px;padding:8px 12px;font-size:15px;cursor:pointer}#impBar button.ok{margin-left:auto;background:#1a6fd6;color:#fff;border-color:#1a6fd6;font-size:13.5px;font-weight:600}
 #impBarN{font-size:12px;color:#666}
 @media (max-width:640px){#impBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom))}}
-
-/* lignes fines entre les tuiles : tuiles qui se chevauchent d'1 px, sans le mode « addition » de Leaflet (qui éclaircissait les bords) */
-.leaflet-container img.leaflet-tile{mix-blend-mode:normal}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -560,8 +557,6 @@ function compteurs(){try{const f=document.getElementById('cptF'),c=document.getE
   const cbs=[...d.querySelectorAll('.cou > label > input[type=checkbox], .fond-item .fond-titre > input[type=checkbox]')];k.textContent=cbs.length?cbs.filter(i=>i.checked).length+' / '+cbs.length:''})}catch(e){}}
 document.addEventListener('change',()=>setTimeout(compteurs,0));setInterval(compteurs,2000);
 {const app=document.createElement('div');app.id='app';document.body.appendChild(app);for(const id of ['p','fiche','adjB','adjP','bulle']){const e=document.getElementById(id);if(e)app.appendChild(e)}}
-// tuiles agrandies d'1 px : elles se chevauchent et ne laissent plus de trou au zoom par demi-niveau
-{const _it=L.GridLayer.prototype._initTile;L.GridLayer.prototype._initTile=function(t){_it.call(this,t);const s=this.getTileSize();t.style.width=(s.x+1)+'px';t.style.height=(s.y+1)+'px'}}
 const map=L.map('m',{zoomControl:true,maxZoom:22,zoomSnap:0.5,wheelPxPerZoomLevel:90});
 map.createPane('plans').style.zIndex=250;map.createPane('pvaImg').style.zIndex=245;map.getPane('pvaImg').style.pointerEvents='none';map.createPane('pvaFp').style.zIndex=355;
 document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute"><filter id="netS" color-interpolation-filters="sRGB"><feConvolveMatrix id="netK" order="3" preserveAlpha="true" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"/></filter></svg>');
