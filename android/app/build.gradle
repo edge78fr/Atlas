@@ -1,0 +1,9 @@
+plugins { id 'com.android.application' }
+android {
+  namespace 'fr.edge78.atlas'
+  compileSdk 34
+  defaultConfig { applicationId 'fr.edge78.atlas'; minSdk 24; targetSdk 34; versionCode 1; versionName '1.0' }
+  signingConfigs { atlas { storeFile file('../atlas.keystore'); storePassword 'atlas-apk'; keyAlias 'atlas'; keyPassword 'atlas-apk' } }
+  buildTypes { release { minifyEnabled false; signingConfig signingConfigs.atlas } }
+  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

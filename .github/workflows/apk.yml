@@ -1,0 +1,22 @@
+name: APK Atlas
+on:
+  push: { paths: ['android/**', '.github/workflows/apk.yml'] }
+  workflow_dispatch: {}
+permissions: { contents: write }
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: android }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      - run: gradle assembleRelease --no-daemon
+        working-directory: android
+      - run: |
+          cp android/app/build/outputs/apk/release/app-release.apk Atlas.apk
+          gh release delete apk -y --cleanup-tag || true
+          gh release create apk Atlas.apk --title "Atlas (Android)" --notes "Appli Android de l'Atlas. Installer Atlas.apk."
+        env: { GH_TOKEN: '${{ github.token }}' }
