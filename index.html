@@ -232,6 +232,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .impL{display:flex;align-items:center;gap:8px;margin:6px 2px;font-size:12.5px}.impL input[type=range]{flex:1;accent-color:#1a6fd6}.impL label{flex:1}
 #impNom,#impAn{width:100%;box-sizing:border-box;margin:4px 0;padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.85);font-size:14px}
 #p #impAnn{background:transparent;border:0;box-shadow:none;color:#b3261e;font-size:12.5px;margin-top:4px}
+.impPages{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}#p .impPages button{min-width:38px;padding:7px 0;border-radius:10px;background:rgba(255,255,255,.85);border:1px solid rgba(0,0,0,.08);font-size:13px}
 .impCarte{background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px;font-size:12.5px;margin-top:6px}
 .impJauge{height:6px;border-radius:3px;background:rgba(0,0,0,.1);margin:6px 0 2px;overflow:hidden}.impJauge i{display:block;height:100%;background:#1a6fd6;transition:width .3s}
 #impProg{font-size:12.5px;margin:6px 2px}
@@ -310,7 +311,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
   <div class="sec"><h4>📍 Caler un plan</h4>
    <div id="impVide"><div class="impTxt">Ajoute ton propre plan (photo ou image depuis ton téléphone). Tu le cales point par point, puis il est envoyé dans l’Atlas, <b>pour tout le monde</b>, en pleine qualité.</div>
-    <label class="impBtn">📷 Choisir une image<input type="file" id="impF" accept="image/*" hidden></label><div id="impBr"></div></div>
+    <label class="impBtn">📷 Choisir une image ou un PDF<input type="file" id="impF" accept="image/*,application/pdf,.pdf" hidden></label><div id="impBr"></div></div>
    <div id="impTravail" style="display:none">
     <div id="impT" class="impTxt" style="font-weight:600"></div>
     <button id="impGo" class="impBtn">📍 Placer les points sur la carte</button>
@@ -2389,7 +2390,19 @@ async function upSupprimer(p){if(!upPeutSuppr(p))return;if(!confirm('Supprimer �
   const loc=store.get('up_local',[]).filter(l=>l.id!==p.id);loc.push({id:p.id,d:Date.now(),suppr:1});store.set('up_local',loc);
   if(p.layer)decharge(p);p.ui&&p.ui.row.remove();p.poly&&contours.removeLayer(p.poly);P=P.filter(q=>q!==p);info.textContent='« '+p.nom+' » supprimé pour tout le monde.'}
  catch(e){info.textContent=e.message==='droits'?'La clé de partage n’a pas le droit d’écrire dans data1.':'Suppression impossible : '+e.message}}
-{const fi=$id('impF');fi.onchange=()=>{const f=fi.files[0];fi.value='';if(f){IMP.edit=null;IMP.nouvelleImage=true;brSet(null);impOuvrir(f,null)}};
+
+// ---- PDF : la page choisie est transformée en image haute qualité sur l'appareil ----
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';let pdfPret=null;
+function pdfCharger(){if(!pdfPret)pdfPret=new Promise((ok,ko)=>{const sc=document.createElement('script');sc.src=PDFJS+'pdf.min.js';sc.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.js';ok(pdfjsLib)};sc.onerror=()=>{pdfPret=null;ko(new Error('lecteur PDF indisponible (réseau ?)'))};document.head.appendChild(sc)});return pdfPret}
+function pdfChoixPage(n){return new Promise(ok=>{if(n===1)return ok(1);let h='<div class="impCarte">Ce PDF a <b>'+n+' pages</b>. Laquelle veux-tu caler ?<div class="impPages">';
+ for(let i=1;i<=Math.min(n,60);i++)h+='<button data-pg="'+i+'">'+i+'</button>';h+='</div></div>';impMsg(h);setTimeout(()=>$id('impMsg').scrollIntoView({block:'nearest',behavior:'smooth'}),50);$id('impMsg').querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>{impMsg('');ok(+b.dataset.pg)})})}
+async function pdfEnImage(f){impMsg('Ouverture du PDF…');const lib=await pdfCharger();const doc=await lib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+ const pg=await pdfChoixPage(doc.numPages);impMsg('Conversion de la page '+pg+' en image haute qualité…');const page=await doc.getPage(pg);const v1=page.getViewport({scale:1});
+ const AIRE=mobile()?16e6:36e6,COTE=mobile()?8000:12000;const sc=Math.min(Math.sqrt(AIRE/(v1.width*v1.height)),COTE/Math.max(v1.width,v1.height),12);
+ const vp=page.getViewport({scale:sc});const cv=document.createElement('canvas');cv.width=Math.floor(vp.width);cv.height=Math.floor(vp.height);const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+ await page.render({canvasContext:ctx,viewport:vp}).promise;const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.92));cv.width=cv.height=0;doc.destroy();
+ return new File([b],(f.name||'plan').replace(/\.pdf$/i,'')+(doc.numPages>1?'-p'+pg:'')+'.jpg',{type:'image/jpeg'})}
+{const fi=$id('impF');fi.onchange=async()=>{let f=fi.files[0];fi.value='';if(!f)return;if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){try{f=await pdfEnImage(f)}catch(e){impMsg('⚠️ PDF illisible : '+anEsc(e.message));return}}IMP.edit=null;IMP.nouvelleImage=true;brSet(null);impOuvrir(f,null)};
  $id('impGo').onclick=()=>{impBarre(true);plier()};
  $id('impBarU').onclick=impUndo;$id('impBarV').onclick=()=>{IMP.voir=!IMP.voir;impLy.redraw()};
  $id('impBarC').onclick=()=>{cadCb.click();$id('impCad').checked=cadCb.checked};$id('impCad').onchange=()=>{if($id('impCad').checked!==cadCb.checked)cadCb.click()};
