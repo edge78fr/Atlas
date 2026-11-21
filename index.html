@@ -76,7 +76,7 @@ body.favMode .cou>label{display:flex;align-items:center}
 .sousrub>summary>span:first-child{flex:1}
 .sousrub-body{padding:2px 0 5px 10px}
 #info:empty{display:none}
-#ordre:empty{display:none}#ordre{margin:2px 0 8px;padding:6px;border-radius:8px;background:rgba(255,255,255,.45);border:1px solid rgba(0,0,0,.08)}#ordre .ot{font-size:11px;color:#666;margin-bottom:3px}#ordre .or{display:flex;align-items:center;gap:4px;margin:2px 0;font-size:12px}#ordre .or span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ordre .or button{padding:1px 7px;font-size:12px;line-height:1.3}
+#ordre:empty{display:none}#ordre{margin:4px 0 10px;padding:6px 8px 4px;border-radius:12px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}#ordre .ot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;color:#666;text-transform:uppercase;padding:2px 0 5px}#ordre .ot span{flex:1}#ordre .ot small{font-weight:400;text-transform:none;letter-spacing:0;color:#999}#ordre .or{display:grid;grid-template-columns:18px 18px 1fr auto;align-items:center;column-gap:6px;padding:4px 2px 3px;border-top:1px solid rgba(0,0,0,.06);font-size:12.5px;background:transparent;border-radius:8px;touch-action:auto}#ordre .or:first-of-type{border-top:0}#ordre .or .poi{cursor:grab;color:#aaa;font-size:15px;line-height:1;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none}#ordre .or .poi:active{cursor:grabbing}#ordre .or input[type=checkbox]{margin:0}#ordre .or .n{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}#ordre .or .n:hover{text-decoration:underline}#ordre .or input[type=range]{grid-column:3/5;width:100%;height:10px;margin:0 0 2px;opacity:.75}#ordre .or.drag{background:rgba(255,255,255,.95);box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative;z-index:5;border-top-color:transparent}#ordre .or .rang{font-size:10px;color:#bbb;text-align:center}@media (max-width:640px){#ordre .or{grid-template-columns:26px 24px 1fr auto;padding:6px 2px 2px}#ordre .or .poi{font-size:20px}#ordre .or input[type=range]{height:20px}}
 .depbar{display:flex;gap:4px;margin:3px 0 4px 14px}.depbar button{font-size:11px;padding:1px 6px;border:1px solid #ccc;background:#f6f6f6;border-radius:4px;cursor:pointer}.depbar button:hover{background:#e8e8e8}
 .sec h5{margin:7px 0 2px;font-size:10.5px;font-weight:600;color:#888}
 .opf{font-size:12px;color:#666;display:flex;align-items:center;gap:6px;margin:2px 0 2px}
@@ -1029,12 +1029,30 @@ let ORD=store.get('ordre',[]);
 function zDe(l,z){if(!l)return;if(l.setZIndex&&l instanceof L.GridLayer)l.setZIndex(z);else if(l._c)l._c.style.zIndex=z}
 function ordreMaj(){const act=P.filter(p=>p.layer);ORD=ORD.filter(id=>act.some(p=>p.id===id));act.forEach(p=>{if(!ORD.includes(p.id))ORD.unshift(p.id)});store.set('ordre',ORD);
  ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);zDe(p&&p.layer,10+ORD.length-i)});
- const box=document.getElementById('ordre');if(!box)return;box.innerHTML='';if(ORD.length<2)return;
- box.innerHTML='<div class="ot">Ordre des plans chargés (en haut = au-dessus)</div>';
- ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);const r=document.createElement('div');r.className='or';
-  r.innerHTML=`<span title="${p.nom}">${p.nom}</span><button title="Monter (passer au-dessus)">▲</button><button title="Descendre (passer dessous)">▼</button>`;
-  const [,up,dn]=r.children;up.disabled=i===0;dn.disabled=i===ORD.length-1;
-  up.onclick=()=>{[ORD[i-1],ORD[i]]=[ORD[i],ORD[i-1]];ordreMaj()};dn.onclick=()=>{[ORD[i+1],ORD[i]]=[ORD[i],ORD[i+1]];ordreMaj()};box.appendChild(r)})}
+ const box=document.getElementById('ordre');if(!box)return;box.innerHTML='';if(!ORD.length)return;
+ const esc_=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const t=document.createElement('div');t.className='ot';t.innerHTML=`<span>🗂️ Plans affichés (${ORD.length})</span>`+(ORD.length>1?'<small>glisse ⠿ · en haut = dessus</small>':'');box.appendChild(t);
+ ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);if(!p)return;const r=document.createElement('div');r.className='or';r.dataset.id=id;
+  r.innerHTML=`<span class="poi" title="Glisser pour changer l'ordre">⠿</span><input type="checkbox" checked title="Décharger ce plan"><span class="n" title="Aller sur ${esc_(p.nom)}">${esc_(p.nom)}</span><button class="dots" title="Options">⋯</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
+  const [poi,cb,nm,dots,rg]=r.children;
+  cb.onchange=()=>decharge(p);nm.onclick=()=>{charge(p,true);plier()};
+  rg.oninput=()=>{p.op=+rg.value;p.layer&&p.layer.setOpacity(p.op);const pr=p.ui&&p.ui.row.querySelector('input[type=range]');if(pr)pr.value=p.op;sauve()};
+  dots.onclick=e=>{e.stopPropagation();const mv=j=>{ORD.splice(i,1);ORD.splice(j,0,id);ordreMaj()};popMenu(dots,[
+   ['🔍 Aller sur ce plan',()=>{charge(p,true);plier()}],
+   ...(i>0?[['⏫ Tout en haut',()=>mv(0)]]:[]),...(i<ORD.length-1?[['⏬ Tout en bas',()=>mv(ORD.length-1)]]:[]),
+   ...(p.ui&&p.ui.aj?[['🎯 Ajuster',()=>p.ui.aj.click()]]:[]),
+   ['✖️ Décharger',()=>decharge(p),1]])};
+  // glisser-déposer (souris et doigt)
+  poi.onpointerdown=e=>{if(ORD.length<2)return;e.preventDefault();poi.setPointerCapture(e.pointerId);r.classList.add('drag');
+   const gy=e.clientY-r.getBoundingClientRect().top;
+   poi.onpointermove=ev=>{r.style.transform='';const top=ev.clientY-gy,h=r.offsetHeight,cy=top+h/2;
+    const prev=r.previousElementSibling,next=r.nextElementSibling;
+    if(prev&&prev.classList.contains('or')){const bb=prev.getBoundingClientRect();if(cy<bb.top+bb.height/2)box.insertBefore(r,prev)}
+    if(next&&next.classList.contains('or')){const bb=next.getBoundingClientRect();if(cy>bb.top+bb.height/2)box.insertBefore(r,next.nextSibling)}
+    r.style.transform=`translateY(${top-r.getBoundingClientRect().top}px)`};
+   const fin=()=>{poi.onpointermove=poi.onpointerup=poi.onpointercancel=null;r.classList.remove('drag');r.style.transform='';ORD=[...box.querySelectorAll('.or')].map(x=>x.dataset.id);ordreMaj()};
+   poi.onpointerup=poi.onpointercancel=fin};
+  box.appendChild(r)})}
 function majNb(){document.getElementById('nbp').textContent=`(${P.filter(p=>p.layer).length} chargé(s) / ${P.filter(p=>!pmMasque(p.id)).length})`}
 // un ajustement manuel n'est valable que pour la version du plan sur laquelle il a été fait
 function adjGet(p){const s=store.get('adj2_'+p.id,null);if(!s)return null;const d=store.get('adjd_'+p.id,null);
