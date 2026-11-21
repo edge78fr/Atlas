@@ -76,6 +76,10 @@ body.favMode .cou>label{display:flex;align-items:center}
 .sousrub>summary>span:first-child{flex:1}
 .sousrub-body{padding:2px 0 5px 10px}
 #info:empty{display:none}
+#plOng{display:flex;gap:4px;margin:2px 0 6px;padding:3px;border-radius:11px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.6)}#plOng button{flex:1;border:0!important;box-shadow:none!important;background:transparent!important;border-radius:8px;padding:5px 6px;font-size:12.5px;color:#555;cursor:pointer}#plOng button.on{background:rgba(255,255,255,.9)!important;color:#111;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.15)!important}#nIci{color:#999;font-weight:400}
+#plIci .ic{display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;padding:5px 2px;border-top:1px solid rgba(0,0,0,.06)}#plIci .ic:first-child{border-top:0}#plIci .ic .n{min-width:0;cursor:pointer;overflow:hidden}#plIci .ic .n small{display:block;color:#888;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#plIci .ic .n{white-space:nowrap;text-overflow:ellipsis}#plIci .ic.actif .n{font-weight:600}#plIci .vide{color:#888;font-size:12px;padding:8px 2px;text-align:center}
+#plans .plan>button:not(.dots){display:none}#plans .plan{grid-template-columns:18px 1fr auto auto}#plans .plan input[type=range]{grid-column:2/5}details.dep>summary>span:first-child,details.com>summary>span:first-child{flex:1;text-align:left;margin-left:4px}details.com{margin:1px 0 1px 10px}details.com>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;padding:3px 6px;font-size:12.5px;border-radius:6px}details.com>summary::-webkit-details-marker{display:none}details.com>summary:before{content:'▸ ';color:#aaa}details.com[open]>summary:before{content:'▾ '}details.com>summary:hover{background:rgba(255,255,255,.45)}details.com .cn{color:#999;font-size:11px}
+@media (max-width:640px){#plans .plan{grid-template-columns:26px 1fr auto auto}#plOng button{font-size:14px;padding:8px}#plIci .ic{grid-template-columns:26px 1fr auto;padding:8px 2px}details.com>summary{padding:8px 6px;font-size:14px}}
 #ordre:empty{display:none}#ordre{margin:4px 0 10px;padding:6px 8px 4px;border-radius:12px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}#ordre .ot{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;color:#666;text-transform:uppercase;padding:2px 0 5px}#ordre .ot span{flex:1}#ordre .ot small{font-weight:400;text-transform:none;letter-spacing:0;color:#999}#ordre .or{display:grid;grid-template-columns:18px 18px 1fr auto;align-items:center;column-gap:6px;padding:4px 2px 3px;border-top:1px solid rgba(0,0,0,.06);font-size:12.5px;background:transparent;border-radius:8px;touch-action:auto}#ordre .or:first-of-type{border-top:0}#ordre .or .poi{cursor:grab;color:#aaa;font-size:15px;line-height:1;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none}#ordre .or .poi:active{cursor:grabbing}#ordre .or input[type=checkbox]{margin:0}#ordre .or .n{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}#ordre .or .n:hover{text-decoration:underline}#ordre .or input[type=range]{grid-column:3/5;width:100%;height:10px;margin:0 0 2px;opacity:.75}#ordre .or.drag{background:rgba(255,255,255,.95);box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative;z-index:5;border-top-color:transparent}#ordre .or .rang{font-size:10px;color:#bbb;text-align:center}@media (max-width:640px){#ordre .or{grid-template-columns:26px 24px 1fr auto;padding:6px 2px 2px}#ordre .or .poi{font-size:20px}#ordre .or input[type=range]{height:20px}}
 .depbar{display:flex;gap:4px;margin:3px 0 4px 14px}.depbar button{font-size:11px;padding:1px 6px;border:1px solid #ccc;background:#f6f6f6;border-radius:4px;cursor:pointer}.depbar button:hover{background:#e8e8e8}
 .sec h5{margin:7px 0 2px;font-size:10.5px;font-weight:600;color:#888}
@@ -240,7 +244,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="cou"><label><input id="bss" type="checkbox"> 📍 Points BRGM « Dossiers du sous-sol »</label></div>
    <div class="cou"><label><input id="cont" type="checkbox"> 🔲 Contours des plans</label></div></div>
   <div class="sec"><h4>📐 Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
-   <div id="ordre"></div><input id="filtre" placeholder="Filtrer les plans…"><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
+   <div id="ordre"></div><div id="plOng"><button data-o="ici" class="on">📍 Ici <span id="nIci"></span></button><button data-o="tous">📂 Tous les plans</button></div><input id="filtre" placeholder="🔍 Chercher un plan, une commune…"><div id="plIci"></div><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
   <div class="sec"><h4>✏️ Terrain</h4>
    <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bSurf" title="Pose les coins de la zone : la surface se calcule en direct">📐 Surface</button><button id="bAlt" title="Touche la carte : altitude du sol, et du toit ou de l’arbre s’il y en a un (LiDAR HD IGN)">⛰️ Altitude</button></div></details>
@@ -1053,7 +1057,7 @@ function ordreMaj(){const act=P.filter(p=>p.layer);ORD=ORD.filter(id=>act.some(p
    const fin=()=>{poi.onpointermove=poi.onpointerup=poi.onpointercancel=null;r.classList.remove('drag');r.style.transform='';ORD=[...box.querySelectorAll('.or')].map(x=>x.dataset.id);ordreMaj()};
    poi.onpointerup=poi.onpointercancel=fin};
   box.appendChild(r)})}
-function majNb(){document.getElementById('nbp').textContent=`(${P.filter(p=>p.layer).length} chargé(s) / ${P.filter(p=>!pmMasque(p.id)).length})`}
+function majNb(){try{iciMaj()}catch(e){}document.getElementById('nbp').textContent=`(${P.filter(p=>p.layer).length} chargé(s) / ${P.filter(p=>!pmMasque(p.id)).length})`}
 // un ajustement manuel n'est valable que pour la version du plan sur laquelle il a été fait
 function adjGet(p){const s=store.get('adj2_'+p.id,null);if(!s)return null;const d=store.get('adjd_'+p.id,null);
  if(d===null&&!(p.raz&&p.raz.includes(p.d))){store.set('adjd_'+p.id,p.d);return s}
@@ -1072,6 +1076,9 @@ function initPlans(j){
   bOff.onclick=()=>ps.forEach(p=>p.layer&&decharge(p));
   bVoir.onclick=()=>{const b=ps.reduce((a,p)=>[Math.min(a[0],p.bbox[0]),Math.min(a[1],p.bbox[1]),Math.max(a[2],p.bbox[2]),Math.max(a[3],p.bbox[3])],[180,90,-180,-90]);map.fitBounds([[b[1],b[0]],[b[3],b[2]]])};
   det.appendChild(bar);
+  const coms={},comOuv=store.get('comOuv',{});
+  const comDe=p=>{const c=p.com||'Autres';if(!coms[c]){const d=document.createElement('details');d.className='com';d.dataset.c=c;d.open=!!comOuv[dep+'|'+c];
+    d.innerHTML=`<summary><span>${c}</span><span class="cn"></span></summary>`;d.ontoggle=()=>{if(document.getElementById('filtre').value)return;comOuv[dep+'|'+c]=d.open;store.set('comOuv',comOuv)};coms[c]=d}return coms[c]};
   ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;if(p.nomO===undefined)p.nomO=p.nom;{const nn=store.get('nom_'+p.id,null);if(nn)p.nom=nn}
    const r=document.createElement('div');r.className='plan';r.dataset.nom=sansAcc(p.nom+' '+dep);
    r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><button class="sup" title="Supprimer ce plan de l'atlas (sur tous les appareils, restaurable)">🗑</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
@@ -1082,16 +1089,39 @@ function initPlans(j){
    cb.onchange=()=>cb.checked?charge(p,false):decharge(p);
    nm.onclick=bt.onclick=()=>{charge(p,true);plier()};
    rg.oninput=()=>{p.op=+rg.value;p.layer&&p.layer.setOpacity(p.op);sauve()};
-   det.appendChild(r);
+   comDe(p).appendChild(r);if(p.com)nm.textContent=courtNom(p);r.dataset.nom=sansAcc(p.nom+' '+dep+' '+(p.com||''));
+   {const dt=document.createElement('button');dt.className='dots';dt.title='Options';dt.textContent='⋯';r.insertBefore(dt,rg);
+    dt.onclick=e=>{e.stopPropagation();popMenu(dt,[['🔍 Aller sur ce plan',()=>bt.click()],[aj.textContent==='🔒'?'🔒 Déverrouiller / ajuster':'🎯 Ajuster la position',()=>aj.click()],['✏️ Renommer',()=>rn.click()],['🗑 Supprimer de l\'atlas…',()=>sp.click(),1]])}}
    if(p.contour){p.poly=L.polygon(p.multi?p.contour.map(r=>[r.map(c=>[c[1],c[0]])]):p.contour.map(c=>[c[1],c[0]]),{pane:'cont',color:'#d60',weight:2,fillColor:'#f90',fillOpacity:.15}).bindTooltip(p.nom,{sticky:true,className:'contour-lbl'});
     p.poly.on('click',e=>{L.DomEvent.stop(e);p.layer?decharge(p):charge(p,false)});contours.addLayer(p.poly)}
    if(s.on&&!pmMasque(p.id))charge(p,false)});
+  Object.keys(coms).sort((a,b)=>a==='Autres'?1:b==='Autres'?-1:a.localeCompare(b,'fr')).forEach(c=>det.appendChild(coms[c]));
   box.appendChild(det)});
+ comMaj();ongletPl(store.get('ongletPl','ici'));
  if(contCb.checked)contours.addTo(map);pmApplique();majNb();
  if(new URLSearchParams(location.search).get('plan')){const p=P.find(x=>x.id===new URLSearchParams(location.search).get('plan'));p&&charge(p,true)}
 }
 function sansAcc(t){return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/œ/g,'oe').replace(/æ/g,'ae').replace(/[-'’_.,()]/g,' ').replace(/\s+/g,' ').trim()}
-let filtreAvant=null;document.getElementById('filtre').oninput=e=>{const q=sansAcc(e.target.value);const deps=[...document.querySelectorAll('details.dep')];if(q&&filtreAvant===null)filtreAvant=deps.map(d=>d.open);deps.forEach((d,i)=>{let n=0;d.querySelectorAll('.plan').forEach(r=>{const ok=!r.dataset.hid&&(!q||q.split(' ').every(w=>r.dataset.nom.includes(w)));r.style.display=ok?'':'none';n+=ok});d.style.display=n?'':'none';if(q)d.open=true;else if(filtreAvant)d.open=filtreAvant[i]});if(!q)filtreAvant=null};
+let filtreAvant=null;document.getElementById('filtre').oninput=e=>{const q=sansAcc(e.target.value);if(q&&ONG!=='tous')ongletPl('tous',1);const deps=[...document.querySelectorAll('details.dep')];if(q&&filtreAvant===null)filtreAvant=deps.map(d=>d.open);deps.forEach((d,i)=>{let n=0;d.querySelectorAll('.plan').forEach(r=>{const ok=!r.dataset.hid&&(!q||q.split(' ').every(w=>r.dataset.nom.includes(w)));r.style.display=ok?'':'none';n+=ok});d.style.display=n?'':'none';if(q)d.open=true;else if(filtreAvant)d.open=filtreAvant[i]});comMaj(q);if(!q)filtreAvant=null};
+// communes : compteurs, masquées si vides, ouvertes pendant une recherche
+function comMaj(q){const co=store.get('comOuv',{});document.querySelectorAll('details.com').forEach(d=>{const n=[...d.querySelectorAll('.plan')].filter(r=>r.style.display!=='none'&&!r.dataset.hid).length;d.style.display=n?'':'none';d.querySelector('.cn').textContent=n;
+  const dep=d.closest('details.dep').querySelector('summary span').textContent;if(q)d.open=true;else if(q!==undefined)d.open=!!co[dep+'|'+d.dataset.c]})}
+// ---------- onglets Ici / Tous ----------
+let ONG='ici';document.querySelectorAll('#plOng button').forEach(b=>b.onclick=()=>ongletPl(b.dataset.o));
+function ongletPl(o,sil){ONG=o;store.set('ongletPl',o);document.querySelectorAll('#plOng button').forEach(b=>b.classList.toggle('on',b.dataset.o===o));
+ document.getElementById('plans').style.display=o==='tous'?'':'none';document.getElementById('plIci').style.display=o==='ici'?'':'none';if(o==='ici'){if(!sil)document.getElementById('filtre').value='';iciMaj()}}
+function courtNom(p){const n=p.nom||'',c=p.com||'';const m=n.match(/^IGC (.+?) – (.*)$/);if(m&&sansAcc(m[1])===sansAcc(c))return 'IGC · '+m[2].charAt(0).toUpperCase()+m[2].slice(1);return n}
+function iciMaj(){const box=document.getElementById('plIci');if(!box||ONG!=='ici'||!P.length||!P[0].ui)return;const b=map.getBounds(),c=map.getCenter();
+ const L_=P.filter(p=>!p.ui.row.dataset.hid&&p.bbox&&b.intersects(L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]])))
+  .map(p=>({p,d:c.distanceTo([(p.bbox[1]+p.bbox[3])/2,(p.bbox[0]+p.bbox[2])/2])})).sort((x,y)=>(!!y.p.layer-!!x.p.layer)||x.d-y.d);
+ const n=document.getElementById('nIci');if(n)n.textContent=L_.length;box.innerHTML='';
+ if(!L_.length){box.innerHTML='<div class="vide">Aucun plan à cet endroit.<br>Déplace la carte, ou regarde dans <a href="#" id="versTous">📂 Tous</a>.</div>';box.querySelector('#versTous').onclick=e=>{e.preventDefault();ongletPl('tous')};return}
+ const esc_=t=>String(t||'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+ L_.slice(0,40).forEach(({p,d})=>{const r=document.createElement('div');r.className='ic'+(p.layer?' actif':'');
+  r.innerHTML=`<input type="checkbox"${p.layer?' checked':''} title="Charger / décharger"><span class="n" title="Aller sur ${esc_(p.nom)}">${esc_(courtNom(p))}<small>${esc_(p.com||'')}${d>1000?' · '+(d/1000).toFixed(1)+' km':''}</small></span><span class="badge" title="${esc_(p.t||'')}">${p.ok||'•'}</span>`;
+  const [cb,nm]=r.children;cb.onchange=()=>{cb.checked?charge(p,false):decharge(p)};nm.onclick=()=>{charge(p,true);plier()};box.appendChild(r)});
+ if(L_.length>40){const m=document.createElement('div');m.className='vide';m.textContent=`+ ${L_.length-40} autres : zoome pour affiner.`;box.appendChild(m)}}
+let iciT=null;map.on('moveend',()=>{clearTimeout(iciT);iciT=setTimeout(iciMaj,250)});
 document.getElementById('tout0').onclick=()=>P.forEach(p=>p.layer&&decharge(p));
 
 // ---------- recherche ----------
@@ -1346,7 +1376,7 @@ const pmMasque=id=>PM.some(x=>x.id===id&&x.del);
 function pmSet(id,v){const x=PM.find(y=>y.id===id);if(x){x.del=v;x.d=Date.now()}else PM.push({id,del:v,d:Date.now()});store.set('masques',PM);pmApplique();if(NTOK){clearTimeout(pmTimer);pmTimer=setTimeout(pmSync,1200)}}
 function pmApplique(){if(!P.length||!P[0].ui)return;
  P.forEach(p=>{const h=pmMasque(p.id);if(h&&p.layer)decharge(p);p.ui.row.dataset.hid=h?'1':'';p.ui.row.style.display=h?'none':'';if(p.poly){if(h)contours.removeLayer(p.poly);else if(!contours.hasLayer(p.poly))contours.addLayer(p.poly)}});
- document.querySelectorAll('details.dep').forEach(d=>{const rs=[...d.querySelectorAll('.plan')],n=rs.filter(r=>!r.dataset.hid).length;d.style.display=n?'':'none';const c=d.querySelector('summary span:last-child');if(c)c.textContent=n});
+ document.querySelectorAll('details.dep').forEach(d=>{const rs=[...d.querySelectorAll('.plan')],n=rs.filter(r=>!r.dataset.hid).length;d.style.display=n?'':'none';const c=d.querySelector(':scope>summary span:last-child');if(c)c.textContent=n});try{comMaj()}catch(e){};try{iciMaj()}catch(e){}
  const box=document.getElementById('supBox'),hs=P.filter(p=>pmMasque(p.id)).sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));box.style.display=hs.length?'':'none';
  box.firstChild.textContent='🗑 Plans supprimés ('+hs.length+')';const l=box.lastChild;l.innerHTML='';
  hs.forEach(p=>{const d=document.createElement('div');d.className='pl';d.innerHTML='<span></span><button>Restaurer</button>';d.firstChild.textContent=p.nom;d.lastChild.onclick=()=>pmSet(p.id,0);l.appendChild(d)});
@@ -1790,7 +1820,7 @@ function hlVueHL(){const off=!navigator.onLine,S=hlSecteurs();document.body.clas
  if(!off){ // remise à l'état normal
   fondsUI.forEach(r=>vis(r,true));document.querySelectorAll('#fonds .hist-options,#fonds .hist-src,.anc-maitre').forEach(e=>vis(e,true));
   document.querySelectorAll('.cou').forEach(e=>vis(e,true));vis(document.getElementById('rub-recherche'),true);
-  if(P.length&&P[0].ui)P.forEach(p=>{p.ui.row.dataset.hlh='';vis(p.ui.row,!p.ui.row.dataset.hid)});document.querySelectorAll('details.dep').forEach(d=>{const n=[...d.querySelectorAll('.plan')].filter(r=>r.style.display!=='none').length;vis(d,n)});return}
+  if(P.length&&P[0].ui)P.forEach(p=>{p.ui.row.dataset.hlh='';vis(p.ui.row,!p.ui.row.dataset.hid)});document.querySelectorAll('details.dep').forEach(d=>{const n=[...d.querySelectorAll('.plan')].filter(r=>r.style.display!=='none').length;vis(d,n)});try{comMaj()}catch(e){};return}
  const F=new Set(S.flatMap(s=>s.fonds)),PL=new Set(S.flatMap(s=>s.plans));
  // masque noir hors des secteurs
  const monde=[[-89,-179.9],[-89,179.9],[89,179.9],[89,-179.9]],trous=S.map(s=>[[s.bbox[1],s.bbox[0]],[s.bbox[3],s.bbox[0]],[s.bbox[3],s.bbox[2]],[s.bbox[1],s.bbox[2]]]);
@@ -1807,7 +1837,7 @@ function hlVueHL(){const off=!navigator.onLine,S=hlSecteurs();document.body.clas
  vis(document.getElementById('rub-recherche'),false);
  // plans : seulement ceux téléchargés
  if(P.length&&P[0].ui){P.forEach(p=>{const ok=PL.has(p.id);vis(p.ui.row,ok&&!p.ui.row.dataset.hid);if(!ok&&p.layer)decharge(p);if(p.poly){if(ok){if(!contours.hasLayer(p.poly)&&!pmMasque(p.id))contours.addLayer(p.poly)}else contours.removeLayer(p.poly)}});
-  document.querySelectorAll('details.dep').forEach(d=>{const n=[...d.querySelectorAll('.plan')].filter(r=>r.style.display!=='none').length;vis(d,n);const c=d.querySelector('summary span:last-child');if(c)c.textContent=n});}
+  document.querySelectorAll('details.dep').forEach(d=>{const n=[...d.querySelectorAll('.plan')].filter(r=>r.style.display!=='none').length;vis(d,n);const c=d.querySelector(':scope>summary span:last-child');if(c)c.textContent=n});try{comMaj()}catch(e){};try{iciMaj()}catch(e){}}
  info.textContent=S.length?'🔴 Hors ligne : seuls tes secteurs téléchargés sont affichés.':'🔴 Hors ligne : aucun secteur téléchargé.'}
 addEventListener('offline',hlVueHL);
 addEventListener('online',()=>{hlVueHL();if(P.length&&P[0].ui)P.forEach(p=>{if(p.poly&&!contours.hasLayer(p.poly)&&!pmMasque(p.id))contours.addLayer(p.poly)});info.textContent='';hlNet();if(NTOK){anSync().catch(()=>{});trSync().catch(()=>{})}});addEventListener('offline',hlNet);hlNet();
