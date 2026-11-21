@@ -212,6 +212,16 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .anc-maitre .fond-item .fond-titre{align-items:flex-start}.anc-maitre .fond-item .fond-slider{accent-color:#1a6fd6;height:10px;width:calc(100% - 26px);margin-left:24px}
 
 .fond-hist>.fond-item:not(.actif)>.fond-slider{display:none!important}
+
+/* --- boutons harmonisés (même look que le reste du menu) --- */
+#p #tout0,#p .depbar button,#p #bHL,#p #bEX,#p #bMenuEd,#p #bLien,#p #bLock,#p #favEd{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:7px 12px;font:500 12.5px system-ui,sans-serif;color:#222;cursor:pointer;transition:background .15s}
+#p #tout0:hover,#p .depbar button:hover,#p #bHL:hover,#p #bEX:hover,#p #bMenuEd:hover,#p #bLien:hover,#p #bLock:hover,#p #favEd:hover{background:rgba(255,255,255,.95)}
+#p #tout0{margin-top:6px;color:#b3261e}
+#p #favEd.on{background:#1a6fd6;color:#fff;border-color:#1a6fd6}
+#p #netRow{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:10px}
+#p #netRow label{flex:1;display:flex;align-items:center;gap:6px}
+#p #netF{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.75) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center;border:1px solid rgba(255,255,255,.95);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:5px 26px 5px 10px;font:12.5px system-ui,sans-serif;margin:0!important;cursor:pointer}
+#p #netF:disabled{opacity:.45;cursor:default}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -288,7 +298,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
   <div class="sec"><h4>⚙️ Compte et réglages</h4>
    <div id="cpt" style="font-size:12px"></div>
-   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><div class="cou"><label><input id="net" type="checkbox"> Netteté des plans</label> <select id="netF" title="Force" style="font-size:12px;margin-left:6px"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
+   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><div class="cou" id="netRow"><label><input id="net" type="checkbox"> Netteté des plans</label><select id="netF" title="Force de la netteté"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
    <div class="outils" style="margin-top:6px"><button id="bLien" title="Copier un lien vers la vue actuelle">🔗 Lien de la vue</button><button id="bLock" title="Oublier le code sur cet appareil">🔒 Verrouiller</button></div>
    <div id="info"></div></div>
  </div>
