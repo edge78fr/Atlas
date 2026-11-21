@@ -222,6 +222,24 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p #netRow label{flex:1;display:flex;align-items:center;gap:6px}
 #p #netF{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.75) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center;border:1px solid rgba(255,255,255,.95);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:5px 26px 5px 10px;font:12.5px system-ui,sans-serif;margin:0!important;cursor:pointer}
 #p #netF:disabled{opacity:.45;cursor:default}
+
+/* --- caler un plan --- */
+.impTxt{font-size:12.5px;color:#444;line-height:1.4;margin:4px 2px 8px}
+#p .impBtn{display:block;text-align:center;width:100%;box-sizing:border-box;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:9px 12px;font:600 13px system-ui,sans-serif;color:#222;cursor:pointer;margin:6px 0}
+#p .impBtn.bleu{background:#1a6fd6;color:#fff;border-color:#1a6fd6}#p .impBtn:disabled{opacity:.45;cursor:default}
+#impPts{margin:4px 0}.impP{display:flex;align-items:center;gap:8px;padding:4px;border-top:1px solid rgba(0,0,0,.05);font-size:12.5px}.impP .ptM{width:20px;height:20px;line-height:16px;font-size:11px}
+#p .impP button{border:0;background:transparent;box-shadow:none;color:#999;padding:2px 6px}
+.impL{display:flex;align-items:center;gap:8px;margin:6px 2px;font-size:12.5px}.impL input[type=range]{flex:1;accent-color:#1a6fd6}.impL label{flex:1}
+#impNom,#impAn{width:100%;box-sizing:border-box;margin:4px 0;padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.85);font-size:14px}
+#p #impAnn{background:transparent;border:0;box-shadow:none;color:#b3261e;font-size:12.5px;margin-top:4px}
+.impCarte{background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px;font-size:12.5px;margin-top:6px}
+.impJauge{height:6px;border-radius:3px;background:rgba(0,0,0,.1);margin:6px 0 2px;overflow:hidden}.impJauge i{display:block;height:100%;background:#1a6fd6;transition:width .3s}
+#impProg{font-size:12.5px;margin:6px 2px}
+#impBar{position:fixed;z-index:1500;left:0;right:0;margin:0 auto;top:10px;width:min(420px,calc(100vw - 24px));box-sizing:border-box;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.25);padding:10px 12px;font:13px system-ui,sans-serif}
+#impBarT span{color:#666;font-size:12px}.impBarB{display:flex;gap:6px;align-items:center;margin-top:8px}
+#impBar button{border:1px solid rgba(0,0,0,.1);background:#fff;border-radius:10px;padding:8px 12px;font-size:15px;cursor:pointer}#impBar button.ok{margin-left:auto;background:#1a6fd6;color:#fff;border-color:#1a6fd6;font-size:13.5px;font-weight:600}
+#impBarN{font-size:12px;color:#666}
+@media (max-width:640px){#impBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom))}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -242,6 +260,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 <div class="r adjPtsR"><button id="adjPts" style="flex:1">📍 Caler par points</button></div>
 <div id="ptsBox" style="display:none"><div id="ptsTxt" style="font-size:12px;margin:6px 0;line-height:1.35"></div><div class="g"><button id="ptsUndo">↶ Retirer</button><button id="ptsVoir">👁 Plan</button><button class="ok" id="ptsOk" disabled>✔ Appliquer</button><button id="ptsNo">✕</button></div></div>
 <div class="g adjG"><button class="ok" id="adjOk">✔ Enregistrer</button><button id="adjNo">Annuler</button><button id="adjDef">Calage d'origine</button><button id="adjCp">📋 Copier pour Claude</button><button id="adjLk">🔒 Enregistrer + verrouiller</button></div><div id="adjMsg" style="font-size:11px;color:#1a7f37;margin-top:5px"></div></div><div id="fiche"><div id="fh"><b id="ft">Fiche BRGM</b><a id="fo" target="_blank" rel="noopener">↗ Onglet</a><button id="fx">✕</button></div><div id="fi"></div></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
+<div id="impBar" style="display:none"><div id="impBarT"></div><div class="impBarB"><button id="impBarU" title="Annuler le dernier point">↩</button><button id="impBarV" title="Montrer / estomper le plan">👁</button><button id="impBarC" title="Cadastre">🏘️</button><span id="impBarN"></span><button id="impBarM" class="ok">✔ Terminé</button></div></div>
 <div id="p">
  <div id="tete"><b>Atlas</b> <span id="netInd" style="font-size:11px"></span><button id="pli" title="Replier / déplier le menu">☰</button></div>
  <div id="corps">
@@ -289,6 +308,22 @@ details.dep>summary{padding:9px 8px;font-size:15px}
   <div class="sec"><h4>📐 Plans <span id="nbp" style="text-transform:none;color:#999"></span></h4>
    <div id="ordre"></div><div id="plOng"><button data-o="ici" class="on">📍 Ici <span id="nIci"></span></button><button data-o="tous">📂 Tous les plans</button></div><input id="filtre" placeholder="🔍 Chercher un plan, une commune…"><div id="plIci"></div><div id="plans">Chargement…</div><details id="supBox" style="display:none"><summary></summary><div></div></details>
    <button id="tout0" title="Décharger tous les plans">Tout décharger</button></div>
+  <div class="sec"><h4>📍 Caler un plan</h4>
+   <div id="impVide"><div class="impTxt">Ajoute ton propre plan (photo ou image depuis ton téléphone). Tu le cales point par point, puis il est envoyé dans l’Atlas, <b>pour tout le monde</b>, en pleine qualité.</div>
+    <label class="impBtn">📷 Choisir une image<input type="file" id="impF" accept="image/*" hidden></label><div id="impBr"></div></div>
+   <div id="impTravail" style="display:none">
+    <div id="impT" class="impTxt" style="font-weight:600"></div>
+    <button id="impGo" class="impBtn">📍 Placer les points sur la carte</button>
+    <div id="impEtat" class="impTxt"></div>
+    <div id="impPts"></div>
+    <label id="impDefL" style="display:none"><input type="checkbox" id="impDef"> Suivre les déformations du plan (papier plié, vieux plan)</label>
+    <div class="impL"><span>Transparence</span><input type="range" id="impOp" min="0.1" max="1" step="0.05" value="0.85"></div>
+    <div class="impL"><label><input type="checkbox" id="impCad"> Cadastre IGN</label><button id="impVoirT">🔍 Voir le plan</button></div>
+    <input id="impNom" placeholder="Nom du plan (ex. : Carrière rue Pasteur)" maxlength="80"><input id="impAn" placeholder="Année (facultatif)" maxlength="20">
+    <button id="impEnv" class="impBtn bleu" disabled>📤 Envoyer à l’Atlas</button>
+    <div id="impProg"></div>
+    <button id="impAnn">✖ Abandonner</button>
+   </div><div id="impMsg" class="impTxt"></div></div>
   <div class="sec"><h4>✏️ Terrain</h4>
    <details class="tgH" id="tgOutils"><summary><span>🧰 Outils</span></summary><div class="tgH-b outils"><button id="bPdr" title="Pas + boussole, sans GPS">🧭 Navigation à l’estime</button><button id="bMes" title="Clique pour poser des points, double-clic ou Échap pour finir">📏 Mesurer</button><button id="bSurf" title="Pose les coins de la zone : la surface se calcule en direct">📐 Surface</button><button id="bAlt" title="Touche la carte : altitude du sol, et du toit ou de l’arbre s’il y en a un (LiDAR HD IGN)">⛰️ Altitude</button></div></details>
    <details class="tgH" id="tgPlans"><summary><span>🗂️ Mes plans de terrain</span><button id="grpNew" class="tgNew">➕ Nouveau plan</button></summary><div id="grpList"></div></details>
@@ -335,6 +370,7 @@ function initialiserMenusRepliables(){
   ['fonds',false],
   ['couches',false],
   ['plans',false],
+  ['caler',false],
   ['terrain',false],
   ['horsligne',false],
   ['reglages',false]
@@ -870,10 +906,10 @@ const copier=t=>{try{navigator.clipboard.writeText(t);return true}catch(e){retur
 
 // ---------- chiffrement : rien n'est lisible sans le code ----------
 const te=new TextEncoder(),b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),b64e=u=>btoa(String.fromCharCode(...new Uint8Array(u)));
-let EK=null,NK=null,NoteK=null;
+let EK=null,NK=null,NoteK=null,EKw=null;
 let DKraw=null;async function cles(dk){DKraw=new Uint8Array(dk);const base=await crypto.subtle.importKey('raw',dk,'HKDF',false,['deriveKey']);
  const prm=i=>({name:'HKDF',hash:'SHA-256',salt:te.encode('atlas-v1'),info:te.encode(i)});
- EK=await crypto.subtle.deriveKey(prm('enc'),base,{name:'AES-GCM',length:256},false,['decrypt']);
+ EK=await crypto.subtle.deriveKey(prm('enc'),base,{name:'AES-GCM',length:256},false,['decrypt']);EKw=await crypto.subtle.deriveKey(prm('enc'),base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
  NK=await crypto.subtle.deriveKey(prm('name'),base,{name:'HMAC',hash:'SHA-256',length:256},false,['sign']);
  NoteK=await crypto.subtle.deriveKey(prm('notes'),base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);PRET_R()}
 async function nomF(s){await PRET;const h=new Uint8Array(await crypto.subtle.sign('HMAC',NK,te.encode(s)));return [...h.slice(0,16)].map(b=>b.toString(16).padStart(2,'0')).join('')}
@@ -1026,7 +1062,7 @@ setInterval(()=>{const r=document.getElementById('rub-favoris');if(r&&r.open)fav
 favAff();
 {const ip0=initPlans;initPlans=function(...x){const r=ip0.apply(this,x);try{favAff();if(favMode)favStars()}catch(e){}return r}}
 const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
-async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(aquCb.checked)aquOn();initPlans(JSON.parse(new TextDecoder().decode(buf)));fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
+async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(aquCb.checked)aquOn();{const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}initPlans(pj);setTimeout(upDroitsMaj,3000)}fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
 let mode='u',DKtmp=null;const $id=i=>document.getElementById(i);
 function lockMode(m,txt){mode=m;$id('modeU').style.display=m==='u'?'':'none';$id('modeC').style.display=m==='c'?'':'none';$id('modeN').style.display=m==='n'?'':'none';
  $id('bGo').textContent=m==='u'?'Se connecter':m==='c'?'Valider le code':'Envoyer ma demande';$id('basc').textContent=m==='u'?"Pas encore de compte ? Entre le code d'accès":'← Retour à la connexion';
@@ -1077,6 +1113,7 @@ contCb.onchange=()=>{contCb.checked?contours.addTo(map):map.removeLayer(contours
 function sauve(){const o={};P.forEach(p=>{if(p.layer||p.op!==1)o[p.id]={on:!!p.layer,op:p.op}});store.set('plans',o)}
 function charge(p,aller){
  if(!p.layer&&p.adj){p.layer=new AdjL(adjGet(p)||adjDef(p),p.op).addTo(map);const Ly=p.layer;lire(p.adj.img,p.o).then(b=>b&&createImageBitmap(new Blob([b],{type:'image/webp'}))).then(im=>{if(im){Ly.img=im;Ly.redraw()}});p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
+ if(!p.layer&&p.u){p.layer=new PTile({p,minZoom:p.min||12,maxZoom:22,maxNativeZoom:p.nat,minNativeZoom:p.minNat,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
  if(!p.layer&&!p.adj){const sv=adjGet(p);if(sv&&!estNeutre(p,sv)){p.layer=new TAdjL(p,sv,p.op).addTo(map);p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}}
  if(!p.layer){p.layer=new CTile({d:p.d,o:p.o,minZoom:p.min||13,maxZoom:22,maxNativeZoom:p.nat||19,minNativeZoom:p.minNat||15,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:p.op,keepBuffer:1,updateWhenZooming:false}).addTo(map);
   p.ui.cb.checked=true;p.ui.row.classList.add('actif');p.poly&&p.poly.setStyle({fillOpacity:0,weight:1,dashArray:'4 4'})}
@@ -1153,7 +1190,7 @@ function initPlans(j){
    rg.oninput=()=>{p.op=+rg.value;p.layer&&p.layer.setOpacity(p.op);sauve()};
    comDe(p).appendChild(r);if(p.com)nm.textContent=courtNom(p);r.dataset.nom=sansAcc(p.nom+' '+dep+' '+(p.com||''));
    {const dt=document.createElement('button');dt.className='dots';dt.title='Options';dt.textContent='⋯';r.insertBefore(dt,rg);
-    dt.onclick=e=>{e.stopPropagation();popMenu(dt,[['🔍 Aller sur ce plan',()=>bt.click()],[aj.textContent==='🔒'?'🔒 Déverrouiller / ajuster':'🎯 Ajuster la position',()=>aj.click()],['✏️ Renommer',()=>rn.click()],['🗑 Supprimer de l\'atlas…',()=>sp.click(),1]])}}
+    dt.onclick=e=>{e.stopPropagation();popMenu(dt,[['🔍 Aller sur ce plan',()=>bt.click()],[aj.textContent==='🔒'?'🔒 Déverrouiller / ajuster':'🎯 Ajuster la position',()=>aj.click()],['✏️ Renommer',()=>rn.click()],...(p.u?[['📍 Modifier le calage',()=>{impModifier(p);}]]:[]),upPeutSuppr(p)?['🗑 Supprimer pour tout le monde…',()=>upSupprimer(p),1]:['🗑 Supprimer de l\'atlas…',()=>sp.click(),1]])}}
    if(p.contour){p.poly=L.polygon(p.multi?p.contour.map(r=>[r.map(c=>[c[1],c[0]])]):p.contour.map(c=>[c[1],c[0]]),{pane:'cont',color:'#d60',weight:2,fillColor:'#f90',fillOpacity:.15}).bindTooltip(p.nom,{sticky:true,className:'contour-lbl'});
     p.poly.on('click',e=>{L.DomEvent.stop(e);p.layer?decharge(p):charge(p,false)});contours.addLayer(p.poly)}
    if(s.on&&!pmMasque(p.id))charge(p,false)});
@@ -1198,7 +1235,7 @@ async function chercher(){const t=q.value.trim();if(!t)return;const cp=coordPt(t
 document.getElementById('go').onclick=chercher;q.onkeydown=e=>{if(e.key==='Enter')chercher()};
 // ---------- coordonnées ----------
 let mesure=null;
-map.on('click',e=>{if(mesure||anMode||adjEd||e.anFait||pvaClic(e))return;const t=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+map.on('click',e=>{if(mesure||anMode||adjEd||e.anFait||(IMP.on&&IMP.pick)||pvaClic(e))return;const t=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
  const d=L.DomUtil.create('div','cp');d.innerHTML=`<b>${t}</b><br><button>Copier</button>`;
  d.querySelector('button').onclick=ev=>{ev.target.textContent=copier(t)?'Copié ✔':'Sélectionne le texte'};
  L.popup().setLatLng(e.latlng).setContent(d).openOn(map)});
@@ -1364,7 +1401,7 @@ async function ouvreFiche(id,attrs){ft.textContent=id;fo.href=ficheUrl(id);
  if(!docs.length){box.innerHTML=`Aucun document numérisé trouvé.<a class="big" href="${ficheUrl(id)}" target="_blank" rel="noopener">📄 Ouvrir la fiche complète</a>`;return}
  box.innerHTML=`<div class="nb">${docs.length} document(s) numérisé(s)</div>`+docs.map(d=>`<a class="doc" href="${viaR(d.u)}" target="_blank" rel="noopener">${d.img?`<img loading="lazy" src="${viaR(d.img)}" alt="">`:'<span class="noimg">📄</span>'}<span class="dt"><b>${esc(d.type||d.nom)}</b><small>${esc(d.nom)}${d.poids?' · '+esc(d.poids):''}</small></span></a>`).join('');}
 
-map.on('click',async e=>{if(anMode||e.anFait||e.pvaFait||!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
+map.on('click',async e=>{if(anMode||e.anFait||e.pvaFait||(IMP.on&&IMP.pick)||!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
  const p=map.latLngToContainerPoint(e.latlng),r=12,sw=map.containerPointToLatLng([p.x-r,p.y+r]),ne=map.containerPointToLatLng([p.x+r,p.y-r]);
  const A=L.CRS.EPSG3857.project(sw),Bp=L.CRS.EPSG3857.project(ne);
  const u=BRGM+`?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=${bssLay}&QUERY_LAYERS=${bssLay}&CRS=EPSG:3857&BBOX=${A.x},${A.y},${Bp.x},${Bp.y}&WIDTH=25&HEIGHT=25&I=12&J=12&INFO_FORMAT=text/plain&FEATURE_COUNT=5`;
@@ -1683,7 +1720,7 @@ function hlInter(a,b){return [Math.max(a[0],b[0]),Math.max(a[1],b[1]),Math.min(a
 function* hlTaches(s){const F=hlFonds();
  for(const f of F.filter(f=>s.fonds.includes(f.id))){let bb=s.bbox;const b=f.ly.options.bounds;if(b){const B=L.latLngBounds(b);bb=hlInter(bb,[B.getWest(),B.getSouth(),B.getEast(),B.getNorth()]);if(bb[0]>=bb[2]||bb[1]>=bb[3])continue}
   const [z0,z1]=hlZ(f.ly,s.zmax);for(let z=z0;z<=z1;z++){const [x0,y0]=hlT(bb[3],bb[0],z),[x1,y1]=hlT(bb[1],bb[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield {k:'u',u:hlUrl(f.ly,x,y,z),ko:f.ko}}}
- for(const id of s.plans){const p=P.find(q=>q.id===id);if(!p)continue;const bb=hlInter(s.bbox,p.bbox);if(bb[0]>=bb[2]||bb[1]>=bb[3])continue;
+ for(const id of s.plans){const p=P.find(q=>q.id===id);if(!p)continue;if(p.u){for(const k of p.pk||[])yield {k:'p',n:`u/${p.id}/v${p.v}/${k}`,o:3,ko:1500};continue}const bb=hlInter(s.bbox,p.bbox);if(bb[0]>=bb[2]||bb[1]>=bb[3])continue;
   for(let z=Math.max(p.minNat||15,12);z<=(p.nat||19);z++){const [x0,y0]=hlT(bb[3],bb[0],z),[x1,y1]=hlT(bb[1],bb[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)yield {k:'p',n:`${p.d}/${z}/${x}/${y}`,o:p.o,ko:14}}}}
 function hlCompte(s){let n=0,o=0;for(const t of hlTaches(s)){n++;o+=t.ko*1000;if(n>400000)break}return {n,o}}
 // moteur de téléchargement (6 en parallèle, reprend où il s'était arrêté)
@@ -2087,4 +2124,279 @@ rid.addEventListener('mousedown',e=>{drag=true;e.preventDefault()});rid.addEvent
 document.addEventListener('mousemove',dep);document.addEventListener('touchmove',dep,{passive:false});
 document.addEventListener('mouseup',()=>drag=false);document.addEventListener('touchend',()=>drag=false);
 document.getElementById('bLien').onclick=()=>{info.textContent=copier(location.href)?'Lien copié ✔':location.href};
+// ---------- 📍 Caler un plan : importer son image, la caler point par point, l'envoyer à tout le monde ----------
+// Stockage : dépôt data1 (o=3), tuiles regroupées en « paquets » de 8×8, tout chiffré avec la clé de l'Atlas.
+// Index partagé : u/plans.json (chiffré). Droits : tout le monde modifie, seuls l'auteur et l'admin suppriment.
+const UPR='edge78fr/data1',UPA='https://api.github.com/repos/'+UPR,UPRAW='https://raw.githubusercontent.com/'+UPR+'/main/';
+const dodo=ms=>new Promise(r=>setTimeout(r,ms));
+const UP={moi:null,admin:false,plans:[]};
+async function upChiffre(u){const iv=crypto.getRandomValues(new Uint8Array(12));const c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},EKw,u));const o=new Uint8Array(12+c.length);o.set(iv);o.set(c,12);return o}
+async function upDech(b){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},EK,b.slice(12)))}
+async function upChemin(s){const n=await nomF(s);return `t/${n.slice(0,2)}/${n}`}
+async function upLire(s){const pth=await upChemin(s);let r=null;try{r=await fetch(ORIG[3]+pth)}catch(e){}
+ if(!r||!r.ok){try{r=await fetch(UPRAW+pth+'?t='+Math.floor(Date.now()/60000))}catch(e){return null}}if(!r.ok)return null;return upDech(new Uint8Array(await r.arrayBuffer()))}
+// index des plans ajoutés par les utilisateurs (le plus frais possible)
+async function upIndexLire(){const pth=await upChemin('u/plans.json');
+ const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),5000);
+ try{let r;if(NTOK){r=await fetch(UPA+'/contents/'+pth+'?ref=main&t='+Date.now(),{headers:{Accept:'application/vnd.github.raw',Authorization:'Bearer '+NTOK},cache:'no-store',signal:ctl.signal})}
+  if(!r||!r.ok)r=await fetch(UPRAW+pth+'?t='+Date.now(),{cache:'no-store',signal:ctl.signal});
+  if(!r.ok)return {plans:[]};return JSON.parse(new TextDecoder().decode(await upDech(new Uint8Array(await r.arrayBuffer()))))}
+ catch(e){return {plans:[]}}finally{clearTimeout(to)}}
+async function upFusion(j){if(!navigator.onLine)return;let idx=await upIndexLire();
+ let loc=store.get('up_local',[]);loc=loc.filter(l=>Date.now()-l.d<30*60e3);store.set('up_local',loc);   // plan tout juste envoyé : visible tout de suite chez soi
+ const byId=new Map(idx.plans.map(p=>[p.id,p]));loc.forEach(l=>{if(l.suppr)byId.delete(l.id);else{const p=byId.get(l.id);if(!p||(p.v||0)<l.p.v)byId.set(l.id,l.p)}});
+ UP.plans=[...byId.values()];const ids=new Set(j.plans.map(p=>p.id));UP.plans.forEach(p=>{if(!ids.has(p.id))j.plans.push(Object.assign({},p))})}
+async function upDroitsMaj(){try{if(!USER){UP.moi=null;UP.admin=false;return}UP.moi=await uHash(USER);const F=await uLire();UP.admin=!!(F.u[UP.moi]&&F.u[UP.moi].a)}catch(e){}}
+const upPeutSuppr=p=>!!(p&&p.u&&(UP.admin||(UP.moi&&p.a===UP.moi)));
+
+// ---- affichage : tuiles lues dans les paquets ----
+const PK=new Map();
+function pkParse(b){const n=b[0]|b[1]<<8|b[2]<<16|b[3]<<24;const h=JSON.parse(new TextDecoder().decode(b.subarray(4,4+n)));const m=new Map();h.t.forEach(t=>m.set(t[0]+','+t[1],t));return {m,d:b.subarray(4+n)}}
+function pkGet(p,z,bx,by){const k=p.id+'/'+p.v+'/'+z+'/'+bx+'/'+by;if(!PK.has(k)){if(PK.size>48)PK.delete(PK.keys().next().value);
+ PK.set(k,upLire(`u/${p.id}/v${p.v}/${z}/${bx}/${by}`).then(b=>b?pkParse(b):null).catch(()=>{PK.delete(k);return null}))}return PK.get(k)}
+const MIME={w:'image/webp',j:'image/jpeg',p:'image/png'};
+const PTile=L.GridLayer.extend({createTile(c,done){const img=document.createElement('img');img.alt='';img.style.visibility='hidden';const p=this.options.p;
+ const key=c.z+'/'+(c.x>>3)+'/'+(c.y>>3);if(!p.pkS)p.pkS=new Set(p.pk);if(!p.pkS.has(key)){setTimeout(()=>done(null,img),0);return img}
+ pkGet(p,c.z,c.x>>3,c.y>>3).then(pk=>{const t=pk&&pk.m.get((c.x&7)+','+(c.y&7));if(!t){done(null,img);return}
+  const u=URL.createObjectURL(new Blob([pk.d.subarray(t[2],t[2]+t[3])],{type:MIME[t[4]]}));img.onload=()=>{URL.revokeObjectURL(u);img.style.visibility='';done(null,img)};img.onerror=()=>done(null,img);img.src=u}).catch(()=>done(null,img));return img}});
+
+// ---- géométrie : image (pixels de l'original) -> carte (pixels « zoom 20 ») ----
+function resoudre(A,b){const n=b.length;const M=A.map((r,i)=>[...r,b[i]]);
+ for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;[M[c],M[p]]=[M[p],M[c]];const v=M[c][c];if(Math.abs(v)<1e-12)return null;
+  for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/v;if(!f)continue;for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k]}}return M.map((r,i)=>r[n]/r[i])}
+function moindres(rows,rhs){const m=rows[0].length;const A=Array.from({length:m},()=>Array(m).fill(0)),b=Array(m).fill(0);
+ rows.forEach((r,i)=>{for(let a=0;a<m;a++){b[a]+=r[a]*rhs[i];for(let c=0;c<m;c++)A[a][c]+=r[a]*r[c]}});return resoudre(A,b)}
+function normal(P){const n=P.length,mx=P.reduce((s,p)=>s+p[0],0)/n,my=P.reduce((s,p)=>s+p[1],0)/n;const d=P.reduce((s,p)=>s+Math.hypot(p[0]-mx,p[1]-my),0)/n||1;const k=Math.SQRT2/d;
+ return {T:[[k,0,-k*mx],[0,k,-k*my],[0,0,1]],Ti:[[1/k,0,mx],[0,1/k,my],[0,0,1]]}}
+const mul3=(A,B)=>A.map((r,i)=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
+const app3=(H,p)=>{const w=H[2][0]*p[0]+H[2][1]*p[1]+H[2][2];return [(H[0][0]*p[0]+H[0][1]*p[1]+H[0][2])/w,(H[1][0]*p[0]+H[1][1]*p[1]+H[1][2])/w]};
+function inv3(m){const [a,b,c]=m[0],[d,e,f]=m[1],[g,h,i]=m[2];const A=e*i-f*h,B=-(d*i-f*g),C=d*h-e*g;const det=a*A+b*B+c*C;
+ return [[A/det,-(b*i-c*h)/det,(b*f-c*e)/det],[B/det,(a*i-c*g)/det,-(a*f-c*d)/det],[C/det,-(a*h-b*g)/det,(a*e-b*d)/det]]}
+// matrice 3×3 : 2 points = similitude, 3 = affine, 4 et plus = perspective (photo de travers)
+function fitH(S,D){const n=S.length,ns=normal(S),nd=normal(D);const s=S.map(p=>app3(ns.T,p)),d=D.map(p=>app3(nd.T,p));let H;
+ if(n===2){const [a,b]=s,[c,e]=d;const zx=a[0]-b[0],zy=a[1]-b[1],wx=c[0]-e[0],wy=c[1]-e[1],q=zx*zx+zy*zy;const re=(wx*zx+wy*zy)/q,im=(wy*zx-wx*zy)/q;
+  H=[[re,-im,c[0]-(re*a[0]-im*a[1])],[im,re,c[1]-(im*a[0]+re*a[1])],[0,0,1]]}
+ else if(n===3){const r=[],x=[],y=[];s.forEach((p,i)=>{r.push([p[0],p[1],1]);x.push(d[i][0]);y.push(d[i][1])});const ax=moindres(r,x),ay=moindres(r,y);if(!ax||!ay)return null;H=[ax,ay,[0,0,1]]}
+ else{const r=[],v=[];s.forEach((p,i)=>{const [X,Y]=d[i];r.push([p[0],p[1],1,0,0,0,-X*p[0],-X*p[1]]);v.push(X);r.push([0,0,0,p[0],p[1],1,-Y*p[0],-Y*p[1]]);v.push(Y)});
+  const h=moindres(r,v);if(!h)return null;H=[[h[0],h[1],h[2]],[h[3],h[4],h[5]],[h[6],h[7],1]]}
+ return mul3(nd.Ti,mul3(H,ns.T))}
+// correction fine (plaque mince) pour suivre un plan déformé : à partir de 6 points
+function fitTPS(S,R){const n=S.length,k=1e-3,U=r=>r>0?r*r*Math.log(r):0;const s=S.map(p=>[p[0]*k,p[1]*k]);
+ const A=Array.from({length:n+3},()=>Array(n+3).fill(0));for(let i=0;i<n;i++){for(let j=0;j<n;j++)A[i][j]=U(Math.hypot(s[i][0]-s[j][0],s[i][1]-s[j][1]));A[i][i]+=1e-6;A[i][n]=A[n][i]=1;A[i][n+1]=A[n+1][i]=s[i][0];A[i][n+2]=A[n+2][i]=s[i][1]}
+ const wx=resoudre(A,[...R.map(r=>r[0]),0,0,0]),wy=resoudre(A,[...R.map(r=>r[1]),0,0,0]);if(!wx||!wy)return null;
+ return p=>{const x=p[0]*k,y=p[1]*k;let dx=wx[n]+wx[n+1]*x+wx[n+2]*y,dy=wy[n]+wy[n+1]*x+wy[n+2]*y;for(let i=0;i<n;i++){const u=U(Math.hypot(x-s[i][0],y-s[i][1]));dx+=wx[i]*u;dy+=wy[i]*u}return [dx,dy]}}
+function modele(pts,def){const ok=pts.filter(p=>p.m);if(ok.length<2)return null;
+ const S=ok.map(p=>p.i),D=ok.map(p=>{const q=map.project(p.m,20);return [q.x,q.y]});const H=fitH(S,D);if(!H||!H.flat().every(isFinite))return null;const Hi=inv3(H);
+ const res=S.map((s,i)=>{const q=app3(H,s);return Math.hypot(q[0]-D[i][0],q[1]-D[i][1])});
+ let F=p=>app3(H,p),G=p=>app3(Hi,p),tps=false;
+ if(def&&ok.length>=6){const tf=fitTPS(S,S.map((s,i)=>{const q=app3(H,s);return [D[i][0]-q[0],D[i][1]-q[1]]})),tg=fitTPS(D,D.map((d,i)=>{const q=app3(Hi,d);return [S[i][0]-q[0],S[i][1]-q[1]]}));
+  if(tf&&tg){F=p=>{const q=app3(H,p),c=tf(p);return [q[0]+c[0],q[1]+c[1]]};G=p=>{const q=app3(Hi,p),c=tg(p);return [q[0]+c[0],q[1]+c[1]]};tps=true}}
+ const lat=map.unproject(L.point(D[0][0],D[0][1]),20).lat,mpp=40075016.686*Math.cos(lat*Math.PI/180)/(256*2**20);
+ return {H,F,G,tps,n:ok.length,mpp,err:res.map(r=>r*mpp)}}
+
+// ---- état du mode « caler un plan » ----
+const IMP={on:false,pick:false,att:'plan',file:null,W:0,H:0,prev:null,k:1,pts:[],M:null,M0:null,op:0.85,voir:true,edit:null,cadAvant:null,mk:L.layerGroup()};
+map.createPane('imp').style.zIndex=455;
+const ImpL=L.Layer.extend({onAdd(m){this._m=m;const c=this._c=L.DomUtil.create('canvas','leaflet-zoom-hide');c.style.position='absolute';c.style.pointerEvents='none';m.getPane('imp').appendChild(c);m.on('moveend zoomend viewreset resize',this.redraw,this);this.redraw()},
+ onRemove(m){this._c.remove();m.off('moveend zoomend viewreset resize',this.redraw,this)},
+ redraw(){const m=this._m;if(!m||!IMP.prev)return;const c=this._c,sz=m.getSize(),pad=0;c.width=sz.x;c.height=sz.y;L.DomUtil.setPosition(c,m.containerPointToLayerPoint([0,0]));
+  const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);const F=impF();if(!F)return;ctx.globalAlpha=IMP.att==='carte'?Math.min(IMP.op,0.3):(IMP.voir?IMP.op:0.15);
+  const z=m.getZoom(),sc=2**(z-20),o=m.project(m.containerPointToLatLng([0,0]),z);const T=p=>{const q=F(p);return [q[0]*sc-o.x,q[1]*sc-o.y]};
+  const N=IMP.M&&IMP.M.tps?16:(IMP.M&&IMP.M.n>=4?8:1),W=IMP.W,H=IMP.H,k=IMP.k;
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){const x0=W*i/N,x1=W*(i+1)/N,y0=H*j/N,y1=H*(j+1)/N;
+   tri(ctx,IMP.prev,[[x0,y0],[x1,y0],[x0,y1]].map(p=>[p[0]*k,p[1]*k]),[T([x0,y0]),T([x1,y0]),T([x0,y1])]);
+   tri(ctx,IMP.prev,[[x1,y0],[x1,y1],[x0,y1]].map(p=>[p[0]*k,p[1]*k]),[T([x1,y0]),T([x1,y1]),T([x0,y1])])}}});
+function tri(ctx,img,s,d){const [[u0,v0],[u1,v1],[u2,v2]]=s,[[x0,y0],[x1,y1],[x2,y2]]=d;const den=(u1-u0)*(v2-v0)-(u2-u0)*(v1-v0);if(!den)return;
+ const a=((x1-x0)*(v2-v0)-(x2-x0)*(v1-v0))/den,b=((y1-y0)*(v2-v0)-(y2-y0)*(v1-v0))/den,c=((x2-x0)*(u1-u0)-(x1-x0)*(u2-u0))/den,e=((y2-y0)*(u1-u0)-(y1-y0)*(u2-u0))/den;
+ const cx=(x0+x1+x2)/3,cy=(y0+y1+y2)/3,g=p=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [p[0]+dx/l*0.7,p[1]+dy/l*0.7]};
+ ctx.save();ctx.beginPath();const q=[g(d[0]),g(d[1]),g(d[2])];ctx.moveTo(q[0][0],q[0][1]);ctx.lineTo(q[1][0],q[1][1]);ctx.lineTo(q[2][0],q[2][1]);ctx.closePath();ctx.clip();
+ ctx.transform(a,b,c,e,x0-a*u0-c*v0,y0-b*u0-e*v0);ctx.drawImage(img,0,0);ctx.restore()}
+const impLy=new ImpL();
+function impF(){return IMP.M?IMP.M.F:IMP.M0?IMP.M0.F:null}
+function impG(){return IMP.M?IMP.M.G:IMP.M0?IMP.M0.G:null}
+// position de départ : l'image posée au milieu de l'écran (ou là où elle était)
+function impDepart(){const m=map,b=m.getPixelBounds(),z=m.getZoom(),f=2**(20-z);const cw=(b.max.x-b.min.x)*f,ch=(b.max.y-b.min.y)*f,cx=(b.min.x+b.max.x)/2*f,cy=(b.min.y+b.max.y)/2*f;
+ const s=Math.min(cw*0.7/IMP.W,ch*0.7/IMP.H);const H=[[s,0,cx-s*IMP.W/2],[0,s,cy-s*IMP.H/2],[0,0,1]],Hi=inv3(H);IMP.M0={F:p=>app3(H,p),G:p=>app3(Hi,p),H}}
+
+// ---- brouillon gardé sur l'appareil (IndexedDB) ----
+function idb(){return new Promise((ok,ko)=>{const r=indexedDB.open('atlas-imp',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)})}
+async function brSet(v){try{const d=await idb();await new Promise((ok,ko)=>{const t=d.transaction('b','readwrite');v===null?t.objectStore('b').delete('x'):t.objectStore('b').put(v,'x');t.oncomplete=ok;t.onerror=()=>ko(t.error)})}catch(e){}}
+async function brGet(){try{const d=await idb();return await new Promise(ok=>{const r=d.transaction('b').objectStore('b').get('x');r.onsuccess=()=>ok(r.result||null);r.onerror=()=>ok(null)})}catch(e){return null}}
+let brT=null;function brSauve(){clearTimeout(brT);brT=setTimeout(()=>{if(!IMP.file)return;brSet({file:IMP.file,pts:IMP.pts.map(p=>({i:p.i,m:p.m?[p.m.lat,p.m.lng]:null})),nom:$id('impNom').value,an:$id('impAn').value,def:$id('impDef').checked,edit:IMP.edit?IMP.edit.id:null,d:Date.now()})},600)}
+
+// ---- interface ----
+const impMsg=t=>{$id('impMsg').innerHTML=t||''};
+async function impOuvrir(file,brouillon){if(!NTOK){impMsg('⚠️ Partage inactif sur cet appareil : impossible d’envoyer un plan. Active le partage (Terrain → 🔑).');}
+ impMsg('Ouverture de l’image…');let bm;try{bm=await createImageBitmap(file)}catch(e){impMsg('⚠️ Image illisible ('+e.message+'). Essaie en JPG ou PNG.');return}
+ IMP.file=file;IMP.W=bm.width;IMP.H=bm.height;const mx=Math.max(IMP.W,IMP.H),lim=mobile()?2600:4096;IMP.k=Math.min(1,lim/mx);
+ IMP.prev=IMP.k<1?await createImageBitmap(bm,{resizeWidth:Math.round(IMP.W*IMP.k),resizeHeight:Math.round(IMP.H*IMP.k),resizeQuality:'high'}):bm;if(IMP.k<1)bm.close();
+ IMP.pts=brouillon?brouillon.pts.map(p=>({i:p.i,m:p.m?L.latLng(p.m[0],p.m[1]):null})):[];
+ if(brouillon){$id('impNom').value=brouillon.nom||'';$id('impAn').value=brouillon.an||'';$id('impDef').checked=!!brouillon.def}
+ impMsg('');impDebut()}
+function impDebut(){IMP.on=true;IMP.cadAvant=cadCb.checked;if(!cadCb.checked)cadCb.click();$id('impCad').checked=cadCb.checked;
+ if(map.hasLayer(contours)){IMP.contAvant=true;map.removeLayer(contours)}
+ impCalc();if(!IMP.M){impDepart()}impLy.addTo(map);IMP.mk.addTo(map);
+ $id('impVide').style.display='none';$id('impTravail').style.display='';$id('impT').textContent=(IMP.edit?'✏️ Modifier le calage : ':'🖼️ ')+(IMP.edit?IMP.edit.nom:(IMP.file.name||'image'))+' · '+IMP.W+'×'+IMP.H+' px';
+ if(IMP.edit&&!$id('impNom').value)$id('impNom').value=IMP.edit.nomO||IMP.edit.nom;if(IMP.edit&&!$id('impAn').value)$id('impAn').value=IMP.edit.an||'';
+ impMaj();if(IMP.M)map.fitBounds(impBornes(),{maxZoom:19})}
+function impFin(){IMP.on=false;IMP.pick=false;impBarre(false);map.removeLayer(impLy);IMP.mk.clearLayers();map.removeLayer(IMP.mk);
+ if(IMP.cadAvant===false&&cadCb.checked)cadCb.click();if(IMP.contAvant){contours.addTo(map);IMP.contAvant=false}
+ IMP.file=null;IMP.prev=null;IMP.pts=[];IMP.M=null;IMP.M0=null;IMP.edit=null;$id('impNom').value='';$id('impAn').value='';$id('impDef').checked=false;
+ $id('impVide').style.display='';$id('impTravail').style.display='none';impBrAff()}
+function impCalc(){IMP.M=modele(IMP.pts,$id('impDef').checked)}
+function impBornes(){const F=impF(),W=IMP.W,H=IMP.H;const c=[[0,0],[W,0],[W,H],[0,H],[W/2,0],[W,H/2],[W/2,H],[0,H/2]].map(p=>{const q=F(p);return map.unproject(L.point(q[0],q[1]),20)});return L.latLngBounds(c)}
+function impMaj(){const ok=IMP.pts.filter(p=>p.m).length,M=IMP.M;
+ let h='';IMP.pts.forEach((p,i)=>{const e=M&&p.m?M.err[IMP.pts.filter(q=>q.m).indexOf(p)]:null;const col=e==null?'#888':e<2?'#1a7f37':e<6?'#b45309':'#c62828';
+  h+=`<div class="impP"><span class="ptM ${p.m?'ca':'pl'}" style="display:inline-block;margin:0;position:static">${i+1}</span><span style="flex:1">${p.m?(e!=null&&ok>=(M&&M.n>=4?5:3)?`<b style="color:${col}">écart ${e<10?e.toFixed(1).replace('.',','):Math.round(e)} m</b>`:'placé'):'<i>reste à toucher sur la carte</i>'}</span><button data-x="${i}" title="Enlever ce point">✕</button></div>`});
+ $id('impPts').innerHTML=h||'<div style="color:#888">Aucun point pour l’instant.</div>';
+ $id('impPts').querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{IMP.pts.splice(+b.dataset.x,1);impCalc();impMaj();impLy.redraw();brSauve()});
+ const moy=M&&M.n>=(M.n>=4?5:3)?Math.sqrt(M.err.reduce((s,e)=>s+e*e,0)/M.n):null;
+ $id('impEtat').innerHTML=(NTOK?'':'⚠️ Partage inactif sur cet appareil : tu peux caler, mais pas envoyer.<br>')+(ok<2?'Il faut au moins <b>4 points</b> (6 ou plus, c’est mieux).':ok<4?ok+' points : ajoute-en encore (au moins 4, pour corriger la perspective).':
+  ok+' points'+(M&&M.tps?' · déformation suivie':'')+(moy!=null?` · écart moyen <b>${moy<10?moy.toFixed(1).replace('.',','):Math.round(moy)} m</b>`:' · ajoute 1 ou 2 points de plus pour vérifier le calage'));
+ $id('impDefL').style.display=ok>=6?'':'none';$id('impEnv').disabled=ok<4||!NTOK;$id('impOp').value=IMP.op;
+ IMP.mk.clearLayers();const F=impF();IMP.pts.forEach((p,i)=>{if(F&&!p.m||F&&IMP.att==='plan'){const q=F(p.i);L.marker(map.unproject(L.point(q[0],q[1]),20),{icon:L.divIcon({className:'',html:'<div class="ptM pl">'+(i+1)+'</div>'}),interactive:false}).addTo(IMP.mk)}
+  if(p.m)L.marker(p.m,{icon:L.divIcon({className:'',html:'<div class="ptM ca">'+(i+1)+'</div>'}),interactive:false}).addTo(IMP.mk)});
+ impBarreTxt()}
+function impBarre(v){IMP.pick=v;const b=$id('impBar');b.style.display=v?'':'none';map.doubleClickZoom[v?'disable':'enable']();if(v){IMP.att=IMP.pts.length&&!IMP.pts[IMP.pts.length-1].m?'carte':'plan';impBarreTxt();impLy.redraw()}}
+function impBarreTxt(){if(!IMP.pick)return;const i=IMP.pts.length+(IMP.att==='carte'?0:1);
+ $id('impBarT').innerHTML=IMP.att==='plan'?`<b>${i}. Touche un repère sur le PLAN</b><br><span>angle de mur, croisement, coin de parcelle…</span>`:`<b>${i}. Touche le même endroit sur la CARTE</b><br><span>le plan est estompé, le cadastre t’aide</span>`;
+ $id('impBarN').textContent=IMP.pts.filter(p=>p.m).length+' pt';}
+map.on('click',e=>{if(!IMP.on||!IMP.pick)return;e.anFait=true;
+ if(IMP.att==='plan'){const G=impG();if(!G)return;const q=map.project(e.latlng,20),im=G([q.x,q.y]);if(im[0]<-IMP.W*0.02||im[1]<-IMP.H*0.02||im[0]>IMP.W*1.02||im[1]>IMP.H*1.02){info.textContent='Touche un endroit SUR le plan.';return}
+  IMP.pts.push({i:[Math.max(0,Math.min(IMP.W,im[0])),Math.max(0,Math.min(IMP.H,im[1]))],m:null});IMP.att='carte'}
+ else{const p=IMP.pts[IMP.pts.length-1];if(!p||p.m)return;p.m=e.latlng;IMP.att='plan';impCalc()}
+ impMaj();impLy.redraw();brSauve()});
+function impUndo(){const p=IMP.pts[IMP.pts.length-1];if(!p)return;if(p.m){p.m=null;IMP.att='carte'}else{IMP.pts.pop();IMP.att='plan'}impCalc();impMaj();impLy.redraw();brSauve()}
+async function impBrAff(){const el=$id('impBr');el.innerHTML='';const b=await brGet();if(!b||IMP.on)return;
+ el.innerHTML=`<div class="impCarte">📝 Plan en cours : <b>${anEsc(b.nom||b.file&&b.file.name||'sans nom')}</b> (${b.pts.length} points)<div class="outils" style="margin-top:6px"><button id="impBrR">▶ Reprendre</button><button id="impBrX">🗑 Jeter</button></div></div>`;
+ $id('impBrR').onclick=async()=>{if(b.edit){const p=P.find(q=>q.id===b.edit);if(p)IMP.edit=p}impOuvrir(b.file,b)};$id('impBrX').onclick=async()=>{if(!confirm('Jeter ce plan en cours ?'))return;await brSet(null);impBrAff()}}
+
+// ---- envoi : découpe en tuiles pleine qualité, paquets chiffrés, un seul enregistrement GitHub ----
+async function gh(path,opt={}){for(let k=0;k<6;k++){let r;try{r=await fetch(UPA+path,{...opt,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+NTOK,...(opt.body?{'Content-Type':'application/json'}:{})},cache:'no-store'})}catch(e){await dodo(3000*(k+1));continue}
+ if(r.status===403||r.status===429){const t=await r.clone().text();if(/rate limit|secondary/i.test(t)){await dodo(30000);continue}}
+ if(r.status>=500){await dodo(2500*(k+1));continue}return r}throw new Error('GitHub ne répond pas')}
+async function ghJ(path,opt){const r=await gh(path,opt);if(r.status===401||r.status===403||r.status===404)throw new Error('droits');if(!r.ok)throw new Error('GitHub '+r.status);return r.json()}
+function b64big(u){return new Promise((ok,ko)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result.slice(fr.result.indexOf(',')+1));fr.onerror=()=>ko(fr.error);fr.readAsDataURL(new Blob([u]))})}
+async function upBlob(u){const j=await ghJ('/git/blobs',{method:'POST',body:JSON.stringify({content:await b64big(u),encoding:'base64'})});return j.sha}
+async function upCommit(fich,maj,msg){const ip=await upChemin('u/plans.json');
+ for(let k=0;k<8;k++){const ref=await ghJ('/git/ref/heads/main');const head=ref.object.sha;const com=await ghJ('/git/commits/'+head);
+  let idx={plans:[]};const r=await gh('/contents/'+ip+'?ref='+head,{headers:{}});
+  if(r.ok){const j=await r.json();const bl=j.content?j.content:(await ghJ('/git/blobs/'+j.sha)).content;idx=JSON.parse(new TextDecoder().decode(await upDech(b64d(bl.replace(/\s/g,'')))))}
+  else if(r.status!==404)throw new Error(r.status===401||r.status===403?'droits':'GitHub '+r.status);
+  idx=maj(idx);const ib=await upBlob(await upChiffre(te.encode(JSON.stringify(idx))));
+  const tr=await ghJ('/git/trees',{method:'POST',body:JSON.stringify({base_tree:com.tree.sha,tree:[...fich.map(f=>({path:f.path,mode:'100644',type:'blob',sha:f.sha})),{path:ip,mode:'100644',type:'blob',sha:ib}]})});
+  const nc=await ghJ('/git/commits',{method:'POST',body:JSON.stringify({message:msg,tree:tr.sha,parents:[head]})});
+  const u=await gh('/git/refs/heads/main',{method:'PATCH',body:JSON.stringify({sha:nc.sha,force:false})});
+  if(u.ok)return idx;if(u.status!==422&&u.status!==409)throw new Error('GitHub '+u.status);await dodo(1500+Math.random()*2000)}
+ throw new Error('trop de modifications en même temps, réessaie')}
+let WEBP=null;function webpOk(){if(WEBP===null){const c=document.createElement('canvas');c.width=c.height=1;WEBP=c.toDataURL('image/webp').startsWith('data:image/webp')}return WEBP}
+const enBlob=(c,t,q)=>new Promise(ok=>c.toBlob(b=>ok(b),t,q));
+// image découpée en morceaux de 4096 px max (limite des téléphones), sans couture
+async function decoupe(bm){const S=4096,o=[];if(bm.width<=S&&bm.height<=S)return [{x:0,y:0,w:bm.width,h:bm.height,ox:0,oy:0,b:bm}];
+ for(let y=0;y<bm.height;y+=S-8)for(let x=0;x<bm.width;x+=S-8){const ox=Math.max(0,x-4),oy=Math.max(0,y-4),w=Math.min(S,bm.width-ox),h=Math.min(S,bm.height-oy);
+  o.push({x,y,w:Math.min(S-8,bm.width-x),h:Math.min(S-8,bm.height-y),ox,oy,b:await createImageBitmap(bm,ox,oy,w,h)})}return o}
+async function impEnvoyer(){const nom=$id('impNom').value.trim();if(!nom){impMsg('⚠️ Donne un nom au plan.');$id('impNom').focus();return}
+ if(!NTOK){impMsg('⚠️ Partage inactif : impossible d’envoyer.');return}const M=IMP.M;if(!M||M.n<4){impMsg('⚠️ Il faut au moins 4 points.');return}
+ const btn=$id('impEnv');btn.disabled=true;let wl=null;try{wl=await navigator.wakeLock.request('screen')}catch(e){}
+ const prog=t=>{$id('impProg').innerHTML=t};
+ try{
+  const ed=IMP.edit,id=ed?ed.id:'u-'+[...crypto.getRandomValues(new Uint8Array(5))].map(b=>b.toString(16).padStart(2,'0')).join(''),v=ed?(ed.v||1)+1:1;
+  const F=M.F,G=M.G,W=IMP.W,H=IMP.H;
+  // contour, emprise, zooms
+  const bord=[];for(let i=0;i<=16;i++)bord.push([W*i/16,0]);for(let i=1;i<=16;i++)bord.push([W,H*i/16]);for(let i=15;i>=0;i--)bord.push([W*i/16,H]);for(let i=15;i>0;i--)bord.push([0,H*i/16]);
+  const B20=bord.map(F),ll=B20.map(q=>map.unproject(L.point(q[0],q[1]),20));
+  const xs=B20.map(q=>q[0]),ys=B20.map(q=>q[1]),X0=Math.min(...xs),X1=Math.max(...xs),Y0=Math.min(...ys),Y1=Math.max(...ys);
+  const c=F([W/2,H/2]),cx=F([W/2+1,H/2]),cy=F([W/2,H/2+1]);const s=Math.sqrt(Math.hypot(cx[0]-c[0],cx[1]-c[1])*Math.hypot(cy[0]-c[0],cy[1]-c[1]));
+  const nat=Math.max(14,Math.min(21,Math.ceil(20-Math.log2(s)-0.15)));let minNat=nat;while(minNat>10&&Math.max(X1-X0,Y1-Y0)/2**(20-minNat)>600)minNat--;
+  // commune
+  prog('Recherche de la commune…');let com=null,dep='Autres plans';const ctr=map.unproject(L.point(c[0],c[1]),20);
+  try{const r=await fetch(`https://geo.api.gouv.fr/communes?lat=${ctr.lat.toFixed(5)}&lon=${ctr.lng.toFixed(5)}&fields=nom,code,departement`);const j=await r.json();if(j[0]){com=j[0].nom;dep=j[0].departement?`${j[0].departement.nom} (${j[0].departement.code})`:dep}}catch(e){}
+  if(ed&&!com){com=ed.com;dep=ed.dep}
+  // image pleine qualité + niveaux réduits
+  prog('Préparation de l’image en pleine qualité…');let full=await createImageBitmap(IMP.file);if(full.width!==W||full.height!==H)throw new Error('image différente');
+  const niv=[];let cur=full,f=1;while(true){niv.push({f,m:await decoupe(cur)});if(Math.max(cur.width,cur.height)<=512||niv.length>8)break;
+   const nx=await createImageBitmap(cur,{resizeWidth:Math.ceil(cur.width/2),resizeHeight:Math.ceil(cur.height/2),resizeQuality:'high'});if(niv[niv.length-1].m[0].b!==cur)cur.close();cur=nx;f/=2}
+  const cv=document.createElement('canvas');cv.width=cv.height=256;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingQuality='high';
+  const dessine=(z,tx,ty)=>{const sc=2**(20-z),T=(i,j)=>G([(tx*256+i)*sc,(ty*256+j)*sc]);
+   // niveau de l'image : environ 1 pixel d'image par pixel de tuile
+   const a=T(0,0),b=T(256,0),d=T(0,256);const ppx=Math.sqrt(Math.hypot(b[0]-a[0],b[1]-a[1])*Math.hypot(d[0]-a[0],d[1]-a[1]))/256;
+   const li=Math.max(0,Math.min(niv.length-1,Math.floor(Math.log2(Math.max(1,ppx))))),N=niv[li];ctx.clearRect(0,0,256,256);
+   const quad=(i0,j0,sz,prof)=>{const p0=T(i0,j0),p1=T(i0+sz,j0),p2=T(i0,j0+sz),p3=T(i0+sz,j0+sz),pm=T(i0+sz/2,j0+sz/2);
+    const ex=[p1[0]+p2[0]-p0[0],p1[1]+p2[1]-p0[1]],em=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2];
+    if(prof<3&&Math.max(Math.hypot(ex[0]-p3[0],ex[1]-p3[1]),Math.hypot(em[0]-pm[0],em[1]-pm[1]))*N.f>0.6){const h=sz/2;quad(i0,j0,h,prof+1);quad(i0+h,j0,h,prof+1);quad(i0,j0+h,h,prof+1);quad(i0+h,j0+h,h,prof+1);return}
+    const mnx=Math.min(p0[0],p1[0],p2[0],p3[0]),mxx=Math.max(p0[0],p1[0],p2[0],p3[0]),mny=Math.min(p0[1],p1[1],p2[1],p3[1]),mxy=Math.max(p0[1],p1[1],p2[1],p3[1]);
+    if(mxx<0||mxy<0||mnx>W||mny>H)return;
+    // tuile -> image : u = p0 + (i-i0)/sz*(p1-p0) + (j-j0)/sz*(p2-p0) ; on inverse pour dessiner l'image dans la tuile
+    const A=(p1[0]-p0[0])/sz*N.f,Bq=(p1[1]-p0[1])/sz*N.f,C=(p2[0]-p0[0])/sz*N.f,D=(p2[1]-p0[1])/sz*N.f,det=A*D-C*Bq;if(!det)return;
+    const ia=D/det,ib=-Bq/det,ic=-C/det,idd=A/det,u0=p0[0]*N.f,v0=p0[1]*N.f;
+    ctx.save();ctx.beginPath();ctx.rect(i0,j0,sz,sz);ctx.clip();ctx.setTransform(ia,ib,ic,idd,i0-(ia*u0+ic*v0),j0-(ib*u0+idd*v0));
+    const lo=[mnx*N.f-2,mny*N.f-2,mxx*N.f+2,mxy*N.f+2];
+    for(const m of N.m){if(m.x>lo[2]||m.y>lo[3]||m.x+m.w<lo[0]||m.y+m.h<lo[1])continue;ctx.save();ctx.beginPath();ctx.rect(m.x,m.y,m.w,m.h);ctx.clip();ctx.drawImage(m.b,m.ox,m.oy);ctx.restore()}
+    ctx.restore()};
+   quad(0,0,256,0)};
+  // liste des paquets
+  const paquets=[];for(let z=nat;z>=minNat;z--){const sc=2**(20-z),tx0=Math.floor(X0/sc/256),tx1=Math.floor(X1/sc/256),ty0=Math.floor(Y0/sc/256),ty1=Math.floor(Y1/sc/256);
+   for(let bx=tx0>>3;bx<=tx1>>3;bx++)for(let by=ty0>>3;by<=ty1>>3;by++)paquets.push({z,bx,by,tx0:Math.max(tx0,bx*8),tx1:Math.min(tx1,bx*8+7),ty0:Math.max(ty0,by*8),ty1:Math.min(ty1,by*8+7)})}
+  const total=paquets.reduce((s,p)=>s+(p.tx1-p.tx0+1)*(p.ty1-p.ty0+1),0);let fait=0,env=0,ko=0;const fich=[],pk=[],att=[];
+  const poly=B20;const dedans=(x,y)=>{let r=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])r=!r}return r};
+  const touche=(z,tx,ty)=>{const sc=2**(20-z)*256,x0=tx*sc,y0=ty*sc,x1=x0+sc,y1=y0+sc;if(x1<X0||y1<Y0||x0>X1||y0>Y1)return false;
+   if([[x0,y0],[x1,y0],[x0,y1],[x1,y1],[(x0+x1)/2,(y0+y1)/2]].some(p=>dedans(p[0],p[1])))return true;return poly.some(p=>p[0]>=x0&&p[0]<=x1&&p[1]>=y0&&p[1]<=y1)};
+  const majP=()=>prog(`Découpe en tuiles : <b>${Math.round(fait/total*100)} %</b> · envoi : ${env} / ${paquets.length} paquets<div class="impJauge"><i style="width:${(fait/total*70+env/paquets.length*30).toFixed(1)}%"></i></div><small>Garde l’écran allumé et l’Atlas ouvert.</small>`);
+  for(const q of paquets){const tuiles=[];
+   for(let tx=q.tx0;tx<=q.tx1;tx++)for(let ty=q.ty0;ty<=q.ty1;ty++){fait++;if(!touche(q.z,tx,ty))continue;dessine(q.z,tx,ty);
+    const px=ctx.getImageData(0,0,256,256).data;let vide=true,plein=true;for(let i=3;i<px.length;i+=4){if(px[i])vide=false;if(px[i]<255)plein=false;if(!vide&&!plein)break}
+    if(vide)continue;let t,b;if(webpOk()){t='w';b=await enBlob(cv,'image/webp',0.86)}else if(plein){t='j';b=await enBlob(cv,'image/jpeg',0.9)}else{t='p';b=await enBlob(cv,'image/png')}
+    tuiles.push([tx&7,ty&7,new Uint8Array(await b.arrayBuffer()),t]);if(fait%20===0){majP();await dodo(0)}}
+   if(!tuiles.length)continue;let off=0;const h={t:tuiles.map(t=>{const r=[t[0],t[1],off,t[2].length,t[3]];off+=t[2].length;return r})};const hb=te.encode(JSON.stringify(h));
+   const out=new Uint8Array(4+hb.length+off);out[0]=hb.length&255;out[1]=hb.length>>8&255;out[2]=hb.length>>16&255;out[3]=hb.length>>24&255;out.set(hb,4);let o=4+hb.length;tuiles.forEach(t=>{out.set(t[2],o);o+=t[2].length});
+   const key=`${q.z}/${q.bx}/${q.by}`;pk.push(key);
+   const pr=(async()=>{const path=await upChemin(`u/${id}/v${v}/${key}`);const sha=await upBlob(await upChiffre(out));fich.push({path,sha});env++;majP()})();att.push(pr);
+   if(att.length>=2)await att.shift();majP()}
+  await Promise.all(att);env=paquets.length;
+  // original (pleine qualité) : seulement pour un nouveau plan ou une nouvelle image
+  let org=ed&&ed.org&&!IMP.nouvelleImage?ed.org:null;
+  if(!org){const buf=new Uint8Array(await IMP.file.arrayBuffer()),CH=8e6,n=Math.ceil(buf.length/CH);
+   for(let k=0;k<n;k++){prog(`Envoi de l’image d’origine : ${k+1} / ${n}`);fich.push({path:await upChemin(`u/${id}/o/${k}`),sha:await upBlob(await upChiffre(buf.subarray(k*CH,(k+1)*CH)))})}
+   org={n,w:W,h:H,type:IMP.file.type||'image/jpeg',nom:IMP.file.name||''};
+   if(ed&&ed.org)for(let k=0;k<ed.org.n;k++){const pth=await upChemin(`u/${id}/o/${k}`);if(!fich.some(f=>f.path===pth))fich.push({path:pth,sha:null})}}
+  // ancienne version : on enlève ses paquets
+  if(ed&&ed.pk)for(const key of ed.pk)fich.push({path:await upChemin(`u/${id}/v${ed.v||1}/${key}`),sha:null});
+  prog('Enregistrement dans l’Atlas…');
+  const an=$id('impAn').value.trim(),auj=new Date().toLocaleDateString('fr-FR');
+  const e={id,v,u:1,nom:nom+(an&&!nom.includes(an)?' ('+an+')':''),nomO:nom,an,com:com||undefined,dep,o:3,ok:'👤',d:'u/'+id,
+   t:`Plan ajouté par ${(ed?ed.an_:USER)||'un utilisateur'}${ed?' · calage modifié par '+(USER||'un utilisateur')+' le '+auj:' le '+auj} — calé sur ${M.n} points${M.tps?' (déformation suivie)':''}`,
+   a:ed?ed.a:(UP.moi||null),an_:ed?ed.an_:(USER||null),cree:ed?ed.cree:Date.now(),mod:Date.now(),
+   contour:ll.map(p=>[+p.lng.toFixed(7),+p.lat.toFixed(7)]),multi:false,bbox:[Math.min(...ll.map(p=>p.lng)),Math.min(...ll.map(p=>p.lat)),Math.max(...ll.map(p=>p.lng)),Math.max(...ll.map(p=>p.lat))].map(x=>+x.toFixed(7)),
+   min:Math.max(10,minNat-1),minNat,nat,pk,org,pts:IMP.pts.filter(p=>p.m).map(p=>[Math.round(p.i[0]*10)/10,Math.round(p.i[1]*10)/10,+p.m.lat.toFixed(7),+p.m.lng.toFixed(7)]),def:!!M.tps};
+  if(e.t.includes('undefined'))e.t=e.t.replace(/undefined/g,'un utilisateur');
+  await upCommit(fich,idx=>{idx.plans=idx.plans.filter(p=>p.id!==id);idx.plans.push(e);return idx},(ed?'Calage modifié : ':'Plan ajouté : ')+id);
+  const loc=store.get('up_local',[]).filter(l=>l.id!==id);loc.push({id,d:Date.now(),p:e});store.set('up_local',loc);
+  niv.forEach(n=>n.m.forEach(m=>{try{m.b.close()}catch(_){}}));
+  await brSet(null);prog(`✅ <b>« ${anEsc(e.nom)} » est en ligne</b> pour tout le monde (les autres le verront d’ici quelques minutes).`);
+  setTimeout(()=>{const s=store.get('plans',{});s[id]={on:true,op:1};store.set('plans',s);try{etatSauver()}catch(_){}location.reload()},2500)}
+ catch(x){prog('');impMsg(x.message==='droits'?'⚠️ La clé de partage n’a pas le droit d’écrire dans le dépôt data1. Il faut lui ajouter ce dépôt (droit « Contents : lecture et écriture »).':'⚠️ Envoi impossible : '+anEsc(x.message)+'. Ton travail est gardé, tu peux réessayer.');btn.disabled=false}
+ finally{try{wl&&wl.release()}catch(_){}}}
+// modifier le calage d'un plan ajouté (tout le monde peut)
+async function impModifier(p){if(IMP.on){info.textContent='Termine d’abord le plan en cours.';return}const d=$id('rub-caler');if(d&&!d.open)d.querySelector('summary').click();
+ impMsg('Téléchargement de l’image d’origine…');try{const parts=[];for(let k=0;k<p.org.n;k++){const b=await upLire(`u/${p.id}/o/${k}`);if(!b)throw new Error('morceau '+k+' introuvable');parts.push(b)}
+  const file=new File(parts,p.org.nom||'plan',{type:p.org.type});IMP.edit=p;IMP.nouvelleImage=false;
+  await impOuvrir(file,{pts:p.pts.map(q=>({i:[q[0],q[1]],m:[q[2],q[3]]})),nom:p.nomO||p.nom,an:p.an||'',def:p.def})}
+ catch(e){impMsg('⚠️ Impossible de récupérer le plan : '+anEsc(e.message))}}
+// supprimer pour tout le monde (auteur ou admin)
+async function upSupprimer(p){if(!upPeutSuppr(p))return;if(!confirm('Supprimer « '+p.nom+' » pour TOUT LE MONDE ?\nL’image et le calage seront effacés de l’Atlas.'))return;
+ info.textContent='Suppression…';try{const f=[];for(const key of p.pk||[])f.push({path:await upChemin(`u/${p.id}/v${p.v||1}/${key}`),sha:null});for(let k=0;k<(p.org?p.org.n:0);k++)f.push({path:await upChemin(`u/${p.id}/o/${k}`),sha:null});
+  await upCommit(f,idx=>{idx.plans=idx.plans.filter(q=>q.id!==p.id);return idx},'Plan supprimé : '+p.id);
+  const loc=store.get('up_local',[]).filter(l=>l.id!==p.id);loc.push({id:p.id,d:Date.now(),suppr:1});store.set('up_local',loc);
+  if(p.layer)decharge(p);p.ui&&p.ui.row.remove();p.poly&&contours.removeLayer(p.poly);P=P.filter(q=>q!==p);info.textContent='« '+p.nom+' » supprimé pour tout le monde.'}
+ catch(e){info.textContent=e.message==='droits'?'La clé de partage n’a pas le droit d’écrire dans data1.':'Suppression impossible : '+e.message}}
+{const fi=$id('impF');fi.onchange=()=>{const f=fi.files[0];fi.value='';if(f){IMP.edit=null;IMP.nouvelleImage=true;brSet(null);impOuvrir(f,null)}};
+ $id('impGo').onclick=()=>{impBarre(true);plier()};
+ $id('impBarU').onclick=impUndo;$id('impBarV').onclick=()=>{IMP.voir=!IMP.voir;impLy.redraw()};
+ $id('impBarC').onclick=()=>{cadCb.click();$id('impCad').checked=cadCb.checked};$id('impCad').onchange=()=>{if($id('impCad').checked!==cadCb.checked)cadCb.click()};
+ $id('impBarM').onclick=()=>{impBarre(false);pan.classList.remove('ferme');store.set('ferme',false);const d=$id('rub-caler');if(d&&!d.open)d.querySelector('summary').click();setTimeout(()=>$id('impTravail').scrollIntoView({block:'start'}),60)};
+ $id('impOp').oninput=()=>{IMP.op=+$id('impOp').value;impLy.redraw()};$id('impDef').onchange=()=>{impCalc();impMaj();impLy.redraw();brSauve()};
+ $id('impNom').oninput=brSauve;$id('impAn').oninput=brSauve;$id('impEnv').onclick=impEnvoyer;$id('impVoirT').onclick=()=>{if(IMP.M||IMP.M0)map.fitBounds(impBornes(),{maxZoom:19})};
+ $id('impAnn').onclick=async()=>{if(IMP.pts.length&&!confirm('Abandonner ce plan ? Les points placés seront perdus.'))return;await brSet(null);impFin()};
+ setTimeout(impBrAff,1500)}
+
 </script></body></html>
