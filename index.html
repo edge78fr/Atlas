@@ -176,7 +176,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .leaflet-control-zoom{display:none}
 #p.ferme{left:auto;right:calc(16px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));width:auto;padding:0;background:transparent;box-shadow:none;border-radius:50%;opacity:.7;overflow:visible}
 #p.ferme #tete{margin:0;padding:0;background:transparent;position:static;min-height:0}#p.ferme #tete b{display:none}
-#poignee{position:absolute;left:50%;top:3px;width:42px;height:5px;margin-left:-21px;border-radius:3px;background:rgba(0,0,0,.22)}#p.ferme #poignee{display:none}#p.tire{transition:none!important}#p.cran{transition:height .22s ease}
+
 #p.ferme{-webkit-backdrop-filter:none;backdrop-filter:none;border:0}#p.ferme #pli{width:56px;height:56px;border-radius:50%!important;padding:0!important;font-size:26px!important;background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(255,255,255,.4));-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 #fff}
 #fiche{left:6px;right:6px;top:auto;bottom:6px;width:auto;max-height:70%}
 }
@@ -231,7 +231,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 <div id="ptsBox" style="display:none"><div id="ptsTxt" style="font-size:12px;margin:6px 0;line-height:1.35"></div><div class="g"><button id="ptsUndo">↶ Retirer</button><button id="ptsVoir">👁 Plan</button><button class="ok" id="ptsOk" disabled>✔ Appliquer</button><button id="ptsNo">✕</button></div></div>
 <div class="g adjG"><button class="ok" id="adjOk">✔ Enregistrer</button><button id="adjNo">Annuler</button><button id="adjDef">Calage d'origine</button><button id="adjCp">📋 Copier pour Claude</button><button id="adjLk">🔒 Enregistrer + verrouiller</button></div><div id="adjMsg" style="font-size:11px;color:#1a7f37;margin-top:5px"></div></div><div id="fiche"><div id="fh"><b id="ft">Fiche BRGM</b><a id="fo" target="_blank" rel="noopener">↗ Onglet</a><button id="fx">✕</button></div><div id="fi"></div></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
 <div id="p">
- <div id="tete"><span id="poignee" title="Glisser pour agrandir / réduire"></span><b>Atlas</b> <span id="netInd" style="font-size:11px"></span><button id="pli" title="Replier / déplier le menu">☰</button></div>
+ <div id="tete"><b>Atlas</b> <span id="netInd" style="font-size:11px"></span><button id="pli" title="Replier / déplier le menu">☰</button></div>
  <div id="corps">
   <div class="sec"><h4>🔍 Rechercher</h4>
    <div id="rech"><input id="q" placeholder="Adresse, lieu, ou 48.9476, 2.154"><button id="go">🔍</button></div><div id="res"></div></div>
@@ -347,7 +347,7 @@ function initialiserMenusRepliables(){
   details.open=false; // tout replié au lancement
   details.addEventListener('toggle',()=>{store.set('rub_'+id,details.open);
    // une seule rubrique ouverte à la fois
-   if(details.open){document.querySelectorAll('details.rub').forEach(d=>{if(d!==details&&d.open)d.open=false});try{if(window.innerWidth<=640&&store.get('cran',1)===0){store.set('cran',1);const pp=document.getElementById('p');pp.classList.add('cran');pp.style.height=(innerHeight*.5)+'px';setTimeout(()=>pp.classList.remove('cran'),260)}}catch(e){}setTimeout(()=>{try{summary.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}},30)}});
+   if(details.open){document.querySelectorAll('details.rub').forEach(d=>{if(d!==details&&d.open)d.open=false});setTimeout(()=>{try{summary.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}},30)}});
  });
  const fondBody=document.querySelector('#rub-couches > .rub-body');
  const noms=['cadastre','carrieres','aqueducs','divers'];
@@ -847,22 +847,6 @@ L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan)
 const info=document.getElementById('info');
 
 const mobile=()=>window.innerWidth<=640,plier=()=>{if(mobile()){pan.classList.add('ferme');store.set('ferme',true)}};
-// ---------- téléphone : menu qu'on tire avec le doigt (3 hauteurs) ----------
-(()=>{const tete=document.getElementById('tete');if(!tete)return;
- const crans=()=>[Math.min(150,innerHeight*.25),innerHeight*.5,innerHeight*.9];
- const pose=h=>{pan.style.height=h+'px';pan.style.maxHeight='none'};
- const cranSv=()=>{const i=store.get('cran',1);return crans()[Math.max(0,Math.min(2,i))]};
- const applique=()=>{if(!mobile()||pan.classList.contains('ferme')){pan.style.height='';pan.style.maxHeight='';return}pose(cranSv())};
- new MutationObserver(applique).observe(pan,{attributes:true,attributeFilter:['class']});addEventListener('resize',applique);setTimeout(applique,0);
- tete.addEventListener('pointerdown',e=>{if(!mobile()||pan.classList.contains('ferme')||e.target.closest('button'))return;
-  const y0=e.clientY,h0=pan.getBoundingClientRect().height;let bouge=false;tete.setPointerCapture(e.pointerId);pan.classList.add('tire');
-  const mv=ev=>{const dy=ev.clientY-y0;if(Math.abs(dy)>4)bouge=true;pose(Math.max(60,Math.min(innerHeight*.95,h0-dy)))};
-  const up=ev=>{tete.removeEventListener('pointermove',mv);tete.removeEventListener('pointerup',up);tete.removeEventListener('pointercancel',up);pan.classList.remove('tire');
-   const h=pan.getBoundingClientRect().height,c=crans();
-   if(!bouge){return}
-   if(h<c[0]*0.7){pan.classList.add('ferme');store.set('ferme',true);return}
-   let i=0;c.forEach((v,k)=>{if(Math.abs(v-h)<Math.abs(c[i]-h))i=k});store.set('cran',i);pan.classList.add('cran');pose(c[i]);setTimeout(()=>pan.classList.remove('cran'),260)};
-  tete.addEventListener('pointermove',mv);tete.addEventListener('pointerup',up);tete.addEventListener('pointercancel',up)})})();
 const bulle=document.getElementById('bulle');let bulleT=null;
 const majBulle=()=>{const t=info.textContent.trim();bulle.textContent=t;const v=mobile()&&pan.classList.contains('ferme')&&t.length>0;bulle.style.display=v?'block':'none';clearTimeout(bulleT);let mes=false;try{mes=!!mesure}catch(e){}if(v&&!mes)bulleT=setTimeout(()=>bulle.style.display='none',5000)};
 new MutationObserver(majBulle).observe(info,{childList:true,characterData:true,subtree:true});
