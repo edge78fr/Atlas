@@ -238,7 +238,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
   <div class="sec"><h4>🔍 Rechercher</h4>
    <div id="rech"><input id="q" placeholder="Adresse, lieu, ou 48.9476, 2.154"><button id="go">🔍</button></div><div id="res"></div></div>
   <div class="sec"><h4>⭐ Favoris <span class="cpt" id="cptFav"></span></h4><div id="favListe" class="fonds"></div><button id="favEd" style="margin-top:4px;font-size:11px">☆ Choisir mes favoris</button></div>
-  <div class="sec"><h4>🗺️ Fonds de carte <span class="cpt" id="cptF"></span> <span title="Tu peux activer plusieurs fonds et régler leur transparence. Le dernier activé passe au-dessus." style="cursor:help;color:#999;text-transform:none">ⓘ</span></h4>
+  <div class="sec"><h4>🗺️ Fonds de carte <span class="cpt" id="cptF"></span> <span title="Rond = un seul fond de base à la fois. Case carrée = se met par-dessus (LiDAR, géologie, années, cartes anciennes). Le dernier activé passe au-dessus." style="cursor:help;color:#999;text-transform:none">ⓘ</span></h4>
    <div id="fonds" class="fonds"></div>
    <div class="cou" id="pvaRow"><label><input id="pva" type="checkbox"> 🛩️ Photos aériennes IGN (1919 → aujourd’hui)</label><div class="leg" id="pvaBox" style="font-size:12px;margin:4px 0 4px 4px"></div></div></div>
   <div class="sec"><h4>🧱 Couches <span class="cpt" id="cptC"></span></h4>
@@ -988,7 +988,7 @@ const favGet=()=>{const v=store.get(FAV_K,[]);return Array.isArray(v)?v:[]};
 function favCle(el){if(el.classList.contains('plan')){const p=(typeof P!=='undefined'?P:[]).find(x=>x.ui&&x.ui.row===el);return p?'p:'+p.id:null}return el.dataset.mk||null}
 function favOrig(k){if(k.startsWith('p:')){const p=(typeof P!=='undefined'?P:[]).find(x=>x.id===k.slice(2));return p&&p.ui?{el:p.ui.row,p}:null}
  const el=document.querySelector('[data-mk="'+CSS.escape(k)+'"]');return el?{el}:null}
-function favNom(o){if(o.p)return '📐 '+o.p.nom;const n=mkNomEl(o.el);const c=(n||o.el).cloneNode(true);c.querySelectorAll('.favS,input,button,.mvH,.mkAct,.fond-pct').forEach(e=>e.remove());return c.textContent.replace(/[★☆]/g,'').replace(/\s+/g,' ').trim()}
+function favNom(o){if(o.p)return '📐 '+o.p.nom;const n=mkNomEl(o.el);const c=(n||o.el).cloneNode(true);c.querySelectorAll('.favS,input,button,.mvH,.mkAct,.fond-pct,.cm').forEach(e=>e.remove());return c.textContent.replace(/[★☆]/g,'').replace(/\s+/g,' ').trim()}
 function favCands(){mkInit();return [...document.querySelectorAll('#fonds .fond-item, #corps .cou, #plans .plan')].filter(e=>!e.closest('#favListe'))}
 function favStars(){document.querySelectorAll('.favS').forEach(e=>e.remove());if(!favMode)return;const F=new Set(favGet());
  favCands().forEach(el=>{const k=favCle(el);if(!k)return;const st=document.createElement('span');st.className='favS'+(F.has(k)?' on':'');st.textContent=F.has(k)?'★':'☆';st.title='Favori';
@@ -1957,7 +1957,7 @@ async function pvaMissions(){if(!PVA.on)return;if(!document.getElementById('pvaS
  if(map.getZoom()<11){PVA.fp.clearLayers();document.getElementById('pvaSel').innerHTML='<option>—</option>';pvaInfo('Zoome davantage pour voir les photos.');return}
  pvaInfo('Recherche des années…');const zone=map.getBounds().pad(.5);
  try{const j=await pvaGet(WFS+'&typeName=pva:dataset&count=1000&propertyName=date_mission,oblique,couleur,resolution,support,dataset_identifier,dataset_idta&cql_filter='+encodeURIComponent('INTERSECTS(geom,'+pvaPoly3857(zone)+')'));PVA.zone=zone;PVA.izone=null;
-  PVA.ds=j.features.map(f=>f.properties).filter(p=>!p.oblique)}catch(e){pvaInfo('Serveur IGN injoignable. <a href="#" id="pvaRe">↻ Réessayer</a>');document.getElementById('pvaRe').onclick=ev=>{ev.preventDefault();pvaMissions()};return}
+  PVA.ds=j.features.map(f=>f.properties).filter(p=>!p.oblique)}catch(e){pvaInfo('Serveur IGN injoignable. <a href="#" id="pvaRe">↻ Réessayer</a>');{const re=document.getElementById('pvaRe');if(re)re.onclick=ev=>{ev.preventDefault();pvaMissions()}}return}
  const par=pvaAnnees(),ys=Object.keys(par).sort();if(PVA.annee&&!par[PVA.annee])PVA.annee=null;
  document.getElementById('pvaSel').innerHTML='<option value="">Choisis une année ('+ys.length+')</option>'+ys.map(y=>`<option value="${y}"${y===PVA.annee?' selected':''}>${y}${par[y]>1?' · '+par[y]+' missions':''}</option>`).join('');
  if(!ys.length){pvaInfo('Aucune photo ici.');PVA.fp.clearLayers();return}
