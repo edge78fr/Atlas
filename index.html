@@ -192,8 +192,8 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #fonds>.fond-item,#fonds>.cou{padding:5px 4px;border-radius:10px;border-top:1px solid rgba(0,0,0,.05);margin:0}
 #fonds>.fond-item.actif{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(0,0,0,.08);border-top-color:transparent}
 #fonds>.fond-item.actif>.fond-ligne .fond-titre span{font-weight:600}
-#fonds>.fond-item>.fond-ligne input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;border:2px solid #bbb;background:#fff;margin:1px 7px 1px 0;flex:none;cursor:pointer}
-#fonds>.fond-item>.fond-ligne input[type=checkbox]:checked{border:5px solid #1a6fd6}
+#fonds>.fond-item.excl>.fond-ligne input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;border:2px solid #bbb;background:#fff;margin:1px 7px 1px 0;flex:none;cursor:pointer}
+#fonds>.fond-item.excl>.fond-ligne input[type=checkbox]:checked{border:5px solid #1a6fd6}
 #fonds>.fond-item>.fond-slider{accent-color:#1a6fd6;height:10px}
 .fond-hist{display:flex!important;flex-wrap:wrap;gap:5px;border-left:0!important;padding:4px 0 6px 4px!important;margin-left:6px!important}
 .fond-hist>.fond-item{flex:0 0 auto;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85)}
@@ -204,12 +204,14 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .fond-hist>.fond-item.actif .fond-ligne{display:flex;justify-content:space-between;align-items:center}.fond-hist>.fond-item.actif .fond-pct{display:inline;font-size:10.5px;color:#888;padding-right:8px}
 .fond-hist>.fond-item.actif>.fond-slider{display:block;width:calc(100% - 20px);margin:0 10px 6px;accent-color:#1a6fd6;height:10px}
 .fond-hist>#film,.fond-hist>.film{flex-basis:100%}
-@media (max-width:640px){#rub-couches .cou{padding:8px 4px}#rub-couches .cou input.op{height:22px}.fond-hist>.fond-item .fond-titre{padding:7px 12px;font-size:13px}#fonds>.fond-item>.fond-ligne input[type=checkbox]{width:20px;height:20px}#fonds>.fond-item>.fond-ligne input[type=checkbox]:checked{border-width:6px}}
+@media (max-width:640px){#rub-couches .cou{padding:8px 4px}#rub-couches .cou input.op{height:22px}.fond-hist>.fond-item .fond-titre{padding:7px 12px;font-size:13px}#fonds>.fond-item.excl>.fond-ligne input[type=checkbox]{width:20px;height:20px}#fonds>.fond-item.excl>.fond-ligne input[type=checkbox]:checked{border-width:6px}}
 
 .anc-maitre .fond-item{padding:5px 4px;border-radius:10px;border-top:1px solid rgba(0,0,0,.05)}
 .anc-maitre .fond-item.actif{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(0,0,0,.08);border-top-color:transparent}
 .anc-maitre .fond-item.actif .fond-titre>span{font-weight:600}.anc-maitre .fond-item .cm{display:block;font-size:11px;color:#888;font-weight:400}
 .anc-maitre .fond-item .fond-titre{align-items:flex-start}.anc-maitre .fond-item .fond-slider{accent-color:#1a6fd6;height:10px;width:calc(100% - 26px);margin-left:24px}
+
+.fond-hist>.fond-item:not(.actif)>.fond-slider{display:none!important}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -539,6 +541,8 @@ if(!Array.isArray(anciennesCouches)&&store.get('epq2',''))fondsActifs.add('h:'+s
 let fondsOrdre=store.get('fonds_ordre',[]);
 if(!Array.isArray(fondsOrdre))fondsOrdre=[];
 const fondsReg=new Map(),fondsUI=new Map();
+// fonds « de base » : un seul à la fois. Les autres (LiDAR, géologie, hydro…) se superposent.
+const FEXCL=new Set(['o','t','p','yx','w']);
 function fondOp(id){
  const old=id===ancienFond||id==='h:'+store.get('epq2','')?store.get('fondo',1):1;
  const v=Number(store.get('fond_op_'+id,old));
@@ -571,7 +575,7 @@ function fondElement(id,titre,container){
  pct.textContent=Math.round(fondOp(id)*100)+' %';
  if(container&&container.closest&&container.closest('.fond-hist'))nom.textContent=titre.replace(/^\S+\s/,'').replace(/\s+[–-]\s+(SPOT|Esri)$/,'').replace(/^(\d{4})[–-](\d{2})(\d{2})$/,'$1–$3');
  cb.onchange=()=>{
-  if(cb.checked&&row.parentElement===fondsCont){fondsUI.forEach((r,k)=>{if(k!==id&&r.parentElement===fondsCont)fondsActifs.delete(k)})}
+  if(cb.checked&&FEXCL.has(id)){fondsUI.forEach((r,k)=>{if(k!==id&&FEXCL.has(k))fondsActifs.delete(k)})}
   if(cb.checked){fondsActifs.add(id);fondsOrdre=fondsOrdre.filter(x=>x!==id);fondsOrdre.push(id)}
   else fondsActifs.delete(id);
   fondSync();
@@ -581,7 +585,7 @@ function fondElement(id,titre,container){
   store.set('fond_op_'+id,v);const layer=fondsReg.get(id);if(layer)layer.setOpacity(v);
  };
  ligne.append(lab,pct);row.append(ligne,slider);container.appendChild(row);
- fondsUI.set(id,row);row.classList.toggle('actif',fondsActifs.has(id));
+ fondsUI.set(id,row);if(FEXCL.has(id))row.classList.add('excl');row.classList.toggle('actif',fondsActifs.has(id));
  return row;
 }
 function fondAjouter(id,nom,layer,container){
