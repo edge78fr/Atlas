@@ -2373,7 +2373,7 @@ async function impEnvoyer(){const nom=$id('impNom').value.trim();if(!nom){impMsg
   const loc=store.get('up_local',[]).filter(l=>l.id!==id);loc.push({id,d:Date.now(),p:e});store.set('up_local',loc);
   niv.forEach(n=>n.m.forEach(m=>{try{m.b.close()}catch(_){}}));
   await brSet(null);prog(`✅ <b>« ${anEsc(e.nom)} » est en ligne</b> pour tout le monde (les autres le verront d’ici quelques minutes).`);
-  setTimeout(()=>{const s=store.get('plans',{});s[id]={on:true,op:1};store.set('plans',s);try{etatSauver()}catch(_){}location.reload()},2500)}
+  setTimeout(()=>{if(IMP.cadAvant===false&&cadCb.checked)cadCb.click();store.set('cad',IMP.cadAvant===true);const s=store.get('plans',{});s[id]={on:true,op:1};store.set('plans',s);try{etatSauver()}catch(_){}location.reload()},2500)}
  catch(x){prog('');impMsg(x.message==='droits'?'⚠️ La clé de partage n’a pas le droit d’écrire dans le dépôt data1. Il faut lui ajouter ce dépôt (droit « Contents : lecture et écriture »).':'⚠️ Envoi impossible : '+anEsc(x.message)+'. Ton travail est gardé, tu peux réessayer.');btn.disabled=false}
  finally{try{wl&&wl.release()}catch(_){}}}
 // modifier le calage d'un plan ajouté (tout le monde peut)
