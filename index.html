@@ -261,7 +261,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 <div class="r adjPtsR"><button id="adjPts" style="flex:1">📍 Caler par points</button></div>
 <div id="ptsBox" style="display:none"><div id="ptsTxt" style="font-size:12px;margin:6px 0;line-height:1.35"></div><div class="g"><button id="ptsUndo">↶ Retirer</button><button id="ptsVoir">👁 Plan</button><button class="ok" id="ptsOk" disabled>✔ Appliquer</button><button id="ptsNo">✕</button></div></div>
 <div class="g adjG"><button class="ok" id="adjOk">✔ Enregistrer</button><button id="adjNo">Annuler</button><button id="adjDef">Calage d'origine</button><button id="adjCp">📋 Copier pour Claude</button><button id="adjLk">🔒 Enregistrer + verrouiller</button></div><div id="adjMsg" style="font-size:11px;color:#1a7f37;margin-top:5px"></div></div><div id="fiche"><div id="fh"><b id="ft">Fiche BRGM</b><a id="fo" target="_blank" rel="noopener">↗ Onglet</a><button id="fx">✕</button></div><div id="fi"></div></div><div id="bulle"></div><div id="rideau"><span>⇔</span></div>
-<div id="impBar" style="display:none"><div id="impBarT"></div><div class="impBarB"><button id="impBarU" title="Annuler le dernier point">↩</button><button id="impBarV" title="Montrer / estomper le plan">👁</button><button id="impBarC" title="Cadastre">🏘️</button><span id="impBarN"></span><button id="impBarM" class="ok">✔ Terminé</button></div></div>
+<div id="impBar" style="display:none"><div id="impBarT"></div><div class="impBarB"><button id="impBarU" title="Annuler le dernier point">↩</button><button id="impBarV" title="Montrer / estomper le plan">👁</button><button id="impBarC" title="Cadastre">🏘️</button><button id="impBarX" title="Taper les coordonnées Lambert lues sur le plan">X/Y</button><span id="impBarN"></span><button id="impBarM" class="ok">✔ Terminé</button></div></div>
 <div id="p">
  <div id="tete"><b>Atlas</b> <span id="netInd" style="font-size:11px"></span><button id="pli" title="Replier / déplier le menu">☰</button></div>
  <div id="corps">
@@ -1193,7 +1193,7 @@ function initPlans(j){
    rg.oninput=()=>{p.op=+rg.value;p.layer&&p.layer.setOpacity(p.op);sauve()};
    comDe(p).appendChild(r);if(p.com)nm.textContent=courtNom(p);r.dataset.nom=sansAcc(p.nom+' '+dep+' '+(p.com||''));
    {const dt=document.createElement('button');dt.className='dots';dt.title='Options';dt.textContent='⋯';r.insertBefore(dt,rg);
-    dt.onclick=e=>{e.stopPropagation();popMenu(dt,[['🔍 Aller sur ce plan',()=>bt.click()],[aj.textContent==='🔒'?'🔒 Déverrouiller / ajuster':'🎯 Ajuster la position',()=>aj.click()],['✏️ Renommer',()=>rn.click()],...(p.u?[['📍 Modifier le calage',()=>{impModifier(p);}]]:[]),upPeutSuppr(p)?['🗑 Supprimer pour tout le monde…',()=>upSupprimer(p),1]:['🗑 Supprimer de l\'atlas…',()=>sp.click(),1]])}}
+    dt.onclick=e=>{e.stopPropagation();popMenu(dt,[['🔍 Aller sur ce plan',()=>bt.click()],[aj.textContent==='🔒'?'🔒 Déverrouiller / ajuster':'🎯 Ajuster la position',()=>aj.click()],['✏️ Renommer',()=>rn.click()],...(p.u?[['📍 Modifier le calage',()=>{impModifier(p);}]]:[]),...(p.adj&&!p.u?[['📍 Caler avec des points',()=>impCalerPlanche(p)]]:[]),upPeutSuppr(p)?['🗑 Supprimer pour tout le monde…',()=>upSupprimer(p),1]:['🗑 Supprimer de l\'atlas…',()=>sp.click(),1]])}}
    if(p.contour){p.poly=L.polygon(p.multi?p.contour.map(r=>[r.map(c=>[c[1],c[0]])]):p.contour.map(c=>[c[1],c[0]]),{pane:'cont',color:'#d60',weight:2,fillColor:'#f90',fillOpacity:.15}).bindTooltip(p.nom,{sticky:true,className:'contour-lbl'});
     p.poly.on('click',e=>{L.DomEvent.stop(e);p.layer?decharge(p):charge(p,false)});contours.addLayer(p.poly)}
    if(s.on&&!pmMasque(p.id))charge(p,false)});
@@ -2148,7 +2148,7 @@ async function upIndexLire(){const pth=await upChemin('u/plans.json');
 async function upFusion(j){if(!navigator.onLine)return;let idx=await upIndexLire();
  let loc=store.get('up_local',[]);loc=loc.filter(l=>Date.now()-l.d<30*60e3);store.set('up_local',loc);   // plan tout juste envoyé : visible tout de suite chez soi
  const byId=new Map(idx.plans.map(p=>[p.id,p]));loc.forEach(l=>{if(l.suppr)byId.delete(l.id);else{const p=byId.get(l.id);if(!p||(p.v||0)<l.p.v)byId.set(l.id,l.p)}});
- UP.plans=[...byId.values()];const ids=new Set(j.plans.map(p=>p.id));UP.plans.forEach(p=>{if(!ids.has(p.id))j.plans.push(Object.assign({},p))})}
+ UP.plans=[...byId.values()];const rmp=new Set(UP.plans.map(p=>p.remplace).filter(Boolean));j.plans=j.plans.filter(p=>!rmp.has(p.id));const ids=new Set(j.plans.map(p=>p.id));UP.plans.forEach(p=>{if(!ids.has(p.id))j.plans.push(Object.assign({},p))})}
 async function upDroitsMaj(){try{if(!USER){UP.moi=null;UP.admin=false;return}UP.moi=await uHash(USER);const F=await uLire();UP.admin=!!(F.u[UP.moi]&&F.u[UP.moi].a)}catch(e){}}
 const upPeutSuppr=p=>!!(p&&p.u&&(UP.admin||(UP.moi&&p.a===UP.moi)));
 
@@ -2225,7 +2225,7 @@ function impDepart(){const m=map,b=m.getPixelBounds(),z=m.getZoom(),f=2**(20-z);
 function idb(){return new Promise((ok,ko)=>{const r=indexedDB.open('atlas-imp',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)})}
 async function brSet(v){try{const d=await idb();await new Promise((ok,ko)=>{const t=d.transaction('b','readwrite');v===null?t.objectStore('b').delete('x'):t.objectStore('b').put(v,'x');t.oncomplete=ok;t.onerror=()=>ko(t.error)})}catch(e){}}
 async function brGet(){try{const d=await idb();return await new Promise(ok=>{const r=d.transaction('b').objectStore('b').get('x');r.onsuccess=()=>ok(r.result||null);r.onerror=()=>ok(null)})}catch(e){return null}}
-let brT=null;function brSauve(){clearTimeout(brT);brT=setTimeout(()=>{if(!IMP.file)return;brSet({file:IMP.file,pts:IMP.pts.map(p=>({i:p.i,m:p.m?[p.m.lat,p.m.lng]:null})),nom:$id('impNom').value,an:$id('impAn').value,def:$id('impDef').checked,edit:IMP.edit?IMP.edit.id:null,d:Date.now()})},600)}
+let brT=null;function brSauve(){clearTimeout(brT);brT=setTimeout(()=>{if(!IMP.file)return;brSet({file:IMP.file,pts:IMP.pts.map(p=>({i:p.i,m:p.m?[p.m.lat,p.m.lng]:null})),nom:$id('impNom').value,an:$id('impAn').value,def:$id('impDef').checked,edit:IMP.edit?IMP.edit.id:null,remplace:IMP.remplace?IMP.remplace.id:null,d:Date.now()})},600)}
 
 // ---- interface ----
 const impMsg=t=>{$id('impMsg').innerHTML=t||''};
@@ -2238,13 +2238,13 @@ async function impOuvrir(file,brouillon){if(!NTOK){impMsg('⚠️ Partage inacti
  impMsg('');impDebut()}
 function impDebut(){IMP.on=true;IMP.cadAvant=cadCb.checked;if(!cadCb.checked)cadCb.click();$id('impCad').checked=cadCb.checked;
  if(map.hasLayer(contours)){IMP.contAvant=true;map.removeLayer(contours)}
- impCalc();if(!IMP.M){impDepart()}impLy.addTo(map);IMP.mk.addTo(map);
- $id('impVide').style.display='none';$id('impTravail').style.display='';$id('impT').textContent=(IMP.edit?'✏️ Modifier le calage : ':'🖼️ ')+(IMP.edit?IMP.edit.nom:(IMP.file.name||'image'))+' · '+IMP.W+'×'+IMP.H+' px';
+ impCalc();if(!IMP.M){if(IMP.dep0)IMP.M0=IMP.dep0;else impDepart()}impLy.addTo(map);IMP.mk.addTo(map);
+ $id('impVide').style.display='none';$id('impTravail').style.display='';$id('impT').textContent=(IMP.edit?'✏️ Modifier le calage : ':IMP.remplace?'🗺️ Caler : ':'🖼️ ')+(IMP.edit?IMP.edit.nom:IMP.remplace?IMP.remplace.nom:(IMP.file.name||'image'))+' · '+IMP.W+'×'+IMP.H+' px';
  if(IMP.edit&&!$id('impNom').value)$id('impNom').value=IMP.edit.nomO||IMP.edit.nom;if(IMP.edit&&!$id('impAn').value)$id('impAn').value=IMP.edit.an||'';
  impMaj();if(IMP.M)map.fitBounds(impBornes(),{maxZoom:19})}
 function impFin(){IMP.on=false;IMP.pick=false;impBarre(false);map.removeLayer(impLy);IMP.mk.clearLayers();map.removeLayer(IMP.mk);
  if(IMP.cadAvant===false&&cadCb.checked)cadCb.click();if(IMP.contAvant){contours.addTo(map);IMP.contAvant=false}
- IMP.file=null;IMP.prev=null;IMP.pts=[];IMP.M=null;IMP.M0=null;IMP.edit=null;$id('impNom').value='';$id('impAn').value='';$id('impDef').checked=false;
+ IMP.file=null;IMP.prev=null;IMP.pts=[];IMP.M=null;IMP.M0=null;IMP.edit=null;IMP.remplace=null;IMP.dep0=null;$id('impNom').value='';$id('impAn').value='';$id('impDef').checked=false;
  $id('impVide').style.display='';$id('impTravail').style.display='none';impBrAff()}
 function impCalc(){IMP.M=modele(IMP.pts,$id('impDef').checked)}
 function impBornes(){const F=impF(),W=IMP.W,H=IMP.H;const c=[[0,0],[W,0],[W,H],[0,H],[W/2,0],[W,H/2],[W/2,H],[0,H/2]].map(p=>{const q=F(p);return map.unproject(L.point(q[0],q[1]),20)});return L.latLngBounds(c)}
@@ -2272,7 +2272,7 @@ map.on('click',e=>{if(!IMP.on||!IMP.pick)return;e.anFait=true;
 function impUndo(){const p=IMP.pts[IMP.pts.length-1];if(!p)return;if(p.m){p.m=null;IMP.att='carte'}else{IMP.pts.pop();IMP.att='plan'}impCalc();impMaj();impLy.redraw();brSauve()}
 async function impBrAff(){const el=$id('impBr');el.innerHTML='';const b=await brGet();if(!b||IMP.on)return;
  el.innerHTML=`<div class="impCarte">📝 Plan en cours : <b>${anEsc(b.nom||b.file&&b.file.name||'sans nom')}</b> (${b.pts.length} points)<div class="outils" style="margin-top:6px"><button id="impBrR">▶ Reprendre</button><button id="impBrX">🗑 Jeter</button></div></div>`;
- $id('impBrR').onclick=async()=>{if(b.edit){const p=P.find(q=>q.id===b.edit);if(p)IMP.edit=p}impOuvrir(b.file,b)};$id('impBrX').onclick=async()=>{if(!confirm('Jeter ce plan en cours ?'))return;await brSet(null);impBrAff()}}
+ $id('impBrR').onclick=async()=>{if(b.edit){const p=P.find(q=>q.id===b.edit);if(p)IMP.edit=p}if(b.remplace){const p=P.find(q=>q.id===b.remplace);if(p)IMP.remplace=p}impOuvrir(b.file,b)};$id('impBrX').onclick=async()=>{if(!confirm('Jeter ce plan en cours ?'))return;await brSet(null);impBrAff()}}
 
 // ---- envoi : découpe en tuiles pleine qualité, paquets chiffrés, un seul enregistrement GitHub ----
 async function gh(path,opt={}){for(let k=0;k<6;k++){let r;try{r=await fetch(UPA+path,{...opt,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+NTOK,...(opt.body?{'Content-Type':'application/json'}:{})},cache:'no-store'})}catch(e){await dodo(3000*(k+1));continue}
@@ -2315,6 +2315,7 @@ async function impEnvoyer(){const nom=$id('impNom').value.trim();if(!nom){impMsg
   prog('Recherche de la commune…');let com=null,dep='Autres plans';const ctr=map.unproject(L.point(c[0],c[1]),20);
   try{const r=await fetch(`https://geo.api.gouv.fr/communes?lat=${ctr.lat.toFixed(5)}&lon=${ctr.lng.toFixed(5)}&fields=nom,code,departement`);const j=await r.json();if(j[0]){com=j[0].nom;dep=j[0].departement?`${j[0].departement.nom} (${j[0].departement.code})`:dep}}catch(e){}
   if(ed&&!com){com=ed.com;dep=ed.dep}
+  const rp=IMP.remplace||(ed&&ed.remplace?{id:ed.remplace,com:ed.com,dep:ed.dep}:null);if(rp&&rp.com){com=rp.com;dep=rp.dep}
   // image pleine qualité + niveaux réduits
   prog('Préparation de l’image en pleine qualité…');let full=await createImageBitmap(IMP.file);if(full.width!==W||full.height!==H)throw new Error('image différente');
   const niv=[];let cur=full,f=1;while(true){niv.push({f,m:await decoupe(cur)});if(Math.max(cur.width,cur.height)<=512||niv.length>8)break;
@@ -2369,7 +2370,7 @@ async function impEnvoyer(){const nom=$id('impNom').value.trim();if(!nom){impMsg
   const e={id,v,u:1,nom:nom+(an&&!nom.includes(an)?' ('+an+')':''),nomO:nom,an,com:com||undefined,dep,o:3,ok:'👤',d:'u/'+id,
    t:`Plan ajouté par ${(ed?ed.an_:USER)||'un utilisateur'}${ed?' · calage modifié par '+(USER||'un utilisateur')+' le '+auj:' le '+auj} — calé sur ${M.n} points${M.tps?' (déformation suivie)':''}`,
    a:ed?ed.a:(UP.moi||null),an_:ed?ed.an_:(USER||null),cree:ed?ed.cree:Date.now(),mod:Date.now(),
-   contour:ll.map(p=>[+p.lng.toFixed(7),+p.lat.toFixed(7)]),multi:false,bbox:[Math.min(...ll.map(p=>p.lng)),Math.min(...ll.map(p=>p.lat)),Math.max(...ll.map(p=>p.lng)),Math.max(...ll.map(p=>p.lat))].map(x=>+x.toFixed(7)),
+   remplace:rp?rp.id:undefined,contour:ll.map(p=>[+p.lng.toFixed(7),+p.lat.toFixed(7)]),multi:false,bbox:[Math.min(...ll.map(p=>p.lng)),Math.min(...ll.map(p=>p.lat)),Math.max(...ll.map(p=>p.lng)),Math.max(...ll.map(p=>p.lat))].map(x=>+x.toFixed(7)),
    min:Math.max(10,minNat-1),minNat,nat,pk,org,pts:IMP.pts.filter(p=>p.m).map(p=>[Math.round(p.i[0]*10)/10,Math.round(p.i[1]*10)/10,+p.m.lat.toFixed(7),+p.m.lng.toFixed(7)]),def:!!M.tps};
   if(e.t.includes('undefined'))e.t=e.t.replace(/undefined/g,'un utilisateur');
   await upCommit(fich,idx=>{idx.plans=idx.plans.filter(p=>p.id!==id);idx.plans.push(e);return idx},(ed?'Calage modifié : ':'Plan ajouté : ')+id);
@@ -2414,4 +2415,29 @@ async function pdfEnImage(f){impMsg('Ouverture du PDF…');const lib=await pdfCh
  $id('impAnn').onclick=async()=>{if(IMP.pts.length&&!confirm('Abandonner ce plan ? Les points placés seront perdus.'))return;await brSet(null);impFin()};
  setTimeout(impBrAff,1500)}
 
+
+// ---- planches « à caler » : on les cale avec l'outil, puis elles remplacent l'ancienne pour tout le monde ----
+async function impCalerPlanche(p){if(IMP.on){info.textContent='Termine d’abord le plan en cours.';return}
+ const d=$id('rub-caler');if(d&&!d.open)d.querySelector('summary').click();impMsg('Ouverture de la planche…');
+ try{const buf=await lire(p.adj.img,p.o);if(!buf)throw new Error('image introuvable');
+  const a=(p.layer&&p.layer.p&&p.layer.p.c)?p.layer.p:p.adj;const c=L.latLng(a.c),C=map.project(c,20),s=a.m*256*2**20/40075016.68557849,r=a.r*Math.PI/180;
+  const w=p.adj.w,h=p.adj.h,co=Math.cos(r)*s,si=Math.sin(r)*s;const H=[[co,-si,C.x-(co*w/2-si*h/2)],[si,co,C.y-(si*w/2+co*h/2)],[0,0,1]],Hi=inv3(H);
+  IMP.dep0={F:q=>app3(H,q),G:q=>app3(Hi,q),H};IMP.remplace=p;IMP.edit=null;IMP.nouvelleImage=true;await brSet(null);
+  if(p.layer)decharge(p);
+  await impOuvrir(new File([buf],p.id+'.webp',{type:'image/webp'}),{pts:[],nom:p.nom.replace(/\s*–\s*à caler\s*$/,''),an:'',def:false});
+  map.fitBounds(impBornes(),{maxZoom:19})}
+ catch(e){impMsg('⚠️ Impossible d’ouvrir la planche : '+anEsc(e.message))}}
+// coordonnées Lambert I lues sur la planche (croix du quadrillage) au lieu de toucher la carte
+let prjPret=null;function prjCharger(){if(!prjPret)prjPret=new Promise((ok,ko)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js';sc.onload=()=>ok(proj4);sc.onerror=()=>{prjPret=null;ko(new Error('réseau'))};document.head.appendChild(sc)});return prjPret}
+const LAMB1='+proj=lcc +lat_1=49.50000000000001 +lat_0=49.50000000000001 +lon_0=0 +k_0=0.999877341 +x_0=600000 +y_0=Y0 +a=6378249.2 +b=6356515 +towgs84=-168,-60,320,0,0,0,0 +pm=paris +units=m +no_defs';
+const nb=t=>{if(t==null)return NaN;t=String(t).replace(/[\s  ]/g,'');if(/^\d+,\d+$/.test(t))t=t.replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(t))t=t.replace(/\./g,'');return parseFloat(t)};
+async function impXY(){if(!IMP.pick)return;if(IMP.att!=='carte'){info.textContent='Touche d’abord le point (la croix) sur le plan.';return}
+ let X=nb(prompt('Coordonnée X (Lambert I) lue sur le plan pour ce point :\n(en mètres ou en km, ex. 590 100 ou 590,1)'));if(!isFinite(X))return;
+ let Y=nb(prompt('Coordonnée Y (Lambert I) pour ce point :\n(ex. 130 200 ou 130,2)'));if(!isFinite(Y))return;
+ if(X<5000){X*=1000;Y*=1000}const y0=Y>1e6?1200000:200000;
+ let pr;try{pr=await prjCharger()}catch(e){info.textContent='Calcul impossible (pas de réseau).';return}
+ const [lon,lat]=pr(LAMB1.replace('Y0',y0),'WGS84',[X,Y]);if(!isFinite(lat)||Math.abs(lat-48.8)>2||Math.abs(lon-2.3)>3){info.textContent='Ces coordonnées tombent loin de l’Île-de-France : vérifie X et Y.';return}
+ const p=IMP.pts[IMP.pts.length-1];if(!p||p.m)return;p.m=L.latLng(lat,lon);p.xy=[X,Y];IMP.att='plan';impCalc();impMaj();impLy.redraw();brSauve();
+ if(IMP.M&&IMP.M.n>=2)map.panTo(p.m)}
+$id('impBarX').onclick=impXY;
 </script></body></html>
