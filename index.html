@@ -246,6 +246,12 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p:not(.ferme) #tete{z-index:30;background:rgba(246,248,250,.97)!important;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
 #p:not(.ferme) .rub[open]>summary{position:sticky;top:calc(var(--th,36px) - 8px);z-index:29;background:rgba(246,248,250,.97);margin:0 -10px;padding-left:12px;padding-right:12px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
 @media (max-width:640px){#p:not(.ferme) .rub[open]>summary{margin:0 -12px;padding-left:14px;padding-right:14px}}
+/* menu sombre */
+#p.sombre:not(.ferme){filter:invert(.9) hue-rotate(180deg);background:rgba(250,250,250,.98)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#p.sombre:not(.ferme) img,#p.sombre:not(.ferme) canvas,#p.sombre:not(.ferme) video{filter:invert(1) hue-rotate(180deg)}
+#p.sombre:not(.ferme) #tete,#p.sombre:not(.ferme) .rub[open]>summary{background:rgba(250,250,250,1)!important}
+/* glisser pour fermer */
+#p.glisse{transition:none!important}#p.revient{transition:transform .2s ease}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -339,7 +345,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
   <div class="sec"><h4>⚙️ Compte et réglages</h4>
    <div id="cpt" style="font-size:12px"></div>
-   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><div class="cou" id="netRow"><label><input id="net" type="checkbox"> Netteté des plans</label><select id="netF" title="Force de la netteté"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
+   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><div class="cou" id="themeRow" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><label style="flex:1">🌙 Menu sombre</label><select id="theme" style="width:auto!important;flex:none" title="Couleur du menu"><option value="clair">non</option><option value="sombre">oui</option><option value="auto">auto (selon l'appareil)</option></select></div><div class="cou" id="netRow"><label><input id="net" type="checkbox"> Netteté des plans</label><select id="netF" title="Force de la netteté"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
    <div class="outils" style="display:none"><button id="bLien" title="Copier un lien vers la vue actuelle">🔗 Lien de la vue</button><button id="bLock" title="Oublier le code sur cet appareil">🔒 Verrouiller</button></div>
    <div id="info"></div></div>
  </div>
@@ -902,6 +908,28 @@ window.addEventListener('hashchange',()=>{const v=lireHash();if(v)map.setView([v
 const pan=document.getElementById('p');if(store.get('ferme',window.innerWidth<600))pan.classList.add('ferme');
 document.getElementById('pli').onclick=()=>{pan.classList.toggle('ferme');store.set('ferme',pan.classList.contains('ferme'))};
 try{const _t=document.getElementById('tete'),_m=()=>pan.style.setProperty('--th',_t.offsetHeight+'px');_m();new ResizeObserver(_m).observe(_t)}catch(e){}
+// ---------- menu sombre ----------
+{const sel=document.getElementById('theme'),mq=matchMedia('(prefers-color-scheme: dark)');
+ const app=()=>{const v=sel.value;pan.classList.toggle('sombre',v==='sombre'||(v==='auto'&&mq.matches))};
+ sel.value=store.get('themeMenu','clair');app();sel.onchange=()=>{store.set('themeMenu',sel.value);app()};
+ try{mq.addEventListener('change',app)}catch(e){}}
+// ---------- glisser le menu pour le fermer (vers la droite ; vers le bas sur téléphone) ----------
+{const tel=()=>innerWidth<=640;let d=null;
+ const exclu=t=>t.closest('input,select,textarea,.poi,.leaflet-container,[draggable=true]');
+ pan.addEventListener('touchstart',e=>{if(pan.classList.contains('ferme')||e.touches.length!==1||exclu(e.target)){d=null;return}
+  const t=e.touches[0];d={x:t.clientX,y:t.clientY,sc:pan.scrollTop,mode:null}},{passive:true});
+ pan.addEventListener('touchmove',e=>{if(!d)return;const t=e.touches[0],dx=t.clientX-d.x,dy=t.clientY-d.y;
+  if(!d.mode){if(Math.abs(dx)<12&&Math.abs(dy)<12)return;
+   if(!tel()&&dx>0&&Math.abs(dx)>Math.abs(dy)*1.6)d.mode='x';
+   else if(tel()&&dy>0&&d.sc<=0&&pan.scrollTop<=0&&Math.abs(dy)>Math.abs(dx)*1.6)d.mode='y';
+   else{d=null;return}pan.classList.add('glisse')}
+  const v=d.mode==='x'?Math.max(0,dx):Math.max(0,dy);d.v=v;pan.style.transform=d.mode==='x'?`translateX(${v}px)`:`translateY(${v}px)`;
+  if(e.cancelable)e.preventDefault()},{passive:false});
+ const fin=()=>{if(!d||!d.mode){d=null;return}const lim=d.mode==='x'?Math.min(110,pan.offsetWidth*.3):90;pan.classList.remove('glisse');
+  if((d.v||0)>lim){pan.style.transform='';pan.classList.add('ferme');store.set('ferme',true)}
+  else{pan.classList.add('revient');pan.style.transform='';setTimeout(()=>pan.classList.remove('revient'),220)}d=null};
+ pan.addEventListener('touchend',fin);pan.addEventListener('touchcancel',fin)}
+
 L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan);
 const info=document.getElementById('info');
 
