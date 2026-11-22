@@ -242,8 +242,9 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #impBarN{font-size:12px;color:#666}
 @media (max-width:640px){#impBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom))}}
 /* menu : ☰ et titre de la rubrique ouverte restent visibles en défilant */
-@media (min-width:641px){#tete{position:sticky;top:-8px;z-index:3;margin:-8px -10px 0;padding:8px 10px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}}
-#p:not(.ferme) .rub[open]>summary{position:sticky;top:calc(var(--th,36px) - 8px);z-index:2;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin:0 -10px;padding-left:12px;padding-right:12px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+@media (min-width:641px){#p:not(.ferme) #tete{position:sticky;top:-8px;margin:-8px -10px 0;padding:8px 10px}}
+#p:not(.ferme) #tete{z-index:30;background:rgba(246,248,250,.97)!important;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
+#p:not(.ferme) .rub[open]>summary{position:sticky;top:calc(var(--th,36px) - 8px);z-index:29;background:rgba(246,248,250,.97);margin:0 -10px;padding-left:12px;padding-right:12px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
 @media (max-width:640px){#p:not(.ferme) .rub[open]>summary{margin:0 -12px;padding-left:14px;padding-right:14px}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
