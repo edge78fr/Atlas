@@ -247,9 +247,21 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p:not(.ferme) .rub[open]>summary{position:sticky;top:calc(var(--th,36px) - 8px);z-index:29;background:rgba(246,248,250,.97);margin:0 -10px;padding-left:12px;padding-right:12px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
 @media (max-width:640px){#p:not(.ferme) .rub[open]>summary{margin:0 -12px;padding-left:14px;padding-right:14px}}
 /* menu sombre */
-#p.sombre:not(.ferme){filter:invert(.9) hue-rotate(180deg);background:rgba(250,250,250,.98)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-#p.sombre:not(.ferme) img,#p.sombre:not(.ferme) canvas,#p.sombre:not(.ferme) video{filter:invert(1) hue-rotate(180deg)}
-#p.sombre:not(.ferme) #tete,#p.sombre:not(.ferme) .rub[open]>summary{background:rgba(250,250,250,1)!important}
+#p.sombre:not(.ferme){background:#1c1f24!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-color:#30343b!important;color:#e4e6ea;box-shadow:0 8px 28px rgba(0,0,0,.5)!important}
+#p.sombre:not(.ferme) *{color:#dfe2e6;border-color:#383d45}
+#p.sombre [style*="color:#000"],#p.sombre [style*="color:#111"],#p.sombre [style*="color:#222"],#p.sombre [style*="color:#333"],#p.sombre [style*="color:#444"],#p.sombre [style*="color:#555"],#p.sombre [style*="color:#666"],#p.sombre [style*="color:#777"],#p.sombre [style*="color:#888"],#p.sombre [style*="color:#999"],#p.sombre [style*="color:#aaa"]{color:#b9bec6!important}
+#p.sombre:not(.ferme) #tete,#p.sombre:not(.ferme) .rub[open]>summary{background:#1c1f24!important;box-shadow:0 1px 0 #30343b}
+#p.sombre .rub>summary,#p.sombre .sousrub>summary,#p.sombre .tg>summary,#p.sombre .tgH>summary{color:#aeb4bd}
+#p.sombre .sec{border-top-color:#2c3036}
+#p.sombre :is(button,select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range])){background:#2a2e35!important;border:1px solid #3d424a!important;color:#e8eaee!important;box-shadow:none!important}
+#p.sombre button:hover{background:#343943!important}
+#p.sombre :is(.actif,.on,button.on){background:#26364d!important;border-color:#3d6fb5!important;color:#fff!important}
+#p.sombre details.dep>summary,#p.sombre #ordre,#p.sombre .impCarte,#p.sombre .doc,#p.sombre .aj,#p.sombre .sup,#p.sombre .cAj,#p.sombre [style*="background:#fff"],#p.sombre [style*="background:#f6"],#p.sombre [style*="background:#f3"],#p.sombre [style*="background:rgba(255,255,255"]{background:#262a31!important}
+#p.sombre .impBtn{background:#2f5ea8!important;color:#fff!important;border-color:#3d6fb5!important}#p.sombre #plOng{background:#23272d!important}
+#p.sombre ::placeholder{color:#8a9099}
+#p.sombre a{color:#7fb2ff}
+#p.sombre input[type=checkbox],#p.sombre input[type=radio],#p.sombre input[type=range]{accent-color:#5b9cff;color-scheme:dark}
+#p.sombre select{color-scheme:dark}
 /* glisser pour fermer */
 #p.glisse{transition:none!important}#p.revient{transition:transform .2s ease}
 </style></head><body>
@@ -345,7 +357,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div id="hlMini" style="font-size:12.5px;margin-bottom:4px"></div><button id="bHL" style="width:100%">📥 Télécharger / gérer mes secteurs</button><button id="bEX" style="width:100%;margin-top:6px">🖨️ Exporter une zone (PDF / image)</button></div>
   <div class="sec"><h4>⚙️ Compte et réglages</h4>
    <div id="cpt" style="font-size:12px"></div>
-   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><div class="cou" id="themeRow" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><label style="flex:1">🌙 Menu sombre</label><select id="theme" style="width:auto!important;flex:none" title="Couleur du menu"><option value="clair">non</option><option value="sombre">oui</option><option value="auto">auto (selon l'appareil)</option></select></div><div class="cou" id="netRow"><label><input id="net" type="checkbox"> Netteté des plans</label><select id="netF" title="Force de la netteté"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
+   <button id="bMenuEd" style="width:100%;margin:8px 0 2px">🧩 Organiser le menu (bouger, renommer, créer des onglets)</button><div style="font-weight:600;font-size:12px;margin:10px 0 3px">Affichage</div><button id="theme" type="button" style="width:100%;margin:2px 0 6px">🌙 Menu sombre : non</button><div class="cou" id="netRow"><label><input id="net" type="checkbox"> Netteté des plans</label><select id="netF" title="Force de la netteté"><option value="1">douce</option><option value="2" selected>moyenne</option><option value="3">forte</option></select></div>
    <div class="outils" style="display:none"><button id="bLien" title="Copier un lien vers la vue actuelle">🔗 Lien de la vue</button><button id="bLock" title="Oublier le code sur cet appareil">🔒 Verrouiller</button></div>
    <div id="info"></div></div>
  </div>
@@ -909,10 +921,9 @@ const pan=document.getElementById('p');if(store.get('ferme',window.innerWidth<60
 document.getElementById('pli').onclick=()=>{pan.classList.toggle('ferme');store.set('ferme',pan.classList.contains('ferme'))};
 try{const _t=document.getElementById('tete'),_m=()=>pan.style.setProperty('--th',_t.offsetHeight+'px');_m();new ResizeObserver(_m).observe(_t)}catch(e){}
 // ---------- menu sombre ----------
-{const sel=document.getElementById('theme'),mq=matchMedia('(prefers-color-scheme: dark)');
- const app=()=>{const v=sel.value;pan.classList.toggle('sombre',v==='sombre'||(v==='auto'&&mq.matches))};
- sel.value=store.get('themeMenu','clair');app();sel.onchange=()=>{store.set('themeMenu',sel.value);app()};
- try{mq.addEventListener('change',app)}catch(e){}}
+{const bt=document.getElementById('theme');let v=!!store.get('menuSombre',false);
+ const app=()=>{pan.classList.toggle('sombre',v);bt.textContent=v?'☀️ Menu clair':'🌙 Menu sombre';bt.title=v?'Repasser le menu en clair':'Passer le menu en sombre'};
+ app();bt.onclick=()=>{v=!v;store.set('menuSombre',v);app()}}
 // ---------- glisser le menu pour le fermer (vers la droite ; vers le bas sur téléphone) ----------
 {const tel=()=>innerWidth<=640;let d=null;
  const exclu=t=>t.closest('input,select,textarea,.poi,.leaflet-container,[draggable=true]');
