@@ -557,7 +557,9 @@ function compteurs(){try{const f=document.getElementById('cptF'),c=document.getE
   const cbs=[...d.querySelectorAll('.cou > label > input[type=checkbox], .fond-item .fond-titre > input[type=checkbox]')];k.textContent=cbs.length?cbs.filter(i=>i.checked).length+' / '+cbs.length:''})}catch(e){}}
 document.addEventListener('change',()=>setTimeout(compteurs,0));setInterval(compteurs,2000);
 {const app=document.createElement('div');app.id='app';document.body.appendChild(app);for(const id of ['p','fiche','adjB','adjP','bulle']){const e=document.getElementById(id);if(e)app.appendChild(e)}}
-const map=L.map('m',{zoomControl:true,maxZoom:22,zoomSnap:0.5,wheelPxPerZoomLevel:90});
+// dans l'appli Android (WebView), zoom par niveau entier : évite les fines lignes entre les tuiles
+const APPLI=/; wv\)/.test(navigator.userAgent);
+const map=L.map('m',{zoomControl:true,maxZoom:22,zoomSnap:APPLI?1:0.5,wheelPxPerZoomLevel:90});
 map.createPane('plans').style.zIndex=250;map.createPane('pvaImg').style.zIndex=245;map.getPane('pvaImg').style.pointerEvents='none';map.createPane('pvaFp').style.zIndex=355;
 document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute"><filter id="netS" color-interpolation-filters="sRGB"><feConvolveMatrix id="netK" order="3" preserveAlpha="true" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"/></filter></svg>');
 function netMaj(){const on=store.get('net',false),f=+store.get('netF',2),a=[0,0.4,0.8,1.3][f],c=[1,1.1,1.2,1.35][f];document.getElementById('netK').setAttribute('kernelMatrix',`0 ${-a} 0 ${-a} ${1+4*a} ${-a} 0 ${-a} 0`);map.getPane('plans').style.filter=on?`url(#netS) contrast(${c})`:'';const cb=document.getElementById('net'),se=document.getElementById('netF');cb.checked=on;se.value=f;cb.onchange=()=>{store.set('net',cb.checked);netMaj()};se.onchange=()=>{store.set('netF',+se.value);store.set('net',true);netMaj()}}
