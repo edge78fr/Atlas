@@ -241,6 +241,10 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #impBar button{border:1px solid rgba(0,0,0,.1);background:#fff;border-radius:10px;padding:8px 12px;font-size:15px;cursor:pointer}#impBar button.ok{margin-left:auto;background:#1a6fd6;color:#fff;border-color:#1a6fd6;font-size:13.5px;font-weight:600}
 #impBarN{font-size:12px;color:#666}
 @media (max-width:640px){#impBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom))}}
+/* menu : ☰ et titre de la rubrique ouverte restent visibles en défilant */
+@media (min-width:641px){#tete{position:sticky;top:-8px;z-index:3;margin:-8px -10px 0;padding:8px 10px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}}
+#p:not(.ferme) .rub[open]>summary{position:sticky;top:calc(var(--th,36px) - 8px);z-index:2;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin:0 -10px;padding-left:12px;padding-right:12px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+@media (max-width:640px){#p:not(.ferme) .rub[open]>summary{margin:0 -12px;padding-left:14px;padding-right:14px}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -396,7 +400,7 @@ function initialiserMenusRepliables(){
   details.open=false; // tout replié au lancement
   details.addEventListener('toggle',()=>{store.set('rub_'+id,details.open);
    // une seule rubrique ouverte à la fois
-   if(details.open){document.querySelectorAll('details.rub').forEach(d=>{if(d!==details&&d.open)d.open=false});setTimeout(()=>{try{summary.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}},30)}});
+   if(details.open){document.querySelectorAll('details.rub').forEach(d=>{if(d!==details&&d.open)d.open=false});setTimeout(()=>{try{summary.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}},30)}else{try{summary.scrollIntoView({block:'nearest'})}catch(e){}}});
  });
  const fondBody=document.querySelector('#rub-couches > .rub-body');
  const noms=['cadastre','carrieres','aqueducs','divers'];
@@ -896,6 +900,7 @@ map.on('moveend',()=>{const c=map.getCenter(),z=map.getZoom();history.replaceSta
 window.addEventListener('hashchange',()=>{const v=lireHash();if(v)map.setView([v[0],v[1]],v[2])});
 const pan=document.getElementById('p');if(store.get('ferme',window.innerWidth<600))pan.classList.add('ferme');
 document.getElementById('pli').onclick=()=>{pan.classList.toggle('ferme');store.set('ferme',pan.classList.contains('ferme'))};
+try{const _t=document.getElementById('tete'),_m=()=>pan.style.setProperty('--th',_t.offsetHeight+'px');_m();new ResizeObserver(_m).observe(_t)}catch(e){}
 L.DomEvent.disableClickPropagation(pan);L.DomEvent.disableScrollPropagation(pan);
 const info=document.getElementById('info');
 
