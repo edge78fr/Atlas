@@ -264,6 +264,20 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #p.sombre select{color-scheme:dark}
 /* glisser pour fermer */
 #p.glisse{transition:none!important}#p.revient{transition:transform .2s ease}
+/* nouveautés */
+.nvb{font-size:12px;margin:0 2px 0 0;flex:none}
+#nvBox{position:fixed;z-index:3000;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%);width:min(440px,calc(100vw - 24px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;color:#222;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);font:14px -apple-system,system-ui,sans-serif;overflow:hidden;animation:nvIn .25s ease}
+@keyframes nvIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+#nvBox .nvH{display:flex;align-items:center;gap:8px;padding:12px 12px 10px 16px;border-bottom:1px solid #eee}
+#nvBox .nvH b{flex:1;font-size:15px}
+#nvBox .nvX{border:0;background:#f1f2f4;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;color:#333}
+#nvBox .nvC{overflow:auto;padding:6px 16px 14px}
+#nvBox h5{margin:12px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#777}
+#nvBox .nvI{padding:6px 8px;margin:2px -8px;border-radius:8px;cursor:pointer;line-height:1.3}
+#nvBox .nvI:hover{background:#f2f5fa}#nvBox .nvF{cursor:default}#nvBox .nvF:hover{background:none}
+#nvBox .nvI small{color:#888;display:block;font-size:12px}
+#nvBox details{margin:2px 0}#nvBox summary{cursor:pointer;padding:5px 0;font-weight:600}#nvBox summary span{color:#888;font-weight:400}
+#nvBox.sombre{background:#1c1f24;color:#e4e6ea}#nvBox.sombre .nvH{border-color:#30343b}#nvBox.sombre .nvX{background:#2a2e35;color:#eee}#nvBox.sombre .nvI:hover{background:#262c36}#nvBox.sombre h5,#nvBox.sombre small,#nvBox.sombre summary span{color:#9aa1ab}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -920,6 +934,41 @@ window.addEventListener('hashchange',()=>{const v=lireHash();if(v)map.setView([v
 const pan=document.getElementById('p');if(store.get('ferme',window.innerWidth<600))pan.classList.add('ferme');
 document.getElementById('pli').onclick=()=>{pan.classList.toggle('ferme');store.set('ferme',pan.classList.contains('ferme'))};
 try{const _t=document.getElementById('tete'),_m=()=>pan.style.setProperty('--th',_t.offsetHeight+'px');_m();new ResizeObserver(_m).observe(_t)}catch(e){}
+
+// ---------- Nouveautés depuis la dernière visite (pop-up) ----------
+// Nouvelles fonctionnalités : ajouter une ligne ici à chaque nouveauté (ts = moment de mise en ligne)
+const NOUV=[
+ {ts:Date.parse('2026-11-22T22:40:00+01:00'),t:'📌 Le titre de la rubrique ouverte reste visible quand tu fais défiler le menu'},
+ {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'🌙 Menu sombre : bouton dans ⚙️ Compte et réglages → Affichage'},
+ {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'👉 Glisse le menu vers la droite pour le fermer (vers le bas sur téléphone)'},
+ {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
+];
+const NV={ids:new Map(),plans:[],feats:[]};
+function nvCalc(plans){
+ let ses=null;try{ses=JSON.parse(sessionStorage.getItem('atlas_nv')||'null')}catch(e){}
+ if(!ses){const now=Date.now(),prev=+store.get('nv_vu',0)||0,since=prev||now-7*864e5;
+  const pl=[];plans.forEach(p=>{const t=p.u?Math.max(p.cree||0,p.mod||0):(p.maj||0);if(t>since&&t<=now+864e5){
+   const typ=p.u?((p.cree||0)>since?'ajouté':'calage modifié'):(p.majT||'mis à jour');pl.push({id:p.id,typ,t,qui:p.u?(p.an_||''):''})}});
+  ses={since,prem:!prev,pl,fe:NOUV.filter(f=>f.ts>since).map(f=>f.t),vu:false};
+  store.set('nv_vu',now);try{sessionStorage.setItem('atlas_nv',JSON.stringify(ses))}catch(e){}}
+ NV.plans=ses.pl;NV.feats=ses.fe;NV.ses=ses;NV.ids=new Map(ses.pl.map(x=>[x.id,x.typ]))}
+function nvPopup(){const ses=NV.ses;if(!ses||ses.vu||(!NV.plans.length&&!NV.feats.length))return;
+ const box=document.createElement('div');box.id='nvBox';if(pan.classList.contains('sombre'))box.classList.add('sombre');
+ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const byId=new Map(P.map(p=>[p.id,p]));const quand=new Date(ses.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+ let h=`<div class="nvH"><b>🆕 Nouveautés ${ses.prem?'de ces 7 derniers jours':'depuis ta dernière visite'}</b><button class="nvX" title="Fermer">✕</button></div><div class="nvC">`;
+ if(NV.feats.length)h+='<h5>✨ Nouvelles fonctionnalités</h5>'+NV.feats.map(t=>`<div class="nvI nvF">${esc(t)}</div>`).join('');
+ const ligne=x=>{const p=byId.get(x.id);if(!p)return'';return `<div class="nvI" data-id="${esc(x.id)}">${esc(p.nom)}<small>${esc(x.typ)}${x.qui?' par '+esc(x.qui):''} · ${new Date(x.t).toLocaleDateString('fr-FR')}</small></div>`};
+ const grp=(titre,L)=>{if(!L.length)return'';let o=`<h5>${titre} (${L.length})</h5>`;
+  if(L.length<=6)return o+L.map(ligne).join('');
+  const C={};L.forEach(x=>{const p=byId.get(x.id);const c=p?(p.com||p.dep||'Autres'):'Autres';(C[c]=C[c]||[]).push(x)});
+  return o+Object.keys(C).sort((a,b)=>a.localeCompare(b,'fr')).map(c=>`<details><summary>${esc(c)} <span>${C[c].length}</span></summary>${C[c].map(ligne).join('')}</details>`).join('')};
+ h+=grp('📐 Plans ajoutés',NV.plans.filter(x=>x.typ==='ajouté'));
+ h+=grp('🎯 Plans recalés ou modifiés',NV.plans.filter(x=>x.typ!=='ajouté'));
+ box.innerHTML=h+'</div>';document.body.appendChild(box);
+ const ferme=()=>{box.remove();ses.vu=true;try{sessionStorage.setItem('atlas_nv',JSON.stringify(ses))}catch(e){}};
+ box.querySelector('.nvX').onclick=ferme;
+ box.querySelectorAll('.nvI[data-id]').forEach(el=>el.onclick=()=>{const p=byId.get(el.dataset.id);if(p){charge(p,true);ferme()}})}
 // ---------- menu sombre ----------
 {const bt=document.getElementById('theme');let v=!!store.get('menuSombre',false);
  const app=()=>{pan.classList.toggle('sombre',v);bt.textContent=v?'☀️ Menu clair':'🌙 Menu sombre';bt.title=v?'Repasser le menu en clair':'Passer le menu en sombre'};
@@ -1110,7 +1159,7 @@ setInterval(()=>{const r=document.getElementById('rub-favoris');if(r&&r.open)fav
 favAff();
 {const ip0=initPlans;initPlans=function(...x){const r=ip0.apply(this,x);try{favAff();if(favMode)favStars()}catch(e){}return r}}
 const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
-async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(aquCb.checked)aquOn();{const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}initPlans(pj);setTimeout(upDroitsMaj,3000)}fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
+async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(aquCb.checked)aquOn();{const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}try{nvCalc(pj.plans)}catch(e){}initPlans(pj);setTimeout(upDroitsMaj,3000);setTimeout(()=>{try{nvPopup()}catch(e){}},1200)}fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
 let mode='u',DKtmp=null;const $id=i=>document.getElementById(i);
 function lockMode(m,txt){mode=m;$id('modeU').style.display=m==='u'?'':'none';$id('modeC').style.display=m==='c'?'':'none';$id('modeN').style.display=m==='n'?'':'none';
  $id('bGo').textContent=m==='u'?'Se connecter':m==='c'?'Valider le code':'Envoyer ma demande';$id('basc').textContent=m==='u'?"Pas encore de compte ? Entre le code d'accès":'← Retour à la connexion';
@@ -1228,8 +1277,9 @@ function initPlans(j){
     d.innerHTML=`<summary><span>${c}</span><span class="cn"></span></summary>`;d.ontoggle=()=>{if(document.getElementById('filtre').value)return;comOuv[dep+'|'+c]=d.open;store.set('comOuv',comOuv)};coms[c]=d}return coms[c]};
   ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;if(p.nomO===undefined)p.nomO=p.nom;{const nn=store.get('nom_'+p.id,null);if(nn)p.nom=nn}
    const r=document.createElement('div');r.className='plan';r.dataset.nom=sansAcc(p.nom+' '+dep);
-   r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><button class="sup" title="Supprimer ce plan de l'atlas (sur tous les appareils, restaurable)">🗑</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
-   const [cb,nm,,bt,aj,rn,sp,rg]=r.children;
+   r.innerHTML=`<input type="checkbox" title="Charger / décharger">${NV.ids.has(p.id)?'<span class="nvb" title="'+(NV.ids.get(p.id))+' depuis ta dernière visite">🆕</span>':''}<span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><button class="sup" title="Supprimer ce plan de l'atlas (sur tous les appareils, restaurable)">🗑</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
+   const nvb=r.querySelector('.nvb');if(nvb)nvb.remove();
+   const [cb,nm,,bt,aj,rn,sp,rg]=r.children;if(nvb)r.insertBefore(nvb,nm);
    sp.onclick=()=>{if(!confirm('Supprimer « '+p.nom+' » de l\'atlas ?\n(Il disparaît sur tous tes appareils ; tu peux le restaurer en bas de la liste.)'))return;pmSet(p.id,1)};p.ui={cb,row:r,aj};ajBtn(p);
    rn.onclick=()=>{const v=prompt('Nouveau nom (vide = nom d\'origine) :',p.nom);if(v===null)return;const t=v.trim();store.set('nom_'+p.id,t&&t!==p.nomO?t:null);p.nom=t||p.nomO;nm.textContent=p.nom;nm.title='Aller sur '+p.nom;r.dataset.nom=sansAcc(p.nom+' '+dep);p.poly&&p.poly.setTooltipContent(p.nom);ordreMaj()};
    aj.onclick=()=>{if(verrou(p)){if(confirm('« '+p.nom+' » est verrouillé. Le déverrouiller pour l\'ajuster ?')){store.set('lock_'+p.id,false);ajBtn(p)}return}if(adjEd)adjFin(false);adjDebut(p);plier()};
