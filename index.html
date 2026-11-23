@@ -969,6 +969,32 @@ function nvPopup(){const ses=NV.ses;if(!ses||ses.vu||(!NV.plans.length&&!NV.feat
  const ferme=()=>{box.remove();ses.vu=true;try{sessionStorage.setItem('atlas_nv',JSON.stringify(ses))}catch(e){}};
  box.querySelector('.nvX').onclick=ferme;
  box.querySelectorAll('.nvI[data-id]').forEach(el=>el.onclick=()=>{const p=byId.get(el.dataset.id);if(p){charge(p,true);ferme()}})}
+
+// ---------- Nouveautés quand l'appli revient au premier plan / en ligne (sans fermer l'onglet) ----------
+const NVR={last:Date.now(),vus:new Set(),h0:null};
+async function nvEmpreinte(){const t=await (await fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?v='+Date.now(),{cache:'no-store'})).text();let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return t.length+':'+h}
+setTimeout(async()=>{try{if(navigator.onLine)NVR.h0=await nvEmpreinte()}catch(e){}},15000);
+async function nvReprise(force){if(!navigator.onLine||document.hidden||document.getElementById('nvBox'))return;
+ if(!force&&Date.now()-NVR.last<5*60e3)return;NVR.last=Date.now();
+ let neuf=[],maj=false;
+ try{const h=await nvEmpreinte();maj=!!(h&&NVR.h0&&h!==NVR.h0)}catch(e){}
+ try{const buf=await lire('plans.json');if(buf){const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}
+  const vu=+store.get('nv_vu',0)||0,ids=new Set(P.map(p=>p.id));
+  pj.plans.forEach(p=>{const t=p.u?Math.max(p.cree||0,p.mod||0):(p.maj||0);if(t>vu&&!NVR.vus.has(p.id+'|'+t)&&!(NV.ids.has(p.id)&&(P.find(x=>x.id===p.id)||{}).maj===p.maj)){
+   neuf.push({nom:p.nom,typ:p.u?((p.cree||0)>vu?'ajouté':'calage modifié'):(p.majT||'mis à jour'),qui:p.u?(p.an_||''):'',cle:p.id+'|'+t,nouveauIci:!ids.has(p.id)})}})}}catch(e){}
+ if(!neuf.length&&!maj)return;
+ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const box=document.createElement('div');box.id='nvBox';if(pan.classList.contains('sombre'))box.classList.add('sombre');
+ let h=`<div class="nvH"><b>🆕 Du nouveau dans l'Atlas</b><button class="nvX" title="Fermer">✕</button></div><div class="nvC">`;
+ if(maj)h+='<h5>✨ Nouvelle version</h5><div class="nvI nvF">De nouvelles fonctionnalités sont disponibles. Actualise pour en profiter.</div>';
+ if(neuf.length){h+=`<h5>📐 Plans ajoutés ou recalés (${neuf.length})</h5>`+neuf.slice(0,40).map(x=>`<div class="nvI nvF">${esc(x.nom)}<small>${esc(x.typ)}${x.qui?' par '+esc(x.qui):''}</small></div>`).join('')+(neuf.length>40?`<div class="nvI nvF"><small>… et ${neuf.length-40} autres</small></div>`:'')}
+ h+='<button class="nvGo" style="display:block;width:100%;margin:12px 0 2px;padding:10px;border:0;border-radius:10px;background:#1a6fd6;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer">🔄 Actualiser l\'Atlas pour les voir</button></div>';
+ box.innerHTML=h;document.body.appendChild(box);
+ box.querySelector('.nvX').onclick=()=>{neuf.forEach(x=>NVR.vus.add(x.cle));box.remove()};
+ box.querySelector('.nvGo').onclick=()=>{try{sessionStorage.removeItem('atlas_nv')}catch(e){}location.reload()}}
+addEventListener('online',()=>setTimeout(()=>nvReprise(true),3000));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>nvReprise(false),1500)});
+setInterval(()=>nvReprise(false),30*60e3);
 // ---------- menu sombre ----------
 {const bt=document.getElementById('theme');let v=!!store.get('menuSombre',false);
  const app=()=>{pan.classList.toggle('sombre',v);bt.textContent=v?'☀️ Menu clair':'🌙 Menu sombre';bt.title=v?'Repasser le menu en clair':'Passer le menu en sombre'};
