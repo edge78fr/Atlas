@@ -265,7 +265,8 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 /* glisser pour fermer */
 #p.glisse{transition:none!important}#p.revient{transition:transform .2s ease}
 /* nouveautés */
-.nvb{font-size:12px;margin:0 2px 0 0;flex:none}
+.ic.nv .n>small::before{content:'🆕 ';font-size:.95em}
+.plan.nv .nom::after{content:'🆕';font-size:.8em;margin-left:5px;vertical-align:1px}
 #nvBox{position:fixed;z-index:3000;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%);width:min(440px,calc(100vw - 24px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;color:#222;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);font:14px -apple-system,system-ui,sans-serif;overflow:hidden;animation:nvIn .25s ease}
 @keyframes nvIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
 #nvBox .nvH{display:flex;align-items:center;gap:8px;padding:12px 12px 10px 16px;border-bottom:1px solid #eee}
@@ -1303,9 +1304,8 @@ function initPlans(j){
     d.innerHTML=`<summary><span>${c}</span><span class="cn"></span></summary>`;d.ontoggle=()=>{if(document.getElementById('filtre').value)return;comOuv[dep+'|'+c]=d.open;store.set('comOuv',comOuv)};coms[c]=d}return coms[c]};
   ps.forEach(p=>{const s=etat[p.id]||{on:false,op:1};p.op=s.op;if(p.nomO===undefined)p.nomO=p.nom;{const nn=store.get('nom_'+p.id,null);if(nn)p.nom=nn}
    const r=document.createElement('div');r.className='plan';r.dataset.nom=sansAcc(p.nom+' '+dep);
-   r.innerHTML=`<input type="checkbox" title="Charger / décharger">${NV.ids.has(p.id)?'<span class="nvb" title="'+(NV.ids.get(p.id))+' depuis ta dernière visite">🆕</span>':''}<span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><button class="sup" title="Supprimer ce plan de l'atlas (sur tous les appareils, restaurable)">🗑</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
-   const nvb=r.querySelector('.nvb');if(nvb)nvb.remove();
-   const [cb,nm,,bt,aj,rn,sp,rg]=r.children;if(nvb)r.insertBefore(nvb,nm);
+   r.innerHTML=`<input type="checkbox" title="Charger / décharger"><span class="nom" title="Aller sur ${p.nom}">${p.nom}</span><span class="badge" title="${p.t||''}">${p.ok||'•'}</span><button title="Aller sur ce plan">Aller</button><button class="aj"></button><button class="aj rn" title="Renommer ce plan">✏️</button><button class="sup" title="Supprimer ce plan de l'atlas (sur tous les appareils, restaurable)">🗑</button><input type="range" min="0" max="1" step="0.05" value="${p.op}" title="Transparence">`;
+   const [cb,nm,,bt,aj,rn,sp,rg]=r.children;if(NV.ids.has(p.id)){r.classList.add('nv');r.title=NV.ids.get(p.id)+' depuis ta dernière visite'}
    sp.onclick=()=>{if(!confirm('Supprimer « '+p.nom+' » de l\'atlas ?\n(Il disparaît sur tous tes appareils ; tu peux le restaurer en bas de la liste.)'))return;pmSet(p.id,1)};p.ui={cb,row:r,aj};ajBtn(p);
    rn.onclick=()=>{const v=prompt('Nouveau nom (vide = nom d\'origine) :',p.nom);if(v===null)return;const t=v.trim();store.set('nom_'+p.id,t&&t!==p.nomO?t:null);p.nom=t||p.nomO;nm.textContent=p.nom;nm.title='Aller sur '+p.nom;r.dataset.nom=sansAcc(p.nom+' '+dep);p.poly&&p.poly.setTooltipContent(p.nom);ordreMaj()};
    aj.onclick=()=>{if(verrou(p)){if(confirm('« '+p.nom+' » est verrouillé. Le déverrouiller pour l\'ajuster ?')){store.set('lock_'+p.id,false);ajBtn(p)}return}if(adjEd)adjFin(false);adjDebut(p);plier()};
@@ -1340,7 +1340,7 @@ function iciMaj(){const box=document.getElementById('plIci');if(!box||ONG!=='ici
  const n=document.getElementById('nIci');if(n)n.textContent=L_.length;box.innerHTML='';
  if(!L_.length){box.innerHTML='<div class="vide">Aucun plan à cet endroit.<br>Déplace la carte, ou regarde dans <a href="#" id="versTous">📂 Tous</a>.</div>';box.querySelector('#versTous').onclick=e=>{e.preventDefault();ongletPl('tous')};return}
  const esc_=t=>String(t||'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
- L_.slice(0,40).forEach(({p,d})=>{const r=document.createElement('div');r.className='ic'+(p.layer?' actif':'');
+ L_.slice(0,40).forEach(({p,d})=>{const r=document.createElement('div');r.className='ic'+(p.layer?' actif':'')+(NV.ids.has(p.id)?' nv':'');
   r.innerHTML=`<input type="checkbox"${p.layer?' checked':''} title="Charger / décharger"><span class="n" title="Aller sur ${esc_(p.nom)}">${esc_(courtNom(p))}<small>${esc_(p.com||'')}${d>1000?' · '+(d/1000).toFixed(1)+' km':''}</small></span><span class="badge" title="${esc_(p.t||'')}">${p.ok||'•'}</span>`;
   const [cb,nm]=r.children;cb.onchange=()=>{cb.checked?charge(p,false):decharge(p)};nm.onclick=()=>{charge(p,true);plier()};box.appendChild(r)});
  if(L_.length>40){const m=document.createElement('div');m.className='vide';m.textContent=`+ ${L_.length-40} autres : zoome pour affiner.`;box.appendChild(m)}}
