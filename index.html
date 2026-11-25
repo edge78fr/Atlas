@@ -284,6 +284,18 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .rlModes{display:flex;flex-wrap:wrap;gap:4px}.rlModes button{flex:1 1 auto;font-size:12px;padding:5px 6px}
 #p .rlModes button.on{background:#1a6fd6!important;color:#fff!important;border-color:#1a6fd6!important}
 .rlL{display:flex;flex-direction:column;font-size:12px;gap:2px}.rlL b{font-weight:600;margin-left:4px}.rlL input{width:100%}
+.tg>summary{flex-wrap:wrap}.tgOp{flex-basis:100%;display:flex;align-items:center;gap:6px;padding:0 4px 2px 22px}.tgOp[hidden]{display:none}.tgOp input{flex:1;min-width:0;margin:0;height:18px}.tgOp small{width:36px;text-align:right;color:#888;font-size:11px}
+#ecrB{position:absolute;z-index:1200;left:calc(10px + env(safe-area-inset-left));top:86px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 2px 10px #0005;font-size:20px;padding:0;cursor:pointer}
+#ecrB b{position:absolute;right:-4px;top:-4px;min-width:18px;height:18px;border-radius:9px;background:#1a73e8;color:#fff;font:600 11px/18px system-ui;padding:0 4px}#ecrB b:empty{display:none}#ecrB.on{background:#1a73e8;border-color:#1a73e8}
+#ecrP{position:absolute;z-index:1250;left:calc(62px + env(safe-area-inset-left));top:86px;width:320px;max-height:calc(100% - 110px);overflow:auto;background:rgba(250,251,252,.97);border-radius:12px;box-shadow:0 6px 24px #0005;font:13px system-ui;color:#222;display:none;overscroll-behavior:contain}
+#ecrP.on{display:block}#ecrP .eh{position:sticky;top:0;display:flex;align-items:center;gap:6px;padding:9px 10px;background:inherit;border-bottom:1px solid #e3e6ea;font-weight:700;z-index:1}#ecrP .eh span{flex:1}
+#ecrP .eh button,#ecrP .ei button{border:0;background:#eef1f4;border-radius:6px;padding:3px 7px;font-size:13px;cursor:pointer;color:#333}#ecrP .ei button:disabled{opacity:.3;cursor:default}
+#ecrP .eg{padding:6px 10px 2px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#777}
+#ecrP .ei{padding:5px 10px 7px;border-bottom:1px solid #eef0f2}#ecrP .el{display:flex;align-items:center;gap:4px}#ecrP .en{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ecrP .eo{display:flex;align-items:center;gap:6px;margin-top:3px}#ecrP .eo input{flex:1;margin:0}#ecrP .eo small{width:36px;text-align:right;color:#888}
+#ecrP .ev{padding:16px 12px;color:#777;text-align:center}
+#ecrP.sombre{background:rgba(28,31,36,.97);color:#e6e6e6}#ecrP.sombre .eh{border-color:#333}#ecrP.sombre .ei{border-color:#2c3036}#ecrP.sombre .eh button,#ecrP.sombre .ei button{background:#30353c;color:#ddd}
+@media (max-width:700px){#ecrP{left:8px;right:8px;width:auto;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));max-height:55%}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -991,6 +1003,8 @@ const NOUV=[
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'🌙 Menu sombre : bouton dans ⚙️ Compte et réglages → Affichage'},
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'👉 Glisse le menu vers la droite pour le fermer (vers le bas sur téléphone)'},
  {ts:Date.parse('2026-11-25T15:00:00+01:00'),t:'☀️ Relief LiDAR à soleil réglable (Fonds) : fais tourner le soleil pour faire ressortir les creux et les bosses'},
+ {ts:Date.parse('2026-11-25T17:30:00+01:00'),t:'👁️ Nouveau bouton « À l’écran » (sur la carte, sous le zoom) : tout ce qui est affiché, avec opacité, ordre, zoom et ✕ pour retirer'},
+ {ts:Date.parse('2026-11-25T17:30:00+01:00'),t:'✏️ Plans de terrain : un curseur d’opacité sous chaque plan coché (Terrain → Mes plans de terrain)'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
@@ -1611,7 +1625,7 @@ function anRows(el,g){const c=anCache();
    ...grpChoix(a.g,v=>{if(v)a.g=v;else delete a.g;a.d=Date.now();anSave();grpTout()}),['🗑 Supprimer…',()=>{if(confirm('Supprimer ce point ?')){a.t='';anSuppr(a.id);grpListe()}},1]])};
   el.appendChild(d)})}
 const anCache=()=>new Set(store.get('anCache',[]));
-function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];const c=anCache();ANN.filter(a=>!a.del&&grpVu(a.g)&&!c.has(a.id)).forEach(anPose)}
+function anRefait(){anLay.clearLayers();for(const id in anMk)delete anMk[id];const c=anCache();ANN.filter(a=>!a.del&&grpVu(a.g)&&!c.has(a.id)).forEach(a=>{anPose(a);const o=grpOp(a.g),m=anMk[a.id];if(o<1&&m&&m.setOpacity)m.setOpacity(o)})}
 // à l'ouverture de l'Atlas : tous les plans de terrain sont désactivés (on coche ceux qu'on veut)
 store.set('grpCache',['',...store.get('traces',[]).filter(x=>x.k==='g'&&!x.del).map(x=>x.id)]);store.set('grpOuv',[]);
 anRefait();anListe();
@@ -1710,9 +1724,9 @@ const trCache=()=>new Set(store.get('trCache',[]));const trMontre=x=>store.get('
 window.trOeil=id=>{const c=trCache();c.has(id)?c.delete(id):c.add(id);store.set('trCache',[...c]);trDessine();trListe()};
 function trSave(){store.set('traces',TRC);trListe();if(NTOK){clearTimeout(trTimer);trTimer=setTimeout(()=>trSync().catch(()=>{}),1500)}}
 function trDessine(){trLay.clearLayers();for(const k in trObj)delete trObj[k];
- for(const x of trVis().filter(x=>x.k==='l'&&trMontre(x))){const da=x.s==='t'?'10 8':null;const pl=L.polyline(x.p,{color:x.c,weight:TR_W,opacity:.95,dashArray:da}).addTo(trLay);const halo=L.polyline(x.p,{color:x.c==='#ffffff'?'#000':'#fff',weight:TR_W+3,opacity:.45,interactive:false,dashArray:da});trLay.addLayer(halo);halo.bringToBack();
+ for(const x of trVis().filter(x=>x.k==='l'&&trMontre(x))){const da=x.s==='t'?'10 8':null;const go=grpOp(x.g);const pl=L.polyline(x.p,{color:x.c,weight:TR_W,opacity:.95*go,dashArray:da}).addTo(trLay);const halo=L.polyline(x.p,{color:x.c==='#ffffff'?'#000':'#fff',weight:TR_W+3,opacity:.45*go,interactive:false,dashArray:da});trLay.addLayer(halo);halo.bringToBack();
   pl.bindTooltip(anEsc(x.t||'Tracé'),{sticky:true});pl.bindPopup(()=>`<div class="anPop"><b>${anEsc(x.t||'Tracé')}</b><div style="font-size:11px;color:#888">${x.p.length} points · ${trLong(x.p)}</div><button onclick="trRen('${x.id}')">✏️ Renommer</button><button onclick="trCoul('${x.id}')">🎨 Couleur</button><button onclick="trStyle('${x.id}')">${x.s==='t'?'━ Plein':'┅ Pointillé'}</button><button onclick="trSuite('${x.id}')">➕ Continuer</button><button onclick="grpDeplace('t','${x.id}')">🗂️ Plan</button><button onclick="map.closePopup();trIcones()">● Point</button><button onclick="trSup('${x.id}')">🗑</button></div>`);trObj[x.id]=pl}
- for(const x of trVis().filter(x=>x.k==='i'&&store.get('vis_dot',true)&&(!trFind(x.l)||trMontre(trFind(x.l))))){const lg=trFind(x.l),fc=x.dc||(lg&&lg.c)||'#333',m=trForme(x.ll,x.f||'o',x.r||TR_W*2,fc).addTo(trLay);
+ for(const x of trVis().filter(x=>x.k==='i'&&store.get('vis_dot',true)&&(!trFind(x.l)||trMontre(trFind(x.l))))){const lg=trFind(x.l),fc=x.dc||(lg&&lg.c)||'#333',m=trForme(x.ll,x.f||'o',x.r||TR_W*2,fc).addTo(trLay);{const go=grpOp(lg&&lg.g);if(go<1){if(m.setStyle)m.setStyle({opacity:go,fillOpacity:go});else if(m.setOpacity)m.setOpacity(go)}}
   if(x.t)m.bindTooltip(anEsc(x.t),{direction:'top'});m.bindPopup(()=>`<div class="anPop"><div><span style="display:inline-block;vertical-align:middle">${trSvg(x.f||'o',7,fc,'#999')}</span> Point</div><div class="txt">${anEsc(x.t)||'<i style="color:#888">(sans texte)</i>'}</div><div style="font-size:11px;color:#888">${x.ll[0].toFixed(6)}, ${x.ll[1].toFixed(6)}</div><button onclick="trIcTxt('${x.id}')">✏️ Texte</button><button onclick="trDotCoul('${x.id}')">🎨 Couleur / taille / forme</button><button onclick="trSup('${x.id}')">🗑</button></div>`)}}
 function trLong(p){let d=0;for(let i=1;i<p.length;i++)d+=map.distance(p[i-1],p[i]);return d<1000?Math.round(d)+' m':(d/1000).toFixed(2)+' km'}
 function trListe(){try{grpListe()}catch(e){}}
@@ -1740,6 +1754,8 @@ function grpChoix(cur,fn){const ls=[...grpL().map(x=>[x.id,x.t||'Plan sans nom']
 // ---------- plans de terrain : ranger tracés et points par projet, à afficher / cacher ----------
 function grpCache(){return new Set(store.get('grpCache',[]))}
 function grpVu(g){return !grpCache().has(g||'')}
+function grpOp(g){const v=+((store.get('grpOp',{})||{})[g||'']??1);return Number.isFinite(v)?Math.max(.05,Math.min(1,v)):1}
+function grpOpSet(g,v){const o={...(store.get('grpOp',{})||{})};o[g||'']=+v;store.set('grpOp',o);clearTimeout(grpOpSet.t);grpOpSet.t=setTimeout(()=>{trDessine();anRefait()},60)}
 function grpL(){return TRC.filter(x=>x.k==='g'&&!x.del).sort((a,b)=>(a.t||'').localeCompare(b.t||'','fr'))}
 function grpCour(){const g=store.get('grpCour','')||'';try{return g&&!TRC.some(x=>x.k==='g'&&x.id===g&&!x.del)?'':g}catch(e){return g}}
 function grpNom(g){if(!g)return 'Sans plan';const x=trFind(g);return x?x.t||'Plan sans nom':'Sans plan'}
@@ -1750,14 +1766,16 @@ function grpZoom(g){const pts=[];TRC.filter(x=>x.k==='l'&&!x.del&&(x.g||'')===g)
 function grpListe(){const el=document.getElementById('grpList');if(!el)return;const c=grpCache(),ouv=new Set(store.get('grpOuv',[]));el.innerHTML='';
  const ls=grpL().map(x=>x.id);const s0=grpCompte('');if(s0.t||s0.p||!ls.length)ls.push('');
  ls.forEach(g=>{const n=grpCompte(g),cach=c.has(g),d=document.createElement('details');d.className='tg';d.open=ouv.has(g);if(cach)d.style.opacity=.6;
-  const sm=document.createElement('summary');sm.innerHTML=`<input type="checkbox" title="Afficher ce plan sur la carte"${cach?'':' checked'}><span class="tgN">${anEsc(grpNom(g))} <span class="cpt">(${n.t+n.p})</span></span><button class="dots" title="Options du plan">⋯</button>`;
+  const sm=document.createElement('summary');sm.innerHTML=`<input type="checkbox" title="Afficher ce plan sur la carte"${cach?'':' checked'}><span class="tgN">${anEsc(grpNom(g))} <span class="cpt">(${n.t+n.p})</span></span><button class="dots" title="Options du plan">⋯</button><span class="tgOp"${cach?' hidden':''}><input type="range" min="0.05" max="1" step="0.05" value="${grpOp(g)}" title="Opacité du plan" aria-label="Opacité du plan"><small>${Math.round(grpOp(g)*100)} %</small></span>`;
+  {const op=sm.querySelector('.tgOp'),rg=op.querySelector('input'),pc=op.querySelector('small');['click','pointerdown','mousedown','touchstart'].forEach(ev=>op.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));op.addEventListener('click',e=>e.preventDefault());
+   rg.oninput=()=>{pc.textContent=Math.round(rg.value*100)+' %';grpOpSet(g,rg.value)}}
   const body=document.createElement('div');body.className='tg-b';d.append(sm,body);
   const tl=document.createElement('div');tl.className='tgTools';tl.innerHTML='<button>〰️ Tracé</button><button>📍 Point</button><button>● Rond sur tracé</button>';body.appendChild(tl);
   const dans=id=>()=>{store.set('grpCour',g);grpMontre(g);document.getElementById(id).click()};const tb=tl.querySelectorAll('button');tb[0].onclick=dans('trNew');tb[1].onclick=dans('anAdd');tb[2].onclick=dans('trIco');
   trRows(body,g);anRows(body,g);
   if(!n.t&&!n.p){const v=document.createElement('div');v.className='tgVide';v.textContent='Vide pour l’instant : utilise les boutons ci-dessus.';body.appendChild(v)}
   const cb=sm.querySelector('input');cb.onclick=e=>e.stopPropagation();
-  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait();d.style.opacity=cb.checked?1:.6;if(!cb.checked)d.open=false};
+  cb.onchange=()=>{const k=grpCache();cb.checked?k.delete(g):k.add(g);store.set('grpCache',[...k]);trDessine();anRefait();d.style.opacity=cb.checked?1:.6;sm.querySelector('.tgOp').hidden=!cb.checked;if(!cb.checked)d.open=false};
   d.addEventListener('toggle',()=>{const o=new Set(store.get('grpOuv',[]));d.open?o.add(g):o.delete(g);store.set('grpOuv',[...o])});
   sm.querySelector('.dots').onclick=e=>{e.preventDefault();e.stopPropagation();const it=[['🔍 Zoomer dessus',()=>{grpMontre(g);grpZoom(g);plier()}],
     ['👁️ Tout afficher',()=>{const tc=trCache(),ac=anCache();TRC.filter(x=>x.k==='l'&&(x.g||'')===g).forEach(x=>tc.delete(x.id));ANN.filter(a=>(a.g||'')===g).forEach(a=>ac.delete(a.id));store.set('trCache',[...tc]);store.set('anCache',[...ac]);grpMontre(g);grpTout()}],
@@ -2584,4 +2602,49 @@ async function pdfEnImage(f){impMsg('Ouverture du PDF…');const lib=await pdfCh
  $id('impAnn').onclick=async()=>{if(IMP.pts.length&&!confirm('Abandonner ce plan ? Les points placés seront perdus.'))return;await brSet(null);impFin()};
  setTimeout(impBrAff,1500)}
 
+// ===== 👁️ À l'écran : tout ce qui est affiché, avec opacité, ordre, zoom et ✕ =====
+const ECR={on:false,t:null};
+const ecrB=document.createElement('button');ecrB.id='ecrB';ecrB.title='À l’écran : ce qui est affiché (opacité, ordre, retirer)';ecrB.innerHTML='👁️<b></b>';document.getElementById('m').appendChild(ecrB);
+const ecrP=document.createElement('div');ecrP.id='ecrP';document.getElementById('m').appendChild(ecrP);
+L.DomEvent.disableClickPropagation(ecrB);L.DomEvent.disableClickPropagation(ecrP);L.DomEvent.disableScrollPropagation(ecrP);
+ecrB.onclick=()=>{ECR.on=!ECR.on;ecrP.classList.toggle('on',ECR.on);ecrB.classList.toggle('on',ECR.on);if(ECR.on)ecrRendu()};
+function ecrNomLab(lab){const c=lab.cloneNode(true);c.querySelectorAll('input,small,button,style,.leg').forEach(e=>e.remove());return c.textContent.replace(/\s+/g,' ').trim()}
+function ecrItems(){const G={f:[],a:[],c:[],p:[],t:[]};
+ // fonds (ordre : en haut = dessus)
+ [...fondsOrdre].reverse().forEach((id,i,arr)=>{const row=fondsUI.get(id);if(!row||!fondsActifs.has(id))return;const sl=row.querySelector('.fond-slider'),cb=row.querySelector('input[type=checkbox]');
+  const nom=(row.closest('.fond-hist')?'🕰️ ':'')+(row.querySelector('.fond-titre span')||{}).textContent;const j=fondsOrdre.indexOf(id);
+  (row.closest('#rub-couches')?G.a:G.f).push({nom,op:sl?+sl.value:null,setOp:v=>{sl.value=v;sl.oninput()},off:()=>{cb.checked=false;cb.onchange()},
+   up:j<fondsOrdre.length-1?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j+1,0,id);fondSync()}:null,down:j>0?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j-1,0,id);fondSync()}:null})});
+ // couches à cocher (menu Fonds + Couches)
+ document.querySelectorAll('#rub-couches .cou > label > input[type=checkbox], #rub-fonds .cou > label > input[type=checkbox]').forEach(cb=>{if(!cb.checked)return;const cou=cb.closest('.cou'),op=cou.querySelector(':scope > input.op');
+  G.c.push({nom:ecrNomLab(cb.parentElement),op:op?+op.value:null,setOp:v=>{op.value=v;op.dispatchEvent(new Event('input',{bubbles:true}))},off:()=>{cb.checked=false;cb.dispatchEvent(new Event('change',{bubbles:true}))}})});
+ // plans chargés (ordre : en haut = dessus)
+ ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);if(!p||!p.layer)return;
+  G.p.push({nom:p.nom,op:+p.op,setOp:v=>{p.op=+v;p.layer&&p.layer.setOpacity(p.op);const pr=p.ui&&p.ui.row.querySelector('input[type=range]');if(pr)pr.value=p.op;const or=document.querySelector(`#ordre .or[data-id="${CSS.escape(id)}"] input[type=range]`);if(or)or.value=p.op;sauve()},
+   off:()=>decharge(p),zoom:()=>charge(p,true),up:i>0?()=>{ORD.splice(i,1);ORD.splice(i-1,0,id);ordreMaj()}:null,down:i<ORD.length-1?()=>{ORD.splice(i,1);ORD.splice(i+1,0,id);ordreMaj()}:null})});
+ // plans de terrain visibles
+ try{const ls=grpL().map(x=>x.id);ls.push('');ls.forEach(g=>{if(!grpVu(g))return;const n=grpCompte(g);if(!n.t&&!n.p)return;
+  G.t.push({nom:grpNom(g),op:grpOp(g),setOp:v=>{grpOpSet(g,v);const r=[...document.querySelectorAll('#grpList .tg')].find(d=>d.querySelector('.tgN')&&d.querySelector('.tgN').textContent.startsWith(grpNom(g)));const rg=r&&r.querySelector('.tgOp input');if(rg){rg.value=v;rg.nextElementSibling.textContent=Math.round(v*100)+' %'}},
+   off:()=>{const k=grpCache();k.add(g);store.set('grpCache',[...k]);grpTout()},zoom:()=>grpZoom(g)})})}catch(e){}
+ return G}
+function ecrCompte(){const G=ecrItems();const n=Object.values(G).reduce((s,a)=>s+a.length,0);ecrB.querySelector('b').textContent=n||'';return [G,n]}
+function ecrRendu(){const [G,n]=ecrCompte();if(!ECR.on)return;const sombre=document.getElementById('p').classList.contains('sombre');ecrP.classList.toggle('sombre',sombre);
+ const keep=ecrP.scrollTop;ecrP.innerHTML='';const h=document.createElement('div');h.className='eh';h.innerHTML=`<span>👁️ À l’écran (${n})</span>`;
+ const tout=document.createElement('button');tout.textContent='Tout retirer';tout.title='Retirer tout sauf le fond de base';const fx=document.createElement('button');fx.textContent='✕';fx.title='Fermer';h.append(tout,fx);ecrP.appendChild(h);
+ fx.onclick=()=>ecrB.onclick();tout.onclick=()=>{if(!confirm('Retirer toutes les couches, plans et plans de terrain affichés ? (le fond de base reste)'))return;const g=ecrItems();[...g.a,...g.c,...g.p,...g.t,...g.f.slice(0,-1)].forEach(it=>{try{it.off()}catch(e){}});ecrPlanif()};
+ const T={f:'🗺️ Fonds',a:'📜 Cartes anciennes',c:'🧱 Couches',p:'📐 Plans',t:'✏️ Plans de terrain'};let vide=true;
+ for(const k of ['p','t','c','a','f']){const L_=G[k];if(!L_.length)continue;vide=false;const t=document.createElement('div');t.className='eg';t.textContent=T[k]+(k==='p'||k==='f'||k==='a'?' · en haut = dessus':'');ecrP.appendChild(t);
+  L_.forEach(it=>{const r=document.createElement('div');r.className='ei';const l=document.createElement('div');l.className='el';const nm=document.createElement('span');nm.className='en';nm.textContent=it.nom;nm.title=it.nom;l.appendChild(nm);
+   const bt=(txt,tit,fn)=>{const b=document.createElement('button');b.textContent=txt;b.title=tit;if(fn)b.onclick=()=>{fn();ecrPlanif()};else b.disabled=true;l.appendChild(b)};
+   if(it.up!==undefined){bt('↑','Monter (passe au-dessus)',it.up);bt('↓','Descendre',it.down)}if(it.zoom)bt('🔍','Zoomer dessus',it.zoom);bt('✕','Retirer de la carte',it.off);r.appendChild(l);
+   if(it.op!=null){const o=document.createElement('div');o.className='eo';o.innerHTML=`<input type="range" min="${k==='t'?0.05:0}" max="1" step="0.05" value="${it.op}" aria-label="Opacité ${it.nom.replace(/"/g,'')}"><small>${Math.round(it.op*100)} %</small>`;const [rg,pc]=o.children;rg.oninput=()=>{pc.textContent=Math.round(rg.value*100)+' %';it.setOp(+rg.value)};r.appendChild(o)}
+   ecrP.appendChild(r)})}
+ if(vide){const v=document.createElement('div');v.className='ev';v.textContent='Rien d’affiché pour l’instant.';ecrP.appendChild(v)}ecrP.scrollTop=keep}
+function ecrPlanif(){clearTimeout(ECR.t);ECR.t=setTimeout(()=>{try{ecrRendu()}catch(e){}},120)}
+// suit les changements faits ailleurs (menu, plans, fonds)
+document.getElementById('p').addEventListener('change',e=>{if(!e.target.closest('#ecrP'))ecrPlanif()},true);
+ordreMaj=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(ordreMaj);
+fondSync=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(fondSync);
+grpTout=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(grpTout);
+setTimeout(ecrPlanif,1500);
 </script></body></html>
