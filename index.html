@@ -284,10 +284,6 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .rlModes{display:flex;flex-wrap:wrap;gap:4px}.rlModes button{flex:1 1 auto;font-size:12px;padding:5px 6px}
 #p .rlModes button.on{background:#1a6fd6!important;color:#fff!important;border-color:#1a6fd6!important}
 .rlL{display:flex;flex-direction:column;font-size:12px;gap:2px}.rlL b{font-weight:600;margin-left:4px}.rlL input{width:100%}
-#pnxBox{position:fixed;z-index:1200;left:12px;bottom:12px;width:min(560px,calc(100vw - 24px));height:min(420px,60vh);display:none;flex-direction:column;background:#111;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.45);overflow:hidden;color:#fff;font:13px system-ui}
-#pnxH{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#1c1f24}#pnxH button,#pnxH a{background:#333;color:#fff;border:0;border-radius:6px;padding:5px 10px;font-size:14px;cursor:pointer;text-decoration:none}#pnxT{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#pnxPano{flex:1;min-height:0;background:#000}#pnxPied{padding:4px 8px;font-size:11.5px;color:#bbb;background:#1c1f24}
-@media (max-width:700px){#pnxBox{left:8px;right:8px;bottom:8px;width:auto;height:52vh}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -342,12 +338,6 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 <label><input type="checkbox" data-c="m"> <b style="color:#5a0060">●</b> Ouvrages militaires <small>(6 432)</small></label>
 <label><input type="checkbox" data-c="p" checked> <b style="color:#29b6f6">●</b> Puits <small>(208)</small></label>
 <label><input type="checkbox" data-c="e"> <b style="color:#c8e600;text-shadow:0 0 1px #000">◌</b> Effondrements / affaissements <small>(25 760)</small></label></div></div>
-   <div class="cou"><label><input id="osc" type="checkbox"> 🗺️ Points OpenStreetMap (bénévoles)</label><div class="leg" id="oscsub" style="font-size:12.5px;margin:2px 0 4px 22px;line-height:1.3"><style>#oscsub label{padding:2px 0!important;display:block}</style>
-<label><input type="checkbox" data-c="e" checked> <b style="color:#e8590c">▲</b> Entrées de cavités <small id="oscn-e"></small></label>
-<label><input type="checkbox" data-c="g" checked> <b style="color:#111">■</b> Galeries / entrées de carrières <small id="oscn-g"></small></label>
-<label><input type="checkbox" data-c="p" checked> <b style="color:#1c7ed6">●</b> Puits (extraction, aérage) <small id="oscn-p"></small></label>
-<label><input type="checkbox" data-c="m" checked> <b style="color:#7048e8">◆</b> Mines et champignonnières <small id="oscn-m"></small></label>
-<label><input type="checkbox" data-c="q"> <b style="color:#2b8a3e">⬟</b> Anciennes carrières (contours) <small id="oscn-q"></small></label><div id="oscD" style="font-size:11px;color:#888"></div></div></div>
    <h5>💧 Aqueducs</h5>
    <div class="cou"><label><input id="aqu" type="checkbox"> 🌊 Aqueducs et rigoles de Versailles</label><input id="aquo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="gal" type="checkbox"> 🏛️ Aqueducs nord et sud de Gally (XIXe, 5 planches)</label><button class="cAj" data-c="gal" title="Positionner moi-même ce plan (déplacer, tourner, taille)">🎯</button><input id="galo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
@@ -356,9 +346,6 @@ details.dep>summary{padding:9px 8px;font-size:15px}
    <div class="cou"><label><input id="mol" type="checkbox"> 💦 Domaine des étangs et rigoles – Moléon (1825)</label><button class="cAj" data-c="mol" title="Positionner moi-même ce plan (déplacer, tourner, taille)">🎯</button><input id="molo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="chy" type="checkbox"> 🚰 Réseau hydraulique du Chesnay (XVIIe–XVIIIe)</label><button class="cAj" data-c="chy" title="Positionner moi-même ce plan (déplacer, tourner, taille)">🎯</button><input id="chyo" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
    <div class="cou"><label><input id="bar" type="checkbox"> ✏️ Canalisations des eaux de sources – Barbet, fig. 41 (croquis)</label><button class="cAj" data-c="bar" title="Positionner moi-même ce plan (déplacer, tourner, taille)">🎯</button><input id="baro" class="op" type="range" min="0.1" max="1" step="0.05" value="1" title="Opacité"></div>
-   <div class="cou"><label><input id="osa" type="checkbox"> 🗺️ Aqueducs OpenStreetMap (tracés et ponts)</label><div id="osaD" style="font-size:11px;color:#888;margin-left:22px"></div></div>
-   <h5>📷 Photos de terrain</h5>
-   <div class="cou"><label><input id="pnx" type="checkbox"> 📷 Photos 360° des rues et chemins (Panoramax)</label><div class="leg" id="pnxInfo" style="font-size:12px;margin:2px 0 4px 22px;color:#666;display:none"></div></div>
    <h5>📌 Divers</h5>
    <div class="cou"><label><input id="bss" type="checkbox"> 📍 Points BRGM « Dossiers du sous-sol »</label></div>
    <div class="cou"><label><input id="cont" type="checkbox"> 🔲 Contours des plans</label></div></div>
@@ -417,7 +404,7 @@ addEventListener('pagehide',etatSauver);document.addEventListener('visibilitycha
 const store={get(k,d){try{const v=localStorage.getItem('atlas2_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('atlas2_'+k,JSON.stringify(v))}catch(e){}if(!ETAT_GLOB.test(k))etatPlus()}};
 // sans état mémorisé pour ce compte : rien de coché, seulement le satellite récent
 const ETAT_U0=etatU();
-(()=>{if(ETAT_U0&&etatAppliquer(ETAT_U0))return;for(const k of ['adm','aqu','bss','pnx','osc','osa','cad','cad2','cvf','eur','gir','igcp','igch','chy','gal','mol','env','a411','bar','fcy','net','zon','anc_on','cont','pva_on'])store.set(k,false);store.set('fonds_actifs',['o']);store.set('fonds_ordre',['o']);store.set('plans',{});store.set('anc_sel',[]);store.set('pva_an',null)})();
+(()=>{if(ETAT_U0&&etatAppliquer(ETAT_U0))return;for(const k of ['adm','aqu','bss','cad','cad2','cvf','eur','gir','igcp','igch','chy','gal','mol','env','a411','bar','fcy','net','zon','anc_on','cont','pva_on'])store.set(k,false);store.set('fonds_actifs',['o']);store.set('fonds_ordre',['o']);store.set('plans',{});store.set('anc_sel',[]);store.set('pva_an',null)})();
 // ---------- menus repliables : conserve chaque contrôle et ses identifiants ----------
 function initialiserMenusRepliables(){
  const corps=document.getElementById('corps');
@@ -455,7 +442,7 @@ function initialiserMenusRepliables(){
    if(details.open){document.querySelectorAll('details.rub').forEach(d=>{if(d!==details&&d.open)d.open=false});setTimeout(()=>{try{summary.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}},30)}else{try{summary.scrollIntoView({block:'nearest'})}catch(e){}}});
  });
  const fondBody=document.querySelector('#rub-couches > .rub-body');
- const noms=['cadastre','carrieres','aqueducs','photos','divers'];
+ const noms=['cadastre','carrieres','aqueducs','divers'];
  let sousCorps=null,index=0;
  for(const enfant of [...fondBody.childNodes]){
   if(enfant.nodeType===1&&enfant.matches('h5')){
@@ -856,7 +843,7 @@ const ANC=[
 ];
 {const row=document.createElement('details');row.className='sousrub anc-maitre';row.dataset.mk='f:anc';
  const sm=document.createElement('summary');const nm=document.createElement('span');nm.textContent='📜 Cartes anciennes';sm.appendChild(nm);
- const li=document.createElement('div');li.className='sousrub-body';li.dataset.mkc='f:anc';row.append(sm,li);{const dv=document.getElementById('sousrub-photos')||document.getElementById('sousrub-divers');dv?dv.parentNode.insertBefore(row,dv):fondsCont.appendChild(row)}
+ const li=document.createElement('div');li.className='sousrub-body';li.dataset.mkc='f:anc';row.append(sm,li);{const dv=document.getElementById('sousrub-divers');dv?dv.parentNode.insertBefore(row,dv):fondsCont.appendChild(row)}
  row.open=!!store.get('sousrub_anc',false);row.addEventListener('toggle',()=>store.set('sousrub_anc',row.open));
  ANC.forEach(([id,nom,mk])=>fondAjouter(id,nom,mk(),li));
  li.querySelectorAll('.fond-item .fond-titre>span').forEach(sp=>{if(sp.querySelector('.cm'))return;let t=sp.textContent,m='';const a=t.match(/^(.*?)\s*\(([^()]+)\)\s*$/);if(a){t=a[1];m=a[2]}const b=t.match(/^(.*?)\s+[–-]\s+(.+)$/);if(b){t=b[1];m=b[2]+(m?' · '+m:'')}
@@ -1004,8 +991,6 @@ const NOUV=[
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'🌙 Menu sombre : bouton dans ⚙️ Compte et réglages → Affichage'},
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'👉 Glisse le menu vers la droite pour le fermer (vers le bas sur téléphone)'},
  {ts:Date.parse('2026-11-25T15:00:00+01:00'),t:'☀️ Relief LiDAR à soleil réglable (Fonds) : fais tourner le soleil pour faire ressortir les creux et les bosses'},
- {ts:Date.parse('2026-11-25T16:00:00+01:00'),t:'📷 Photos 360° de terrain (Couches → Photos de terrain) : clique sur un point pour voir la rue ou le chemin comme dans Street View'},
- {ts:Date.parse('2026-11-25T16:00:00+01:00'),t:'🗺️ Points OpenStreetMap : entrées de cavités, galeries, puits et mines (Couches → Carrières), tracés d\'aqueducs (Couches → Aqueducs)'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
@@ -1250,7 +1235,7 @@ setInterval(()=>{const r=document.getElementById('rub-favoris');if(r&&r.open)fav
 favAff();
 {const ip0=initPlans;initPlans=function(...x){const r=ip0.apply(this,x);try{favAff();if(favMode)favStars()}catch(e){}return r}}
 const memDK=()=>{try{return sessionStorage.getItem('atlas_dk')||localStorage.getItem('atlas_dk')}catch(e){return null}};
-async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(oscCb.checked)oscOn();if(osaCb.checked)osaOn();if(aquCb.checked)aquOn();{const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}try{nvCalc(pj.plans)}catch(e){}initPlans(pj);setTimeout(upDroitsMaj,3000);setTimeout(()=>{try{nvPopup()}catch(e){}},1200)}fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
+async function demarre(dk){await cles(dk);setTimeout(anSyncInit,500);const buf=await lire('plans.json');if(!buf)throw 'données';document.getElementById('lock').style.display='none';if(zonCb.checked)zonOn();if(eurCb.checked)eurOn();if(cvfCb.checked)cvfOn();if(aquCb.checked)aquOn();{const pj=JSON.parse(new TextDecoder().decode(buf));try{await upFusion(pj)}catch(e){}try{nvCalc(pj.plans)}catch(e){}initPlans(pj);setTimeout(upDroitsMaj,3000);setTimeout(()=>{try{nvPopup()}catch(e){}},1200)}fondsReg.forEach(l=>{if(l instanceof PlanL&&map.hasLayer(l))l.onAdd()});if(!navigator.onLine)setTimeout(hlVueHL,50)}
 let mode='u',DKtmp=null;const $id=i=>document.getElementById(i);
 function lockMode(m,txt){mode=m;$id('modeU').style.display=m==='u'?'':'none';$id('modeC').style.display=m==='c'?'':'none';$id('modeN').style.display=m==='n'?'':'none';
  $id('bGo').textContent=m==='u'?'Se connecter':m==='c'?'Valider le code':'Envoyer ma demande';$id('basc').textContent=m==='u'?"Pas encore de compte ? Entre le code d'accès":'← Retour à la connexion';
@@ -2171,69 +2156,6 @@ async function cvfOn(){if(!cvfG){await infoCharge();const b=await lire('cavites.
   m.bindPopup(()=>`<div style="font:13px system-ui;max-width:250px"><b style="color:${col}">● ${lab}</b><div style="margin:4px 0">${anEsc(nom)||'<i>sans nom</i>'}</div><div style="font-size:12px;color:#555">${rep?'Repérage : '+anEsc(rep)+'<br>':''}Identifiant : ${id}<br>${la.toFixed(6)}, ${lo.toFixed(6)}</div>${infoPied(id,ins,nom,lab,'BDCavité (BRGM / Géorisques)')}</div>`);cvfG[c].addLayer(m)}}
  cvfMaj()}
 const cvfCb=document.getElementById('cvf');cvfCb.checked=store.get('cvf',false);cvfCb.onchange=e=>{store.set('cvf',e.target.checked);e.target.checked?cvfOn():cvfMaj()};cvfSub.forEach(i=>i.onchange=cvfMaj);
-// ===== Points OpenStreetMap (carrières, cavités, puits, aqueducs) — instantané chiffré =====
-const OSC={e:['Entrée de cavité','#e8590c','▲'],g:['Galerie / entrée de carrière','#111','■'],p:['Puits','#1c7ed6','●'],m:['Mine / champignonnière','#7048e8','◆'],q:['Ancienne carrière','#2b8a3e','⬟']};
-const oscR=L.canvas({padding:.3});let OSM_D=null,oscG=null,osaG=null;const oscSub=[...document.querySelectorAll('#oscsub input')];{const st=store.get('oscsub',null);if(st)oscSub.forEach(i=>i.checked=!!st[i.dataset.c])}
-async function osmCharge(){if(OSM_D)return OSM_D;const b=await lire('osm_sout.json.gz');if(!b)return null;const t=await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text();OSM_D=JSON.parse(t);return OSM_D}
-const OSMT={description:'Description',note:'Note',inscription:'Inscription',start_date:'Date',operator:'Gestionnaire',access:'Accès','disused:man_made':'Ancien ouvrage',mineshaft_type:'Type de puits',depth:'Profondeur',resource:'Ressource',historic:'Historique',heritage:'Patrimoine',wikipedia:'Wikipédia',ele:'Altitude',location:'Emplacement'};
-function osmPop(o,lab,col){const tg=o.t||{};const lig=Object.keys(OSMT).filter(k=>tg[k]).map(k=>OSMT[k]+' : '+anEsc(tg[k])).join('<br>');
- return `<div style="font:13px system-ui;max-width:260px"><b style="color:${col}">${lab}</b><div style="margin:4px 0">${anEsc(o.n)||'<i>sans nom</i>'}</div>${lig?`<div style="font-size:12px;color:#444;margin-bottom:4px">${lig}</div>`:''}<div style="font-size:11.5px;color:#777">Saisi par des bénévoles OpenStreetMap — à vérifier sur place (de loin).<br><a href="https://www.openstreetmap.org/${o.i}" target="_blank" rel="noopener">Voir la fiche OSM ↗</a></div></div>`}
-function oscIcone(c){const [,col,s]=OSC[c];return L.divIcon({className:'',html:`<div style="font:bold 15px/16px system-ui;color:${col};text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 3px #fff;text-align:center;width:16px">${s}</div>`,iconSize:[16,16],iconAnchor:[8,8]})}
-async function oscOn(){if(!oscG){const D=await osmCharge();if(!D)return;oscG={};for(const c in OSC)oscG[c]=L.layerGroup();const n={};
- for(const o of D.p){if(!OSC[o.c])continue;n[o.c]=(n[o.c]||0)+1;const [lab,col]=OSC[o.c];let m;
-  if(o.g){m=L.polygon(o.g.map(([x,y])=>[y,x]),{renderer:oscR,color:col,weight:2,dashArray:'4 3',fillColor:col,fillOpacity:.08,bubblingMouseEvents:false})}
-  else m=L.marker([o.y,o.x],{icon:oscIcone(o.c),pane:'cont',bubblingMouseEvents:false,keyboard:false});
-  m.bindPopup(()=>osmPop(o,lab,col));oscG[o.c].addLayer(m)}
- for(const c in OSC){const e=document.getElementById('oscn-'+c);if(e)e.textContent='('+(n[c]||0).toLocaleString('fr')+')'}
- const d=document.getElementById('oscD');if(d)d.textContent='Instantané OSM du '+new Date(D.d).toLocaleDateString('fr')}
- oscMaj()}
-function oscMaj(){const on=document.getElementById('osc').checked;store.set('oscsub',Object.fromEntries(oscSub.map(i=>[i.dataset.c,i.checked])));if(!oscG)return;for(const i of oscSub){const g=oscG[i.dataset.c];if(!g)continue;on&&i.checked?g.addTo(map):map.removeLayer(g)}}
-const oscCb=document.getElementById('osc');oscCb.checked=store.get('osc',false);oscCb.onchange=e=>{store.set('osc',e.target.checked);e.target.checked?oscOn():oscMaj()};oscSub.forEach(i=>i.onchange=oscMaj);
-async function osaOn(){if(!osaG){const D=await osmCharge();if(!D)return;osaG=L.layerGroup();
- for(const o of D.a){const col='#0b7285';const lab=o.k==='p'?'Pont-aqueduc':'Aqueduc';
-  const m=o.l?L.polyline(o.l.map(([x,y])=>[y,x]),{renderer:oscR,color:col,weight:o.k==='p'?6:3.5,opacity:.9,dashArray:o.k==='p'?null:'7 4',bubblingMouseEvents:false}):L.circleMarker([o.y,o.x],{renderer:oscR,radius:6,color:'#fff',weight:1.5,fillColor:col,fillOpacity:.95,bubblingMouseEvents:false});
-  m.bindPopup(()=>osmPop(o,'💧 '+lab+' (OSM)',col));osaG.addLayer(m)}
- const d=document.getElementById('osaD');if(d)d.textContent=D.a.length+' éléments · instantané du '+new Date(D.d).toLocaleDateString('fr')}
- osaG.addTo(map)}
-const osaCb=document.getElementById('osa');osaCb.checked=store.get('osa',false);osaCb.onchange=e=>{store.set('osa',e.target.checked);e.target.checked?osaOn():osaG&&map.removeLayer(osaG)};
-
-// ===== Panoramax : photos 360° de terrain (IGN + OSM France), chargées en direct =====
-map.createPane('pnx').style.zIndex=360;
-const PNX={on:false,G:L.layerGroup(),R:L.canvas({padding:.3,pane:'pnx'}),vu:new Set(),ctl:null,t:null,cur:null,pano:null,lib:null};
-const PNX_S=[['https://panoramax.ign.fr','IGN','#1f6feb'],['https://panoramax.openstreetmap.fr','OSM','#f08c00']];
-const pnxInfo=document.getElementById('pnxInfo');
-function pnxTxt(t){pnxInfo.style.display=t?'block':'none';pnxInfo.textContent=t||''}
-async function pnxMaj(){if(!PNX.on)return;const z=map.getZoom();if(z<15){PNX.G.clearLayers();PNX.vu.clear();pnxTxt('🔍 Zoome davantage pour voir les photos (points bleus = IGN, orange = bénévoles OSM).');return}
- if(PNX.ctl)PNX.ctl.abort();const ctl=PNX.ctl=new AbortController();const b=map.getBounds().pad(.15);const bb=[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].map(v=>v.toFixed(5)).join(',');
- if(PNX.vu.size>8000){PNX.G.clearLayers();PNX.vu.clear()}pnxTxt('⏳ Recherche des photos…');let n=0,err=0;
- await Promise.all(PNX_S.map(async([h,nom,col])=>{try{const r=await fetch(`${h}/api/search?bbox=${bb}&limit=${z>=17?400:250}`,{signal:ctl.signal});const j=await r.json();
-  for(const f of j.features||[]){n++;if(PNX.vu.has(f.id))continue;PNX.vu.add(f.id);const [x,y]=f.geometry.coordinates;
-   const m=L.circleMarker([y,x],{renderer:PNX.R,radius:z>=17?5:4,color:'#fff',weight:1,fillColor:col,fillOpacity:.95,bubblingMouseEvents:false});m.on('click',()=>pnxVoir(f,h,nom));PNX.G.addLayer(m)}}catch(e){if(e.name!=='AbortError')err++}}));
- if(ctl!==PNX.ctl)return;pnxTxt(err===2?'⚠️ Serveurs Panoramax injoignables pour le moment.':(PNX.vu.size?'👆 Clique sur un point pour voir la photo à 360°.':'Aucune photo ici pour l’instant.'))}
-function pnxPlanif(){clearTimeout(PNX.t);PNX.t=setTimeout(pnxMaj,350)}
-function pnxLib(){return PNX.lib||(PNX.lib=new Promise((ok,ko)=>{const c=document.createElement('link');c.rel='stylesheet';c.href='https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.css';document.head.appendChild(c);const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js';s.onload=ok;s.onerror=()=>{PNX.lib=null;ko()};document.head.appendChild(s)}))}
-function pnxBoite(){let d=document.getElementById('pnxBox');if(d)return d;d=document.createElement('div');d.id='pnxBox';
- d.innerHTML=`<div id="pnxH"><button id="pnxPrev" title="Photo précédente">◀</button><button id="pnxNext" title="Photo suivante">▶</button><span id="pnxT"></span><a id="pnxLien" target="_blank" rel="noopener" title="Ouvrir sur Panoramax">↗</a><button id="pnxX" title="Fermer">✕</button></div><div id="pnxPano"></div><div id="pnxPied"></div>`;
- document.body.appendChild(d);d.querySelector('#pnxX').onclick=pnxFerme;d.querySelector('#pnxPrev').onclick=()=>pnxSuite('prev');d.querySelector('#pnxNext').onclick=()=>pnxSuite('next');
- L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d}
-function pnxFerme(){const d=document.getElementById('pnxBox');if(d)d.style.display='none';if(PNX.pano){try{PNX.pano.destroy()}catch(e){}PNX.pano=null}if(PNX.cur){map.removeLayer(PNX.cur);PNX.cur=null}}
-async function pnxSuite(rel){const c=PNX.f;if(!c)return;const l=(c.links||[]).find(x=>x.rel===rel);if(!l){pnxTxtB(rel==='next'?'Fin de la série.':'Début de la série.');return}
- try{const f=await (await fetch(l.href)).json();pnxVoir(f,PNX.h,PNX.nom,true)}catch(e){pnxTxtB('⚠️ Photo introuvable.')}}
-function pnxTxtB(t){const p=document.getElementById('pnxPied');if(p){p.dataset.old=p.dataset.old||p.textContent;p.textContent=t;setTimeout(()=>{p.textContent=p.dataset.old;delete p.dataset.old},2000)}}
-async function pnxVoir(f,h,nom,suivre){PNX.f=f;PNX.h=h;PNX.nom=nom;const d=pnxBoite();d.style.display='flex';const P=f.properties||{};
- const dt=P.datetimetz||P.datetime||'';const date=dt?new Date(dt).toLocaleDateString('fr',{day:'numeric',month:'long',year:'numeric'}):'';
- const aut=(f.providers||[]).map(p=>p.name).join(', ')||P['geovisio:producer']||'';
- d.querySelector('#pnxT').textContent=`📷 ${date}`;d.querySelector('#pnxLien').href=`https://api.panoramax.xyz/#focus=pic&pic=${f.id}`;
- d.querySelector('#pnxPied').textContent=`${aut?aut+' · ':''}${nom==='IGN'?'IGN':'OSM France'} · Licence ${P.license==='etalab-2.0'?'Ouverte':(P.license||'?')}`;
- const [x,y]=f.geometry.coordinates;if(PNX.cur)map.removeLayer(PNX.cur);PNX.cur=L.circleMarker([y,x],{pane:'pnx',radius:9,color:'#ffd400',weight:3,fill:false,interactive:false}).addTo(map);if(suivre&&!map.getBounds().pad(-.2).contains([y,x]))map.panTo([y,x]);
- const el=d.querySelector('#pnxPano');if(PNX.pano){try{PNX.pano.destroy()}catch(e){}PNX.pano=null}el.innerHTML='';
- const sd=f.assets?.sd?.href||P['geovisio:image'],hd=f.assets?.hd?.href||sd;const fov=P['pers:interior_orientation']?.field_of_view;
- if(fov===360){try{await pnxLib();const yaw=PNX.yaw||0;PNX.pano=pannellum.viewer(el,{type:'equirectangular',panorama:(matchMedia('(min-width:900px)').matches?hd:sd),autoLoad:true,showFullscreenCtrl:true,compass:true,northOffset:+P['view:azimuth']||0,yaw,hfov:100,crossOrigin:'anonymous'});
-   PNX.pano.on('mouseup',()=>{try{PNX.yaw=PNX.pano.getYaw()}catch(e){}});PNX.pano.on('touchend',()=>{try{PNX.yaw=PNX.pano.getYaw()}catch(e){}});return}catch(e){}}
- el.innerHTML=`<img src="${sd}" alt="" style="width:100%;height:100%;object-fit:contain;background:#000">`}
-const pnxCb=document.getElementById('pnx');
-function pnxSet(on){PNX.on=on;store.set('pnx',on);if(on){PNX.G.addTo(map);map.on('moveend',pnxPlanif);pnxMaj()}else{map.off('moveend',pnxPlanif);map.removeLayer(PNX.G);PNX.G.clearLayers();PNX.vu.clear();pnxTxt('');pnxFerme()}}
-pnxCb.checked=store.get('pnx',false);pnxCb.onchange=e=>pnxSet(e.target.checked);if(pnxCb.checked)setTimeout(()=>pnxSet(true),800);
 
 // ---------- photos aériennes d'époque (clichés IGN « Remonter le temps ») ----------
 const PVA={on:false,annee:null,ds:[],imgs:[],fp:L.layerGroup(),charges:{},tm:null,cadres:true,plus:false,op:store.get('pva_op',1),pt:null,seq:0,cache:new Map()};
