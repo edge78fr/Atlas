@@ -298,6 +298,21 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 @media (max-width:700px){#ecrP{left:8px;right:8px;width:auto;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));max-height:55%}}
 #ecrP .ef{padding:14px 10px 12px;text-align:center}#ecrP .ef button{border:1px solid #e3b4b4;background:transparent;color:#c0392b;border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer}#ecrP.sombre .ef button{border-color:#6b3a3a;color:#ff8a80}
 #ecrP .eh button{min-width:36px;min-height:32px;font-size:15px}
+#chB{position:absolute;z-index:1200;left:calc(10px + env(safe-area-inset-left));top:140px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 2px 10px #0005;font-size:20px;padding:0;cursor:pointer}
+#chB b{position:absolute;right:-4px;top:-4px;min-width:18px;height:18px;border-radius:9px;background:#d93025;color:#fff;font:600 11px/18px system-ui;padding:0 4px}#chB b:empty{display:none}#chB.on{background:#1a73e8;border-color:#1a73e8}
+#chP{position:absolute;z-index:1250;left:calc(62px + env(safe-area-inset-left));top:86px;width:340px;height:min(520px,calc(100% - 110px));background:rgba(250,251,252,.98);border-radius:12px;box-shadow:0 6px 24px #0005;font:13px system-ui;color:#222;display:none;flex-direction:column;overflow:hidden}
+#chP.on{display:flex}#chP .eh{display:flex;align-items:center;gap:6px;padding:9px 10px;border-bottom:1px solid #e3e6ea;font-weight:700}#chP .eh span{flex:1}#chP .eh button{border:0;background:#eef1f4;border-radius:6px;min-width:36px;min-height:32px;font-size:15px;cursor:pointer}
+#chL{flex:1;overflow:auto;padding:8px 10px;overscroll-behavior:contain;display:flex;flex-direction:column;gap:6px}#chL .ev{color:#777;text-align:center;margin:auto}
+.chJ{align-self:center;font-size:11px;color:#888;margin:4px 0}.chM{position:relative;max-width:85%;align-self:flex-start;background:#fff;border:1px solid #e3e6ea;border-radius:12px 12px 12px 4px;padding:6px 9px}
+.chM.moi{align-self:flex-end;background:#dcebff;border-color:#c5dcfb;border-radius:12px 12px 4px 12px}.chA{font-size:11px;color:#667;margin-bottom:2px}.chTx{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.chV{margin-top:5px;border:0;background:#1a73e8;color:#fff;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}.chDel{position:absolute;top:2px;right:-30px;border:0;background:none;font-size:13px;opacity:.35;cursor:pointer}.chDel:hover{opacity:1}
+#chEtat{font-size:11.5px;color:#b45309;padding:0 10px}#chEtat:empty{display:none}
+#chF{border-top:1px solid #e3e6ea;padding:6px 8px 8px}#chVue{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#555;margin-bottom:4px}#chS{display:flex;gap:6px;align-items:flex-end}
+#chT{flex:1;resize:none;font:16px system-ui;padding:7px 9px;border:1px solid #cfd5db;border-radius:10px;max-height:110px}#chE{border:0;background:#1a73e8;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer}
+#chP.sombre{background:rgba(28,31,36,.98);color:#e6e6e6}#chP.sombre .chM{background:#2a2f36;border-color:#3a4048}#chP.sombre .chM.moi{background:#1f3b63;border-color:#2b4f80}#chP.sombre .chA{color:#9aa}#chP.sombre #chT{background:#1c1f24;color:#eee;border-color:#3a4048}#chP.sombre .eh,#chP.sombre #chF{border-color:#333}#chP.sombre .eh button{background:#30353c;color:#ddd}
+.chM.moi .chDel{right:auto;left:-26px}
+body.v3on #chB,body.v3on #chP{display:none!important}
+@media (max-width:700px){#chP{left:8px;right:8px;width:auto;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));height:60%}.chDel{right:4px;top:auto;bottom:2px}}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -1029,6 +1044,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'👁️ Nouveau bouton « À l’écran » (sur la carte, sous le zoom) : tout ce qui est affiché, avec opacité, ordre, zoom et ✕ pour retirer'},
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'✏️ Plans de terrain : un curseur d’opacité sous chaque plan coché (Terrain → Mes plans de terrain)'},
  {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
+ {ts:Date.parse('2026-11-25T22:40:00+01:00'),t:'💬 Discussion entre membres : bouton 💬 sur la carte, messages chiffrés, et « 📍 joindre ma vue » pour montrer un endroit précis'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
@@ -2674,4 +2690,41 @@ ordreMaj=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(o
 fondSync=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(fondSync);
 grpTout=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(grpTout);
 setTimeout(ecrPlanif,1500);
+// ===== 💬 Chat entre membres (messages chiffrés, partagés comme les points) =====
+const CH={on:false,L:store.get('chat',[]),sha:null,busy:false,att:false,t:null};
+const chB=document.createElement('button');chB.id='chB';chB.title='Discussion entre membres';chB.innerHTML='💬<b></b>';document.getElementById('m').appendChild(chB);
+const chP=document.createElement('div');chP.id='chP';chP.innerHTML=`<div class="eh"><span>💬 Discussion</span><button id="chX" title="Fermer">✕</button></div><div id="chL"></div><div id="chEtat"></div>
+<div id="chF"><label id="chVue" title="Joindre ma vue : position, zoom et plans affichés"><input type="checkbox" id="chVueC"> 📍 joindre ma vue</label><div id="chS"><textarea id="chT" rows="1" maxlength="1000" placeholder="Écrire un message…"></textarea><button id="chE" title="Envoyer">➤</button></div></div>`;document.getElementById('m').appendChild(chP);
+L.DomEvent.disableClickPropagation(chB);L.DomEvent.disableClickPropagation(chP);L.DomEvent.disableScrollPropagation(chP);
+const chQ=i=>document.getElementById(i);
+chB.onclick=()=>{if(!CH.on&&ECR.on)ecrB.onclick();CH.on=!CH.on;chP.classList.toggle('on',CH.on);chP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));chB.classList.toggle('on',CH.on);if(CH.on){chRendu(true);chSync();setTimeout(()=>chQ('chT').focus(),50)}};chQ('chX').onclick=()=>chB.onclick();{const eo=ecrB.onclick;ecrB.onclick=()=>{if(!ECR.on&&CH.on)chB.onclick();eo()}}
+function chVus(){return +store.get('chat_vu',0)}
+function chBadge(){const n=CH.L.filter(m=>!m.del&&m.d>chVus()&&m.u!==USER).length;chB.querySelector('b').textContent=n?(n>9?'9+':n):''}
+function chHeure(d){const t=new Date(d),j=new Date();const h=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});return t.toDateString()===j.toDateString()?h:t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+h}
+function chRendu(bas){const l=chQ('chL'),fin=bas||l.scrollHeight-l.scrollTop-l.clientHeight<40;l.innerHTML='';const ms=CH.L.filter(m=>!m.del).sort((a,b)=>a.d-b.d).slice(-200);
+ if(!ms.length){l.innerHTML='<div class="ev">Aucun message pour l’instant.<br>Écris le premier !</div>'}
+ let jour='';ms.forEach(m=>{const dj=new Date(m.d).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});if(dj!==jour){jour=dj;const s=document.createElement('div');s.className='chJ';s.textContent=dj;l.appendChild(s)}
+  const moi=m.u===USER,b=document.createElement('div');b.className='chM'+(moi?' moi':'');const a=document.createElement('div');a.className='chA';a.textContent=(moi?'Moi':m.u||'?')+' · '+chHeure(m.d);
+  const t=document.createElement('div');t.className='chTx';t.textContent=m.t||'';b.append(a,t);
+  if(m.v){const v=document.createElement('button');v.className='chV';v.textContent='📍 Voir l’endroit'+(m.v.pl&&m.v.pl.length?' ('+m.v.pl.length+' plan'+(m.v.pl.length>1?'s':'')+')':'');v.onclick=()=>chAller(m.v);b.appendChild(v)}
+  if(moi){const x=document.createElement('button');x.className='chDel';x.title='Supprimer mon message';x.textContent='🗑';x.onclick=()=>{m.del=1;m.e=Date.now();store.set('chat',CH.L);chRendu();chSync()};b.appendChild(x)}
+  l.appendChild(b)});
+ if(fin)l.scrollTop=l.scrollHeight;if(CH.on){const last=ms.length?ms[ms.length-1].d:0;if(last>chVus())store.set('chat_vu',last)}chBadge()}
+function chAller(v){map.setView([v.lat,v.lng],v.z);(v.pl||[]).forEach(id=>{const p=P.find(q=>q.id===id);if(p&&!p.layer&&!pmMasque(p.id))try{charge(p)}catch(e){}});if(matchMedia('(max-width:700px)').matches)chB.onclick()}
+function chEtat(t){chQ('chEtat').textContent=t||''}
+async function chEnvoie(){const ta=chQ('chT'),t=ta.value.trim();if(!t)return;if(!NTOK){chEtat('⚠️ Partage non activé : le message ne peut pas être envoyé.');return}
+ const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),u:USER||'Invité',t:t.slice(0,1000),d:Date.now()};
+ if(chQ('chVueC').checked){const c=map.getCenter();m.v={lat:+c.lat.toFixed(6),lng:+c.lng.toFixed(6),z:map.getZoom(),pl:ORD.slice(0,6)};chQ('chVueC').checked=false}
+ CH.L.push(m);store.set('chat',CH.L);ta.value='';ta.style.height='';chRendu(true);chSync()}
+chQ('chE').onclick=chEnvoie;chQ('chT').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chEnvoie()}});
+chQ('chT').addEventListener('input',e=>{const t=e.target;t.style.height='';t.style.height=Math.min(110,t.scrollHeight)+'px'});
+function chFus(a,b){const m=new Map();[...a,...b].forEach(x=>{const y=m.get(x.id);if(!y||(x.e||x.d||0)>(y.e||y.d||0))m.set(x.id,x)});return [...m.values()].sort((x,y)=>x.d-y.d).slice(-400)}
+async function chSync(){if(!NTOK||CH.busy||!navigator.onLine)return;CH.busy=true;try{for(let k=0;k<3;k++){
+  const f=await nGet(NSITE+'.chat');const rem=f?await nDec(f.content):[];CH.sha=f&&f.sha;const mer=chFus(CH.L,rem);
+  if(sig(mer)!==sig(CH.L)){CH.L=mer;store.set('chat',CH.L);chRendu()}
+  if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.chat',await nEnc(mer),CH.sha,'discussion');if(r==='conflit')continue;CH.sha=r}
+  break}chEtat('')}catch(e){chEtat('⚠️ Discussion injoignable pour le moment, nouvel essai bientôt.')}finally{CH.busy=false;chBadge()}}
+setInterval(()=>{if(NTOK&&!document.hidden&&(CH.on||Date.now()%60000<20000))chSync()},15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(chSync,1500)});
+setTimeout(()=>{chBadge();chSync()},4000);
 </script></body></html>
