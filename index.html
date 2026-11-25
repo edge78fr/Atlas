@@ -714,46 +714,38 @@ async function rlAlt(c){const k=c.z+'/'+c.x+'/'+c.y;if(RL.cache.has(k))return RL
   for(let e=0;e<3&&!f;e++){try{const r=await fetch(u(L));if(r.ok){const b=await r.arrayBuffer();if(b.byteLength===RL_N*RL_N*4)f=new Float32Array(b)}}catch(_){}if(!f)await new Promise(r=>setTimeout(r,500*2**e))}
   if(f){let ok=0;for(let i=0;i<f.length;i+=97)if(f[i]>-500)ok++;if(ok>f.length/97*0.3)break;f=null}}
  if(RL.cache.size>500)RL.cache.delete(RL.cache.keys().next().value);RL.cache.set(k,f);return f}
-function rlDessine(cv,c,f){const g=cv.getContext('2d'),N=RL_N,M=RL_M,img=g.createImageData(256,256),d=img.data;
- if(!f){g.clearRect(0,0,256,256);return}
- const lat=Math.atan(Math.sinh(Math.PI*(1-2*(c.y+.5)/2**c.z))),px=2*20037508.342789244/2**c.z/256*Math.cos(lat),ex=RL.ex;
- const az=(360-RL.az+90)*Math.PI/180,zen=(90-RL.el)*Math.PI/180,cz=Math.cos(zen),sz=Math.sin(zen);
+// pré-calcul par tuile (une seule fois) : il ne reste ensuite qu'un petit calcul par pixel quand le soleil tourne
+const RL_EL=35*Math.PI/180,RL_EX=2,RL_LUT=new Uint8ClampedArray(1025);for(let i=0;i<=1024;i++){const v=Math.pow(i/1024,1.4);RL_LUT[i]=Math.max(0,Math.min(255,(v-0.08)/0.62*255))}
+function rlPrep(c,f){if(!f)return null;const N=RL_N,M=RL_M,n=65536,Ac=new Int16Array(n),Bc=new Int16Array(n),Bs=new Int16Array(n),K=new Int16Array(n),ok=new Uint8Array(n);
+ const lat=Math.atan(Math.sinh(Math.PI*(1-2*(c.y+.5)/2**c.z))),px=2*20037508.342789244/2**c.z/256*Math.cos(lat),zen=Math.PI/2-RL_EL,cz=Math.cos(zen),sz=Math.sin(zen),q=RL_EX/(8*px);
  const A=(x,y)=>{const v=f[y*N+x];return v>-500?v:NaN};
- let loc=null;if(RL.mode==='lrm'){const R=10,I=new Float64Array((N+1)*(N+1));for(let y=0;y<N;y++){let s=0;for(let x=0;x<N;x++){const v=f[y*N+x];s+=v>-500?v:0;I[(y+1)*(N+1)+x+1]=I[y*(N+1)+x+1]+s}}
-  loc=(x,y)=>{const x0=x-R,x1=x+R+1,y0=y-R,y1=y+R+1;return (I[y1*(N+1)+x1]-I[y0*(N+1)+x1]-I[y1*(N+1)+x0]+I[y0*(N+1)+x0])/((2*R+1)**2)}}
- const dirs=RL.mode==='multi'||RL.mode==='eff'?[[az,1],[az+Math.PI/4,.6],[az-Math.PI/4,.6],[az+Math.PI/2,.35]]:[[az,1]];
- for(let y=0;y<256;y++)for(let x=0;x<256;x++){const X=x+M,Y=y+M,i=(y*256+x)*4;
-  const a=A(X-1,Y-1),b=A(X,Y-1),cc=A(X+1,Y-1),dd=A(X-1,Y),e0=A(X,Y),ff=A(X+1,Y),gg=A(X-1,Y+1),h=A(X,Y+1),ii=A(X+1,Y+1);
-  if(Number.isNaN(e0)){d[i+3]=0;continue}
-  const dzdx=((cc+2*ff+ii)-(a+2*dd+gg))/(8*px)*ex,dzdy=((gg+2*h+ii)-(a+2*b+cc))/(8*px)*ex;
-  if(Number.isNaN(dzdx+dzdy)){d[i+3]=0;continue}
-  const sl=Math.atan(Math.hypot(dzdx,dzdy)),asp=Math.atan2(dzdy,-dzdx);let v;
-  if(RL.mode==='pente'){v=1-Math.min(1,sl/(Math.PI/3));v=v*v;d[i]=d[i+1]=d[i+2]=v*255}
-  else if(RL.mode==='lrm'){const r=(e0-loc(X,Y))*ex*0.35;const t=Math.max(-1,Math.min(1,r));
-   if(t>=0){d[i]=255;d[i+1]=d[i+2]=255*(1-t)}else{d[i]=d[i+1]=255*(1+t);d[i+2]=255}}
-  else{let s=0,w=0;for(const[da,wt]of dirs){s+=wt*Math.max(0,cz*Math.cos(sl)+sz*Math.sin(sl)*Math.cos(da-asp));w+=wt}v=s/w;
-   if(RL.mode==='eff'){v=Math.pow(v,1.4)*(1-0.4*Math.min(1,sl/(Math.PI/4)));v=Math.min(1,Math.max(0,(v-0.08)/0.62))}
-   d[i]=d[i+1]=d[i+2]=Math.max(0,Math.min(255,v*255))}
-  d[i+3]=255}
+ for(let y=0;y<256;y++)for(let x=0;x<256;x++){const X=x+M,Y=y+M,i=y*256+x;
+  const a=A(X-1,Y-1),b=A(X,Y-1),cc=A(X+1,Y-1),dd=A(X-1,Y),ff=A(X+1,Y),gg=A(X-1,Y+1),h=A(X,Y+1),ii=A(X+1,Y+1);
+  const dzdx=((cc+2*ff+ii)-(a+2*dd+gg))*q,dzdy=((gg+2*h+ii)-(a+2*b+cc))*q;if(Number.isNaN(dzdx+dzdy)||Number.isNaN(A(X,Y)))continue;
+  const sl=Math.atan(Math.hypot(dzdx,dzdy)),asp=Math.atan2(dzdy,-dzdx),B=sz*Math.sin(sl);
+  Ac[i]=32767*cz*Math.cos(sl);Bc[i]=32767*B*Math.cos(asp);Bs[i]=32767*B*Math.sin(asp);K[i]=32767*(1-0.4*Math.min(1,sl/(Math.PI/4)));ok[i]=1}
+ return {Ac,Bc,Bs,K,ok}}
+function rlDessine(cv,c,f){const g=cv.getContext('2d');if(!f){g.clearRect(0,0,256,256);return}
+ const P=cv._p||(cv._p=rlPrep(c,f));if(!cv._img)cv._img=g.createImageData(256,256);const img=cv._img,u32=new Uint32Array(img.data.buffer);
+ const az=(360-RL.az+90)*Math.PI/180,D=[[az,1],[az+Math.PI/4,.6],[az-Math.PI/4,.6],[az+Math.PI/2,.35]].map(([d,w])=>[Math.cos(d)*w,Math.sin(d)*w,w]),W=D.reduce((s,d)=>s+d[2],0);
+ const [d0,d1,d2,d3]=D,{Ac,Bc,Bs,K,ok}=P;
+ for(let i=0;i<65536;i++){if(!ok[i]){u32[i]=0;continue}const a=Ac[i],bc=Bc[i],bs=Bs[i];
+  let s=0,t;t=a*d0[2]+bc*d0[0]+bs*d0[1];if(t>0)s+=t;t=a*d1[2]+bc*d1[0]+bs*d1[1];if(t>0)s+=t;t=a*d2[2]+bc*d2[0]+bs*d2[1];if(t>0)s+=t;t=a*d3[2]+bc*d3[0]+bs*d3[1];if(t>0)s+=t;
+  let v=s*K[i]/(W*1073676289);v=v>1?1:v;const g8=RL_LUT[(v*1024)|0];u32[i]=0xff000000|(g8<<16)|(g8<<8)|g8}
  g.putImageData(img,0,0)}
 const RelLidar=L.GridLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=256;
  rlAlt(c).then(f=>{cv._f=f;cv._c=c;rlDessine(cv,c,f);done(null,cv)});return cv}});
 B.ls=new RelLidar({...fondOpt,maxNativeZoom:19,minZoom:12,attribution:'IGN LiDAR HD'});
-let rlT=0;function rlMaj(){clearTimeout(rlT);rlT=setTimeout(()=>{const ly=B.ls;if(!ly._tiles)return;for(const k in ly._tiles){const cv=ly._tiles[k].el;if(cv._c)rlDessine(cv,cv._c,cv._f)}},40)}
+let rlRaf=0,rlT=0;function rlMaj(){if(rlRaf)return;rlRaf=requestAnimationFrame(()=>{rlRaf=0;const ly=B.ls;if(!ly._tiles)return;const vb=map.getPixelBounds(),z=map.getZoom(),zt=Math.round(z);
+ for(const k in ly._tiles){const t=ly._tiles[k],cv=t.el;if(!cv._c)continue;const sc=map.getZoomScale(z,cv._c.z),x0=cv._c.x*256*sc,y0=cv._c.y*256*sc;
+  if(x0+256*sc<vb.min.x||x0>vb.max.x||y0+256*sc<vb.min.y||y0>vb.max.y){cv._sale=1;continue}rlDessine(cv,cv._c,cv._f);cv._sale=0}
+ clearTimeout(rlT);rlT=setTimeout(()=>{for(const k in ly._tiles){const cv=ly._tiles[k].el;if(cv._sale&&cv._c){rlDessine(cv,cv._c,cv._f);cv._sale=0}}},300)})}
 fondAjouter('ls','☀️ Relief LiDAR à soleil réglable',B.ls,fondsCont);
 {const row=fondsUI.get('ls'),box=document.createElement('div');box.className='rlBox';
- box.innerHTML=`<div class="rlModes">${[['eff','✨ Effets lumière'],['ombre','🌗 Ombrage'],['multi','🔆 Multi-soleil'],['pente','📐 Pentes'],['lrm','🔴 Creux / bosses']].map(([k,t])=>`<button type="button" data-m="${k}">${t}</button>`).join('')}</div>
- <label class="rlL">🧭 Direction du soleil <b id="rlAzV"></b><input type="range" id="rlAz" min="0" max="360" step="5"></label>
- <label class="rlL">⛰️ Hauteur du soleil <b id="rlElV"></b><input type="range" id="rlEl" min="3" max="80" step="1"></label>
- <label class="rlL">🔍 Accentuer le relief <b id="rlExV"></b><input type="range" id="rlEx" min="1" max="10" step="0.5"></label>`;
- row.appendChild(box);const $=id=>box.querySelector('#'+id);
- const maj=()=>{$('rlAz').value=RL.az;$('rlEl').value=RL.el;$('rlEx').value=RL.ex;$('rlAzV').textContent=RL.az+'° '+['N','NE','E','SE','S','SO','O','NO'][Math.round(RL.az/45)%8];$('rlElV').textContent=RL.el+'°';$('rlExV').textContent='×'+RL.ex;
-  box.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===RL.mode));
-  const sol=RL.mode!=='pente'&&RL.mode!=='lrm';$('rlAz').closest('label').style.display=$('rlEl').closest('label').style.display=sol?'':'none'};
- maj();
- const set=(k,v)=>{RL[k]=v;store.set('rl_'+k,v);maj();rlMaj()};
- $('rlAz').oninput=e=>set('az',+e.target.value);$('rlEl').oninput=e=>set('el',+e.target.value);$('rlEx').oninput=e=>set('ex',+e.target.value);
- box.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>set('mode',b.dataset.m));
+ box.innerHTML=`<label class="rlL">🧭 Direction du soleil <b id="rlAzV"></b><input type="range" id="rlAz" min="0" max="359" step="1"></label>`;
+ row.appendChild(box);const az=box.querySelector('#rlAz'),azv=box.querySelector('#rlAzV');
+ const maj=()=>{az.value=RL.az;azv.textContent=RL.az+'° '+['N','NE','E','SE','S','SO','O','NO'][Math.round(RL.az/45)%8]};maj();
+ az.oninput=()=>{RL.az=+az.value;maj();rlMaj()};az.onchange=()=>store.set('rl_az',RL.az);
  const vis=()=>box.style.display=fondsActifs.has('ls')?'':'none';vis();row.querySelector('input[type=checkbox]').addEventListener('change',vis)}
 // Yandex est en Mercator « ellipsoïdal » (EPSG:3395) : on recolle 2 tuiles décalées pour tomber juste sur la carte
 const YandexL=L.TileLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=256;const ctx=cv.getContext('2d');
@@ -998,7 +990,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-22T22:40:00+01:00'),t:'📌 Le titre de la rubrique ouverte reste visible quand tu fais défiler le menu'},
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'🌙 Menu sombre : bouton dans ⚙️ Compte et réglages → Affichage'},
  {ts:Date.parse('2026-11-22T23:10:00+01:00'),t:'👉 Glisse le menu vers la droite pour le fermer (vers le bas sur téléphone)'},
- {ts:Date.parse('2026-11-25T15:00:00+01:00'),t:'☀️ Relief LiDAR à soleil réglable (Fonds) : tourne le soleil, change sa hauteur, accentue le relief, modes pentes et creux/bosses'},
+ {ts:Date.parse('2026-11-25T15:00:00+01:00'),t:'☀️ Relief LiDAR à soleil réglable (Fonds) : fais tourner le soleil pour faire ressortir les creux et les bosses'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
