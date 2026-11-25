@@ -296,6 +296,8 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 #ecrP .ev{padding:16px 12px;color:#777;text-align:center}
 #ecrP.sombre{background:rgba(28,31,36,.97);color:#e6e6e6}#ecrP.sombre .eh{border-color:#333}#ecrP.sombre .ei{border-color:#2c3036}#ecrP.sombre .eh button,#ecrP.sombre .ei button{background:#30353c;color:#ddd}
 @media (max-width:700px){#ecrP{left:8px;right:8px;width:auto;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));max-height:55%}}
+#ecrP .ef{padding:14px 10px 12px;text-align:center}#ecrP .ef button{border:1px solid #e3b4b4;background:transparent;color:#c0392b;border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer}#ecrP.sombre .ef button{border-color:#6b3a3a;color:#ff8a80}
+#ecrP .eh button{min-width:36px;min-height:32px;font-size:15px}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -2630,7 +2632,7 @@ function ecrItems(){const G={f:[],a:[],c:[],p:[],t:[]};
 function ecrCompte(){const G=ecrItems();const n=Object.values(G).reduce((s,a)=>s+a.length,0);ecrB.querySelector('b').textContent=n||'';return [G,n]}
 function ecrRendu(){const [G,n]=ecrCompte();if(!ECR.on)return;const sombre=document.getElementById('p').classList.contains('sombre');ecrP.classList.toggle('sombre',sombre);
  const keep=ecrP.scrollTop;ecrP.innerHTML='';const h=document.createElement('div');h.className='eh';h.innerHTML=`<span>👁️ À l’écran (${n})</span>`;
- const tout=document.createElement('button');tout.textContent='Tout retirer';tout.title='Retirer tout sauf le fond de base';const fx=document.createElement('button');fx.textContent='✕';fx.title='Fermer';h.append(tout,fx);ecrP.appendChild(h);
+ const tout=document.createElement('button');tout.textContent='Tout retirer';tout.title='Retirer tout sauf le fond de base';const fx=document.createElement('button');fx.textContent='✕';fx.title='Fermer';h.append(fx);ecrP.appendChild(h);
  fx.onclick=()=>ecrB.onclick();tout.onclick=()=>{if(!confirm('Retirer toutes les couches, plans et plans de terrain affichés ? (le fond de base reste)'))return;const g=ecrItems();[...g.a,...g.c,...g.p,...g.t,...g.f.slice(0,-1)].forEach(it=>{try{it.off()}catch(e){}});ecrPlanif()};
  const T={f:'🗺️ Fonds',a:'📜 Cartes anciennes',c:'🧱 Couches',p:'📐 Plans',t:'✏️ Plans de terrain'};let vide=true;
  for(const k of ['p','t','c','a','f']){const L_=G[k];if(!L_.length)continue;vide=false;const t=document.createElement('div');t.className='eg';t.textContent=T[k]+(k==='p'||k==='f'||k==='a'?' · en haut = dessus':'');ecrP.appendChild(t);
@@ -2639,7 +2641,7 @@ function ecrRendu(){const [G,n]=ecrCompte();if(!ECR.on)return;const sombre=docum
    if(it.up!==undefined){bt('↑','Monter (passe au-dessus)',it.up);bt('↓','Descendre',it.down)}if(it.zoom)bt('🔍','Zoomer dessus',it.zoom);bt('✕','Retirer de la carte',it.off);r.appendChild(l);
    if(it.op!=null){const o=document.createElement('div');o.className='eo';o.innerHTML=`<input type="range" min="${k==='t'?0.05:0}" max="1" step="0.05" value="${it.op}" aria-label="Opacité ${it.nom.replace(/"/g,'')}"><small>${Math.round(it.op*100)} %</small>`;const [rg,pc]=o.children;rg.oninput=()=>{pc.textContent=Math.round(rg.value*100)+' %';it.setOp(+rg.value)};r.appendChild(o)}
    ecrP.appendChild(r)})}
- if(vide){const v=document.createElement('div');v.className='ev';v.textContent='Rien d’affiché pour l’instant.';ecrP.appendChild(v)}ecrP.scrollTop=keep}
+ if(vide){const v=document.createElement('div');v.className='ev';v.textContent='Rien d’affiché pour l’instant.';ecrP.appendChild(v)}if(!vide){const ft=document.createElement('div');ft.className='ef';tout.textContent='🧹 Tout retirer de la carte';ft.appendChild(tout);ecrP.appendChild(ft)}ecrP.scrollTop=keep}
 function ecrPlanif(){clearTimeout(ECR.t);ECR.t=setTimeout(()=>{try{ecrRendu()}catch(e){}},120)}
 // suit les changements faits ailleurs (menu, plans, fonds)
 document.getElementById('p').addEventListener('change',e=>{if(!e.target.closest('#ecrP'))ecrPlanif()},true);
