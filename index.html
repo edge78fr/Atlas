@@ -721,13 +721,25 @@ fondAjouter('l','🏔️ Relief LiDAR HD',B.l,fondsCont);
 // ---------- ☀️ Relief LiDAR réglable : calculé ici à partir des altitudes brutes LiDAR HD de l'IGN ----------
 const RL={az:+store.get('rl_az',315),el:+store.get('rl_el',35),ex:+store.get('rl_ex',2),mode:store.get('rl_mode','eff'),cache:new Map()};
 const RL_M=16,RL_N=256+2*RL_M;
-async function rlAlt(c){const k=c.z+'/'+c.x+'/'+c.y;if(RL.cache.has(k))return RL.cache.get(k);
+// altitudes : mémoire (rapide) → stockage du téléphone (IndexedDB, survit aux sessions) → serveur IGN
+const RL_MEM=160,RL_IDB_MAX=900;let rlDbP=null;
+function rlDb(){return rlDbP||(rlDbP=new Promise(ok=>{try{const r=indexedDB.open('atlas_rl',1);r.onupgradeneeded=()=>{const s=r.result.createObjectStore('alt',{keyPath:'k'});s.createIndex('t','t')};r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null)}catch(e){ok(null)}}))}
+async function rlDbGet(k){const db=await rlDb();if(!db)return undefined;return new Promise(ok=>{try{const q=db.transaction('alt').objectStore('alt').get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>ok(undefined)}catch(e){ok(undefined)}})}
+let rlDbN=0;async function rlDbPut(o){const db=await rlDb();if(!db)return;try{const tx=db.transaction('alt','readwrite'),st=tx.objectStore('alt');st.put(o);
+ if(++rlDbN%40===0){const c=st.count();c.onsuccess=()=>{let trop=c.result-RL_IDB_MAX;if(trop<=0)return;const cur=st.index('t').openCursor();cur.onsuccess=()=>{const x=cur.result;if(x&&trop-->0){x.delete();x.continue()}}}}}catch(e){}}
+// stockage compact : centimètres sur 16 bits (0 = pas de donnée)
+function rlPack(f){let mn=Infinity;for(const v of f)if(v>-500&&v<mn)mn=v;const u=new Uint16Array(f.length);if(mn<Infinity)for(let i=0;i<f.length;i++){const v=f[i];u[i]=v>-500?Math.min(65535,Math.round((v-mn)*100)+1):0}return {mn,b:u.buffer}}
+function rlUnpack(o){const u=new Uint16Array(o.b),f=new Float32Array(u.length);for(let i=0;i<u.length;i++)f[i]=u[i]?o.mn+(u[i]-1)/100:-9999;return f}
+function rlMemSet(k,f){if(RL.cache.size>=RL_MEM)RL.cache.delete(RL.cache.keys().next().value);RL.cache.set(k,f)}
+async function rlAlt(c,sig){const k=c.z+'/'+c.x+'/'+c.y;if(RL.cache.has(k)){const f=RL.cache.get(k);RL.cache.delete(k);RL.cache.set(k,f);return f}
+ const o=await rlDbGet(k);if(o){const f=o.n?null:rlUnpack(o);rlMemSet(k,f);o.t=Date.now();rlDbPut(o);return f}
+ if(sig&&sig.aborted)throw 'abort';
  const C=20037508.342789244,ts=2*C/2**c.z,px=ts/256,bb=[c.x*ts-C-RL_M*px,C-(c.y+1)*ts-RL_M*px,(c.x+1)*ts-C+RL_M*px,C-c.y*ts+RL_M*px].join(',');
  const u=L=>`https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${L}&STYLES=&CRS=EPSG:3857&BBOX=${bb}&WIDTH=${RL_N}&HEIGHT=${RL_N}&FORMAT=image/x-bil;bits=32`;
- let f=null;for(const L of ['IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.LAMB93','ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES']){
-  for(let e=0;e<3&&!f;e++){try{const r=await fetch(u(L));if(r.ok){const b=await r.arrayBuffer();if(b.byteLength===RL_N*RL_N*4)f=new Float32Array(b)}}catch(_){}if(!f)await new Promise(r=>setTimeout(r,500*2**e))}
+ let f=null,reseau=true;for(const L of ['IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.LAMB93','ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES']){
+  for(let e=0;e<3&&!f;e++){if(sig&&sig.aborted)throw 'abort';try{const r=await fetch(u(L),{signal:sig});if(r.ok){reseau=false;const b=await r.arrayBuffer();if(b.byteLength===RL_N*RL_N*4)f=new Float32Array(b)}}catch(x){if(sig&&sig.aborted)throw 'abort'}if(!f)await new Promise(r=>setTimeout(r,500*2**e))}
   if(f){let ok=0;for(let i=0;i<f.length;i+=97)if(f[i]>-500)ok++;if(ok>f.length/97*0.3)break;f=null}}
- if(RL.cache.size>500)RL.cache.delete(RL.cache.keys().next().value);RL.cache.set(k,f);return f}
+ rlMemSet(k,f);if(f)rlDbPut({k,...rlPack(f),t:Date.now()});else if(!reseau)rlDbPut({k,n:1,t:Date.now()});return f}
 // pré-calcul par tuile (une seule fois) : il ne reste ensuite qu'un petit calcul par pixel quand le soleil tourne
 const RL_EL=35*Math.PI/180,RL_EX=2,RL_LUT=new Uint8ClampedArray(1025);for(let i=0;i<=1024;i++){const v=Math.pow(i/1024,1.4);RL_LUT[i]=Math.max(0,Math.min(255,(v-0.08)/0.62*255))}
 function rlPrep(c,f){if(!f)return null;const N=RL_N,M=RL_M,n=65536,Ac=new Int16Array(n),Bc=new Int16Array(n),Bs=new Int16Array(n),K=new Int16Array(n),ok=new Uint8Array(n);
@@ -747,13 +759,22 @@ function rlDessine(cv,c,f){const g=cv.getContext('2d');if(!f){g.clearRect(0,0,25
   let s=0,t;t=a*d0[2]+bc*d0[0]+bs*d0[1];if(t>0)s+=t;t=a*d1[2]+bc*d1[0]+bs*d1[1];if(t>0)s+=t;t=a*d2[2]+bc*d2[0]+bs*d2[1];if(t>0)s+=t;t=a*d3[2]+bc*d3[0]+bs*d3[1];if(t>0)s+=t;
   let v=s*K[i]/(W*1073676289);v=v>1?1:v;const g8=RL_LUT[(v*1024)|0];u32[i]=0xff000000|(g8<<16)|(g8<<8)|g8}
  g.putImageData(img,0,0)}
-const RelLidar=L.GridLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=256;
- rlAlt(c).then(f=>{cv._f=f;cv._c=c;rlDessine(cv,c,f);done(null,cv)});return cv}});
-B.ls=new RelLidar({...fondOpt,maxNativeZoom:19,minZoom:12,attribution:'IGN LiDAR HD'});
+// aperçu immédiat : on agrandit une tuile plus large déjà en mémoire, puis on affine quand la vraie arrive
+const RL_PV=new Map();let rlPvCv=null;
+function rlApercu(cv,c){for(let dz=1;dz<=5&&c.z-dz>=12;dz++){const n=2**dz,a={z:c.z-dz,x:Math.floor(c.x/n),y:Math.floor(c.y/n)},k=a.z+'/'+a.x+'/'+a.y,f=RL.cache.get(k);if(!f)continue;
+  let P=RL_PV.get(k);if(!P){P=rlPrep(a,f);if(RL_PV.size>24)RL_PV.delete(RL_PV.keys().next().value);RL_PV.set(k,P)}
+  if(!rlPvCv){rlPvCv=document.createElement('canvas');rlPvCv.width=rlPvCv.height=256}rlPvCv._p=P;rlPvCv._img=rlPvCv._img||null;rlDessine(rlPvCv,a,f);
+  const g=cv.getContext('2d'),w=256/n;g.imageSmoothingEnabled=true;g.clearRect(0,0,256,256);g.drawImage(rlPvCv,(c.x-a.x*n)*w,(c.y-a.y*n)*w,w,w,0,0,256,256);return true}return false}
+const RelLidar=L.GridLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=256;cv._c=c;const ac=new AbortController();cv._ac=ac;
+ let fait=false;if(rlApercu(cv,c)){cv._pv=1;fait=true;Promise.resolve().then(()=>done(null,cv))}
+ rlAlt(c,ac.signal).then(f=>{cv._f=f;cv._pv=0;cv._p=null;rlDessine(cv,c,f);if(!fait)done(null,cv)}).catch(()=>{});return cv}});
+B.ls=new RelLidar({...fondOpt,maxNativeZoom:18,minZoom:12,attribution:'IGN LiDAR HD'});
+// tuile sortie de l'écran avant d'être chargée : on annule son téléchargement
+B.ls.on('tileunload',e=>{const cv=e.tile;if(cv&&cv._ac&&cv._f===undefined)cv._ac.abort()});
 let rlRaf=0,rlT=0;function rlMaj(){if(rlRaf)return;rlRaf=requestAnimationFrame(()=>{rlRaf=0;const ly=B.ls;if(!ly._tiles)return;const vb=map.getPixelBounds(),z=map.getZoom(),zt=Math.round(z);
- for(const k in ly._tiles){const t=ly._tiles[k],cv=t.el;if(!cv._c)continue;const sc=map.getZoomScale(z,cv._c.z),x0=cv._c.x*256*sc,y0=cv._c.y*256*sc;
+ for(const k in ly._tiles){const t=ly._tiles[k],cv=t.el;if(!cv._c)continue;if(cv._f===undefined){if(cv._pv)rlApercu(cv,cv._c);continue}const sc=map.getZoomScale(z,cv._c.z),x0=cv._c.x*256*sc,y0=cv._c.y*256*sc;
   if(x0+256*sc<vb.min.x||x0>vb.max.x||y0+256*sc<vb.min.y||y0>vb.max.y){cv._sale=1;continue}rlDessine(cv,cv._c,cv._f);cv._sale=0}
- clearTimeout(rlT);rlT=setTimeout(()=>{for(const k in ly._tiles){const cv=ly._tiles[k].el;if(cv._sale&&cv._c){rlDessine(cv,cv._c,cv._f);cv._sale=0}}},300)})}
+ clearTimeout(rlT);rlT=setTimeout(()=>{for(const k in ly._tiles){const cv=ly._tiles[k].el;if(cv._sale&&cv._c&&cv._f!==undefined){rlDessine(cv,cv._c,cv._f);cv._sale=0}}},300)})}
 fondAjouter('ls','☀️ Relief LiDAR à soleil réglable',B.ls,fondsCont);
 {const row=fondsUI.get('ls'),box=document.createElement('div');box.className='rlBox';
  box.innerHTML=`<label class="rlL">🧭 Direction du soleil <b id="rlAzV"></b><input type="range" id="rlAz" min="0" max="359" step="1"></label>`;
@@ -1007,6 +1028,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T15:00:00+01:00'),t:'☀️ Relief LiDAR à soleil réglable (Fonds) : fais tourner le soleil pour faire ressortir les creux et les bosses'},
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'👁️ Nouveau bouton « À l’écran » (sur la carte, sous le zoom) : tout ce qui est affiché, avec opacité, ordre, zoom et ✕ pour retirer'},
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'✏️ Plans de terrain : un curseur d’opacité sous chaque plan coché (Terrain → Mes plans de terrain)'},
+ {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
