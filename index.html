@@ -868,7 +868,7 @@ fondAjouter('hydro','💧 Réseau hydrographique IGN',L.tileLayer(g('HYDROGRAPHY
 fondAjouter('w','⬜ Fond blanc',B.w,fondsCont);
 fondSync();
 // ordre par défaut des fonds (rangement validé par l'utilisateur le 18/11/2026)
-['o','l','t','yx','p','geol','hydro'].forEach(id=>{const r=fondsUI.get(id);if(r)fondsCont.appendChild(r)});fondsCont.appendChild(document.getElementById('pvaRow'));fondsCont.appendChild(fondsUI.get('w'));
+['o','l','ls','t','yx','p','geol','hydro'].forEach(id=>{const r=fondsUI.get(id);if(r)fondsCont.appendChild(r)});fondsCont.appendChild(document.getElementById('pvaRow'));fondsCont.appendChild(fondsUI.get('w'));
 menuAppliquer();
 
 const cd=L.tileLayer(g('CADASTRALPARCELS.PARCELS','bdparcellaire_o','image/png'),{maxZoom:22,maxNativeZoom:19,pane:'cadp',keepBuffer:1});
@@ -2615,7 +2615,7 @@ function ecrItems(){const G={f:[],a:[],c:[],p:[],t:[]};
  // fonds (ordre : en haut = dessus)
  [...fondsOrdre].reverse().forEach((id,i,arr)=>{const row=fondsUI.get(id);if(!row||!fondsActifs.has(id))return;const sl=row.querySelector('.fond-slider'),cb=row.querySelector('input[type=checkbox]');
   const nom=(row.closest('.fond-hist')?'🕰️ ':'')+(row.querySelector('.fond-titre span')||{}).textContent;const j=fondsOrdre.indexOf(id);
-  (row.closest('#rub-couches')?G.a:G.f).push({nom,op:sl?+sl.value:null,setOp:v=>{sl.value=v;sl.oninput()},off:()=>{cb.checked=false;cb.onchange()},
+  (row.closest('#rub-couches')?G.a:G.f).push({nom,sun:id==='ls',op:sl?+sl.value:null,setOp:v=>{sl.value=v;sl.oninput()},off:()=>{cb.checked=false;cb.onchange()},
    up:j<fondsOrdre.length-1?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j+1,0,id);fondSync()}:null,down:j>0?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j-1,0,id);fondSync()}:null})});
  // couches à cocher (menu Fonds + Couches)
  document.querySelectorAll('#rub-couches .cou > label > input[type=checkbox], #rub-fonds .cou > label > input[type=checkbox]').forEach(cb=>{if(!cb.checked)return;const cou=cb.closest('.cou'),op=cou.querySelector(':scope > input.op');
@@ -2640,8 +2640,11 @@ function ecrRendu(){const [G,n]=ecrCompte();if(!ECR.on)return;const sombre=docum
    const bt=(txt,tit,fn)=>{const b=document.createElement('button');b.textContent=txt;b.title=tit;if(fn)b.onclick=()=>{fn();ecrPlanif()};else b.disabled=true;l.appendChild(b)};
    if(it.up!==undefined){bt('↑','Monter (passe au-dessus)',it.up);bt('↓','Descendre',it.down)}if(it.zoom)bt('🔍','Zoomer dessus',it.zoom);bt('✕','Retirer de la carte',it.off);r.appendChild(l);
    if(it.op!=null){const o=document.createElement('div');o.className='eo';o.innerHTML=`<input type="range" min="${k==='t'?0.05:0}" max="1" step="0.05" value="${it.op}" aria-label="Opacité ${it.nom.replace(/"/g,'')}"><small>${Math.round(it.op*100)} %</small>`;const [rg,pc]=o.children;rg.oninput=()=>{pc.textContent=Math.round(rg.value*100)+' %';it.setOp(+rg.value)};r.appendChild(o)}
+   if(it.sun){const o=document.createElement('div');o.className='eo';o.innerHTML=`<span title="Direction du soleil">🧭</span><input type="range" min="0" max="359" step="1" value="${RL.az}" aria-label="Direction du soleil"><small style="width:52px">${ecrAz()}</small>`;const rg=o.children[1],pc=o.children[2];
+     rg.oninput=()=>{RL.az=+rg.value;pc.textContent=ecrAz();rlMaj();const m=document.getElementById('rlAz');if(m){m.value=RL.az;m.oninput()}};rg.onchange=()=>store.set('rl_az',RL.az);r.appendChild(o)}
    ecrP.appendChild(r)})}
  if(vide){const v=document.createElement('div');v.className='ev';v.textContent='Rien d’affiché pour l’instant.';ecrP.appendChild(v)}if(!vide){const ft=document.createElement('div');ft.className='ef';tout.textContent='🧹 Tout retirer de la carte';ft.appendChild(tout);ecrP.appendChild(ft)}ecrP.scrollTop=keep}
+function ecrAz(){return RL.az+'° '+['N','NE','E','SE','S','SO','O','NO'][Math.round(RL.az/45)%8]}
 function ecrPlanif(){clearTimeout(ECR.t);ECR.t=setTimeout(()=>{try{ecrRendu()}catch(e){}},120)}
 // suit les changements faits ailleurs (menu, plans, fonds)
 document.getElementById('p').addEventListener('change',e=>{if(!e.target.closest('#ecrP'))ecrPlanif()},true);
