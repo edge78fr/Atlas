@@ -335,6 +335,7 @@ body.v3on #chB,body.v3on #chP{display:none!important}
 .dsgC{padding:10px;display:grid;gap:6px}.dsgC input#dsgNom,.dsgC select{font-size:16px;padding:6px;border:1px solid #cfd5db;border-radius:8px;width:100%;box-sizing:border-box}.dsgR{display:block;padding:2px 0}#dsgEst{background:#f3f5f7;border-radius:8px;padding:6px}.dsgB .dsB button{min-height:36px}
 .dsgRow .dsgDel{float:right;border:0;background:none;color:#999;cursor:pointer;font-size:13px;padding:0 4px}.dsgRow input.op{width:calc(100% - 26px);margin:4px 0 1px 24px;height:22px;accent-color:#1a6fd6}.dsgB .dsB .dsGo{background:#1a73e8;color:#fff;border:0;font-weight:600}.dsgB .dsB .dsGo:disabled{opacity:.45}
 #dsHint{color:#222;position:absolute;z-index:1270;left:50%;top:14px;transform:translateX(-50%);background:#fff;border-radius:22px;box-shadow:0 3px 14px #0005;padding:6px 6px 6px 14px;font:600 14px system-ui;display:none;align-items:center;gap:10px;max-width:calc(100% - 24px)}#dsHint.on{display:flex}#dsHint span{flex:1;white-space:nowrap}#dsHint button{border:0;background:#eef1f4;border-radius:16px;padding:7px 12px;font-size:13px;cursor:pointer}
+#dsP .eh #dsQuit{font-size:12.5px;padding:0 10px;color:#b42318;background:#fdecea}#dsP.sombre .eh #dsQuit{background:#4a2020;color:#ffb4ab}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -2796,7 +2797,7 @@ const dsJ=async(u,o,ms)=>JSON.parse(await dsTxt(u,o,ms));
 const dsXml=t=>new DOMParser().parseFromString(t,'text/xml');
 function dsRel(u){if(!DS.RELAIS2)throw new Error('🔒 nécessite le relais (non installé)');return DS.RELAIS2+(DS.RELAIS2.includes('?')?'&':'?')+'u='+encodeURIComponent(u)}
 // ---- interface ----
-const dsP=document.createElement('div');dsP.id='dsP';dsP.innerHTML=`<div class="eh"><span>🕵️ Atlas Deep Search</span><button id="dsX" title="Fermer">✕</button></div>
+const dsP=document.createElement('div');dsP.id='dsP';dsP.innerHTML=`<div class="eh"><span>🕵️ Atlas Deep Search</span><button id="dsQuit" title="Quitter Deep Search : retire aussi les icônes, la zone et les superpositions de la carte">🚪 Quitter</button><button id="dsX" title="Fermer le panneau (les résultats restent sur la carte)">✕</button></div>
 <div id="dsZ"><div class="dsL">1. Zone</div><div class="dsB"><button id="dsVue">📱 Vue actuelle</button><button id="dsRect">✏️ Dessiner un rectangle</button></div><div id="dsZi" class="dsI">Aucune zone choisie.</div>
 <div class="dsL">2. Thème</div><select id="dsTh"><option value="tout">Tous les ouvrages</option><option value="aqu">Aqueducs et hydraulique ancienne</option><option value="car">Carrières et cavités</option><option value="sou">Patrimoine souterrain</option></select>
 <button id="dsGoB" class="dsGo" disabled>🔎 Lancer la fouille</button></div>
@@ -2804,11 +2805,17 @@ const dsP=document.createElement('div');dsP.id='dsP';dsP.innerHTML=`<div class="
 <div id="dsS"></div><div id="dsR"></div><div id="dsRelais"></div>`;document.getElementById('m').appendChild(dsP);
 L.DomEvent.disableClickPropagation(dsP);L.DomEvent.disableScrollPropagation(dsP);
 const dsQ=i=>document.getElementById(i);
-function dsOuvre(on){dsP.classList.toggle('on',on);dsP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));if(on){if(typeof ECR!=='undefined'&&ECR.on)ecrB.onclick();if(typeof CH!=='undefined'&&CH.on)chB.onclick();DS.G.addTo(map);if(DS.zoneL)DS.zoneL.addTo(map);dsRendu()}
- else{map.removeLayer(DS.G);if(DS.zoneL)map.removeLayer(DS.zoneL);DS_SUP.forEach(l=>map.removeLayer(l));DS_SUP.clear();if(typeof dsAp!=='undefined'&&dsAp){map.removeLayer(dsAp);dsAp=null}map.closePopup()}}
-// superpositions ouvertes depuis les résultats : retirées quand on ferme Deep Search
+// ✕ = replie seulement le panneau ; 🚪 Quitter = ferme et retire tout de la carte
+function dsChevauche(){const pn=document.getElementById('p');if(!pn||pn.classList.contains('ferme')||!dsP.classList.contains('on'))return false;const a=dsP.getBoundingClientRect(),b=pn.getBoundingClientRect();return a.width&&b.width&&a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom}
+function dsOuvre(on,tout){dsP.classList.toggle('on',on);dsP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));
+ if(on){if(typeof ECR!=='undefined'&&ECR.on)ecrB.onclick();if(typeof CH!=='undefined'&&CH.on)chB.onclick();DS.G.addTo(map);if(DS.zoneL)DS.zoneL.addTo(map);dsRendu();
+  // téléphone / tablette : si le menu de l'Atlas est par-dessus, on le replie
+  if(dsChevauche()){const pn=document.getElementById('p');pn.classList.add('ferme');try{store.set('ferme',true)}catch(e){}}}
+ else if(tout){map.removeLayer(DS.G);if(DS.zoneL)map.removeLayer(DS.zoneL);DS_SUP.forEach(l=>map.removeLayer(l));DS_SUP.clear();if(typeof dsAp!=='undefined'&&dsAp){map.removeLayer(dsAp);dsAp=null}map.closePopup()}}
+// et l'inverse : on rouvre le menu de l'Atlas alors que Deep Search est par-dessus -> on replie Deep Search (les résultats restent)
+try{new MutationObserver(()=>{if(dsChevauche())dsOuvre(false)}).observe(document.getElementById('p'),{attributes:true,attributeFilter:['class']})}catch(e){}
 const DS_SUP=new Set();
-dsQ('dsX').onclick=()=>dsOuvre(false);
+dsQ('dsX').onclick=()=>dsOuvre(false);dsQ("dsQuit").onclick=()=>dsOuvre(false,true);
 dsQ('dsTh').value=DS.theme;dsQ('dsTh').onchange=e=>DS.theme=e.target.value;
 function dsZone(b){DS.z={w:+b.getWest().toFixed(5),s:+b.getSouth().toFixed(5),e:+b.getEast().toFixed(5),n:+b.getNorth().toFixed(5)};
  const km=(b.getSouthWest().distanceTo(b.getSouthEast())/1000),km2=km*(b.getSouthWest().distanceTo(b.getNorthWest())/1000);
