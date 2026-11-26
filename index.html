@@ -330,6 +330,11 @@ body.v3on #chB,body.v3on #chP{display:none!important}
 @media (max-width:700px){#dsP{left:6px;right:6px;width:auto;top:60px;height:calc(100% - 150px)}}
 #dsRelais{font-size:11.5px;color:#666;padding:6px 10px;border-top:1px solid #e3e6ea;background:#fafbfc}#dsRelais button{font-size:11px;border:1px solid #cfd5db;background:#fff;border-radius:6px;padding:1px 6px;margin-left:4px;cursor:pointer}
 .dsq{font-size:10.5px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.02em;margin-left:24px}.dsImg{display:block;max-width:calc(100% - 24px);max-height:140px;margin:4px 0 0 24px;border-radius:6px;object-fit:cover}.dsAide{color:#555;font-style:italic;padding-bottom:3px}
+#dsG{position:fixed;inset:0;z-index:3000;background:#0006;display:none;align-items:center;justify-content:center;padding:12px}#dsG.on{display:flex}
+.dsgB{background:#fff;color:#222;border-radius:12px;width:min(420px,100%);max-height:100%;overflow:auto;box-shadow:0 8px 30px #0007;font:13px system-ui}.dsgB .eh{display:flex;align-items:center;padding:9px 10px;border-bottom:1px solid #e3e6ea;font-weight:700}.dsgB .eh span{flex:1}.dsgB .eh button{border:0;background:#eef1f4;border-radius:6px;min-width:36px;min-height:32px;cursor:pointer}
+.dsgC{padding:10px;display:grid;gap:6px}.dsgC input#dsgNom,.dsgC select{font-size:16px;padding:6px;border:1px solid #cfd5db;border-radius:8px;width:100%;box-sizing:border-box}.dsgR{display:block;padding:2px 0}#dsgEst{background:#f3f5f7;border-radius:8px;padding:6px}.dsgB .dsB button{min-height:36px}
+.dsgRow .dsgDel{float:right;border:0;background:none;color:#999;cursor:pointer;font-size:13px;padding:0 4px}.dsgRow input.op{width:calc(100% - 26px);margin:4px 0 1px 24px;height:22px;accent-color:#1a6fd6}.dsgB .dsB .dsGo{background:#1a73e8;color:#fff;border:0;font-weight:600}.dsgB .dsB .dsGo:disabled{opacity:.45}
+#dsHint{color:#222;position:absolute;z-index:1270;left:50%;top:14px;transform:translateX(-50%);background:#fff;border-radius:22px;box-shadow:0 3px 14px #0005;padding:6px 6px 6px 14px;font:600 14px system-ui;display:none;align-items:center;gap:10px;max-width:calc(100% - 24px)}#dsHint.on{display:flex}#dsHint span{flex:1;white-space:nowrap}#dsHint button{border:0;background:#eef1f4;border-radius:16px;padding:7px 12px;font-size:13px;cursor:pointer}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -1063,6 +1068,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
  {ts:Date.parse('2026-11-25T22:40:00+01:00'),t:'💬 Discussion entre membres : bouton 💬 sur la carte, messages chiffrés, et « 📍 joindre ma vue » pour montrer un endroit précis'},
  {ts:Date.parse('2026-11-26T07:10:00+01:00'),t:'👀 Discussion : tu vois maintenant qui a lu tes messages (✓ envoyé, ✓✓ lu, « Vu par » sous le dernier message)'},
+ {ts:Date.parse('2026-11-26T18:56:00+01:00'),t:'💾 Deep Search : « Garder dans l’Atlas » copie la carte dans le stockage de l’Atlas (elle reste même si la source disparaît) et tu choisis où la ranger dans le menu'},
  {ts:Date.parse('2026-11-26T18:20:00+01:00'),t:'🕵️ Deep Search plus clair : chaque résultat dit ce que c’est, vignettes, cartes anciennes superposables, moins de bruit'},
  {ts:Date.parse('2026-11-26T17:30:00+01:00'),t:'🕵️ Atlas Deep Search (Rechercher) : fouille une zone dans une douzaine de sources publiques (cartes, documents, couches SIG)'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
@@ -1482,7 +1488,7 @@ async function chercher(){const t=q.value.trim();if(!t)return;const cp=coordPt(t
 document.getElementById('go').onclick=chercher;q.onkeydown=e=>{if(e.key==='Enter')chercher()};
 // ---------- coordonnées ----------
 let mesure=null;
-map.on('click',e=>{if(mesure||anMode||adjEd||e.anFait||(IMP.on&&IMP.pick)||pvaClic(e))return;const t=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+map.on('click',e=>{if(window.DS_DESSIN||mesure||anMode||adjEd||e.anFait||(IMP.on&&IMP.pick)||pvaClic(e))return;const t=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
  const d=L.DomUtil.create('div','cp');d.innerHTML=`<b>${t}</b><br><button>Copier</button>`;
  d.querySelector('button').onclick=ev=>{ev.target.textContent=copier(t)?'Copié ✔':'Sélectionne le texte'};
  L.popup().setLatLng(e.latlng).setContent(d).openOn(map)});
@@ -1648,7 +1654,7 @@ async function ouvreFiche(id,attrs){ft.textContent=id;fo.href=ficheUrl(id);
  if(!docs.length){box.innerHTML=`Aucun document numérisé trouvé.<a class="big" href="${ficheUrl(id)}" target="_blank" rel="noopener">📄 Ouvrir la fiche complète</a>`;return}
  box.innerHTML=`<div class="nb">${docs.length} document(s) numérisé(s)</div>`+docs.map(d=>`<a class="doc" href="${viaR(d.u)}" target="_blank" rel="noopener">${d.img?`<img loading="lazy" src="${viaR(d.img)}" alt="">`:'<span class="noimg">📄</span>'}<span class="dt"><b>${esc(d.type||d.nom)}</b><small>${esc(d.nom)}${d.poids?' · '+esc(d.poids):''}</small></span></a>`).join('');}
 
-map.on('click',async e=>{if(anMode||e.anFait||e.pvaFait||(IMP.on&&IMP.pick)||!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
+map.on('click',async e=>{if(window.DS_DESSIN||anMode||e.anFait||e.pvaFait||(IMP.on&&IMP.pick)||!bssL||(typeof mesure!=='undefined'&&mesure))return;const z=map.getZoom();if(z<13)return;
  const p=map.latLngToContainerPoint(e.latlng),r=12,sw=map.containerPointToLatLng([p.x-r,p.y+r]),ne=map.containerPointToLatLng([p.x+r,p.y-r]);
  const A=L.CRS.EPSG3857.project(sw),Bp=L.CRS.EPSG3857.project(ne);
  const u=BRGM+`?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=${bssLay}&QUERY_LAYERS=${bssLay}&CRS=EPSG:3857&BBOX=${A.x},${A.y},${Bp.x},${Bp.y}&WIDTH=25&HEIGHT=25&I=12&J=12&INFO_FORMAT=text/plain&FEATURE_COUNT=5`;
@@ -2676,7 +2682,7 @@ function ecrItems(){const G={f:[],a:[],c:[],p:[],t:[]};
   (row.closest('#rub-couches')?G.a:G.f).push({nom,sun:id==='ls',op:sl?+sl.value:null,setOp:v=>{sl.value=v;sl.oninput()},off:()=>{cb.checked=false;cb.onchange()},
    up:j<fondsOrdre.length-1?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j+1,0,id);fondSync()}:null,down:j>0?()=>{fondsOrdre.splice(j,1);fondsOrdre.splice(j-1,0,id);fondSync()}:null})});
  // couches à cocher (menu Fonds + Couches)
- document.querySelectorAll('#rub-couches .cou > label > input[type=checkbox], #rub-fonds .cou > label > input[type=checkbox]').forEach(cb=>{if(!cb.checked)return;const cou=cb.closest('.cou'),op=cou.querySelector(':scope > input.op');
+ [...new Set(document.querySelectorAll('#corps .cou > label > input[type=checkbox], #rub-couches .cou > label > input[type=checkbox], #rub-fonds .cou > label > input[type=checkbox]'))].forEach(cb=>{if(!cb.checked)return;const cou=cb.closest('.cou'),op=cou.querySelector(':scope > input.op');
   G.c.push({nom:ecrNomLab(cb.parentElement),op:op?+op.value:null,setOp:v=>{op.value=v;op.dispatchEvent(new Event('input',{bubbles:true}))},off:()=>{cb.checked=false;cb.dispatchEvent(new Event('change',{bubbles:true}))}})});
  // plans chargés (ordre : en haut = dessus)
  ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);if(!p||!p.layer)return;
@@ -2794,8 +2800,15 @@ function dsZone(b){DS.z={w:+b.getWest().toFixed(5),s:+b.getSouth().toFixed(5),e:
  if(DS.zoneL)map.removeLayer(DS.zoneL);DS.zoneL=L.rectangle(b,{color:'#ff6d00',weight:2,dashArray:'6 4',fill:false,interactive:false}).addTo(map);
  dsQ('dsZi').textContent=`Zone de ${km2<1?Math.round(km2*100)/100:Math.round(km2*10)/10} km²`+(km2>150?' ⚠️ très grande : la fouille sera longue et moins précise':'');dsQ('dsGoB').disabled=km2>2500}
 dsQ('dsVue').onclick=()=>dsZone(map.getBounds());
-dsQ('dsRect').onclick=()=>{if(DS.dessin)return;DS.dessin=true;dsQ('dsZi').textContent='👆 Touche un premier coin sur la carte, puis le coin opposé.';let a=null,tmp=null;
- const clic=e=>{if(!a){a=e.latlng;tmp=L.circleMarker(a,{radius:5,color:'#ff6d00'}).addTo(map);return}map.off('click',clic);map.removeLayer(tmp);DS.dessin=false;dsZone(L.latLngBounds(a,e.latlng))};map.on('click',clic)};
+// dessin du rectangle : le panneau se replie, une petite barre guide, puis le panneau revient tout seul
+const dsHint=document.createElement('div');dsHint.id='dsHint';document.getElementById('m').appendChild(dsHint);L.DomEvent.disableClickPropagation(dsHint);
+dsQ('dsRect').onclick=()=>{if(DS.dessin)return;DS.dessin=true;window.DS_DESSIN=1;let a=null,tmp=null,rc=null;dsP.classList.remove('on');
+ const msg=t=>{dsHint.innerHTML='<span></span><button>Annuler</button>';dsHint.firstChild.textContent=t;dsHint.lastChild.onclick=()=>fin(null);dsHint.classList.add('on')};
+ msg('👆 Touche un premier coin de la zone');
+ const bouge=e=>{if(!a)return;if(!rc)rc=L.rectangle(L.latLngBounds(a,e.latlng),{color:'#ff6d00',weight:2,dashArray:'6 4',fillOpacity:.08,interactive:false}).addTo(map);else rc.setBounds(L.latLngBounds(a,e.latlng))};
+ const fin=b=>{map.off('click',clic);map.off('mousemove',bouge);tmp&&map.removeLayer(tmp);rc&&map.removeLayer(rc);DS.dessin=false;setTimeout(()=>window.DS_DESSIN=0,0);dsHint.classList.remove('on');if(b)dsZone(b);dsOuvre(true)};
+ const clic=e=>{if(!a){a=e.latlng;tmp=L.circleMarker(a,{radius:6,color:'#ff6d00',fillOpacity:1}).addTo(map);msg('👆 Touche maintenant le coin opposé');return}fin(L.latLngBounds(a,e.latlng))};
+ setTimeout(()=>{map.on('click',clic);map.on('mousemove',bouge)},0)};
 dsQ('dsT').onclick=e=>{const b=e.target.closest('button');if(!b)return;DS.tab=b.dataset.t;dsRendu()};
 dsQ('dsGoB').onclick=()=>dsLance();
 function dsRelaisAff(){const e=dsQ('dsRelais');e.innerHTML=DS.RELAIS2?'🔓 Relais actif (Gallica, FranceArchives) <button>modifier</button>':'🔒 Gallica et FranceArchives ont besoin du relais. <button>Installer / renseigner</button>';e.querySelector('button').onclick=()=>{const v=(prompt('Adresse du relais Cloudflare (ex. https://atlas-relais.xxx.workers.dev/). Vide = désactiver.',DS.RELAIS2)||'').trim();if(v&&!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/?$/i.test(v)){alert('Adresse non reconnue : elle doit finir par .workers.dev');return}DS.RELAIS2=v;store.set('ds_relais',v);dsRelaisAff()}}
@@ -2845,7 +2858,7 @@ dsSrc('sp','allmaps','Allmaps : cartes anciennes calées','Cartes anciennes déj
   if(km>400)continue;const prov=src.provider&&src.provider[0]&&lab(src.provider[0]);const t2=lab(p2),t1=lab(p1);
   const fic=decodeURIComponent((src.id||'').split('/').pop()).replace(/\.(tiff?|jpe?g|png|jp2)$/i,'').replace(/^[a-z]+:/i,'').replace(/[_+]/g,' ').replace(/\b\d+x\b/i,'').trim();const ficOk=/[a-zA-Zé]{4,}.*[a-zA-Zé]{3,}/.test(fic)&&!/^[a-z]{0,3}\d+$/i.test(fic.replace(/\s/g,''))&&!/derivate|~/.test(fic);
   const titre=[t2,t1&&t1!=='NP'?t1:''].filter(Boolean).join(' — ')||(ficOk?'Carte « '+fic+' »':'Carte ancienne sans titre'+(prov?' ('+prov+')':''));
-  const mid=a.id.split('/').pop();out.push({titre,desc:'Couvre environ '+km+' km de large'+(prov?' · '+prov:'')+(/sans titre/.test(titre)?' · Titre inconnu : « Superposer » pour voir ce que c’est.':''),quoi:'Carte ancienne calée (Allmaps)',url:'https://viewer.allmaps.org/?url='+encodeURIComponent(a.id),ouvrir:'Voir en grand',xyz:{url:`https://allmaps.xyz/maps/${mid}/{z}/{x}/{y}.png`,titre},ic:'📜',bonus:km<15?3:km<60?1:0})}
+  const mid=a.id.split('/').pop();out.push({titre,desc:'Couvre environ '+km+' km de large'+(prov?' · '+prov:'')+(/sans titre/.test(titre)?' · Titre inconnu : « Superposer » pour voir ce que c’est.':''),quoi:'Carte ancienne calée (Allmaps)',url:'https://viewer.allmaps.org/?url='+encodeURIComponent(a.id),ouvrir:'Voir en grand',xyz:{url:`https://allmaps.xyz/maps/${mid}/{z}/{x}/{y}.png`,titre,ext:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]},ic:'📜',bonus:km<15?3:km<60?1:0})}
  return out});
 dsSrc('sp','commons','Wikimedia Commons : photos localisées','Photos et cartes postales libres prises dans la zone',async(z,ctx,mots)=>{const cy=(z.s+z.n)/2,cx=(z.w+z.e)/2,r=Math.min(10000,Math.round(L.latLng(z.s,z.w).distanceTo(L.latLng(z.n,z.e))/2));
  const j=await dsJ(`https://commons.wikimedia.org/w/api.php?action=query&list=geosearch&gscoord=${cy}|${cx}&gsradius=${Math.max(100,r)}&gsnamespace=6&gslimit=500&format=json&origin=*`);if(j.error)throw new Error(j.error.info);
@@ -2898,7 +2911,7 @@ function dsLigne(r,t){const d=document.createElement('div');d.className='dsr';co
  d.querySelector('.dsn').textContent=r.titre;d.querySelector('.dsd').textContent=[r.desc,r.cote?'Cote : '+r.cote:''].filter(Boolean).join(' · ');d.querySelector('.dsm').textContent=(r.hit&&r.hit.length?'Trouvé grâce à : '+r.hit.slice(0,5).join(', ')+' · ':'')+'Source : '+[].concat(r.src).join(', ');
  const a=d.querySelector('.dsa'),bt=(x,f)=>{const b=document.createElement('button');b.textContent=x;b.onclick=f;a.appendChild(b)};
  if(r.lat!=null)bt('📍 Voir sur la carte',()=>{map.setView([r.lat,r.lng],Math.max(map.getZoom(),17));r._m&&r._m.openPopup()});if(r.act)bt('📐 Ouvrir le plan',r.act);
- if(r.xyz){let ly=null;bt('🗺️ Superposer sur l’Atlas',e=>{if(ly){map.removeLayer(ly);ly=null;e.target.textContent='🗺️ Superposer sur l’Atlas';return}ly=L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}).addTo(map);e.target.textContent='🙈 Retirer la superposition'});bt('➕ Garder dans mes couches',e=>{dsAjoute({type:'xyz',base:r.xyz.url,layer:'',titre:r.xyz.titre,src:'Allmaps'});e.target.textContent='✅ Gardée (Couches → Divers)'})}
+ if(r.xyz){let ly=null;bt('🗺️ Superposer sur l’Atlas',e=>{if(ly){map.removeLayer(ly);ly=null;e.target.textContent='🗺️ Superposer sur l’Atlas';return}ly=L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}).addTo(map);e.target.textContent='🙈 Retirer la superposition'});bt('💾 Garder dans l’Atlas',()=>dsGarder({type:'xyz',url:r.xyz.url,titre:r.xyz.titre,ext:r.xyz.ext,src:'Allmaps',lien:r.url}))}
  if(r.url){const l=document.createElement('a');l.href=r.url;l.target='_blank';l.rel='noopener';l.textContent='↗ '+(r.ouvrir||'Ouvrir la source');a.appendChild(l)}
  if(r.pages)bt('🔎 Pages où le mot apparaît',()=>dsPages(r,d));
  if(r.rec)bt('🔍 Chercher le service cartographique',async e=>{e.target.disabled=true;e.target.textContent='⏳ Lecture de la fiche…';try{const t=await dsTxt(r.rec.replace(/&amp;/g,'&'));const us=[...new Set([...t.matchAll(/<gmd:URL>([^<]*)<\/gmd:URL>/g)].map(m=>m[1].replace(/&amp;/g,'&')).filter(u=>/service=(wms|wfs)/i.test(u)&&!/intranet|\.rie\.gouv/.test(u)))];if(!us.length)throw new Error('aucun service public dans la fiche');r.svc=us.map(u=>({p:/service=wms/i.test(u)?'OGC:WMS':'OGC:WFS',n:'',u}));r.rec=null;const nv=dsLigne(r,'sig');d.replaceWith(nv)}catch(x){e.target.textContent='❌ '+x.message}});
@@ -2912,7 +2925,7 @@ function dsRendu(){const R=dsQ('dsR'),S=dsQ('dsS');const tb=dsQ('dsT');
   R.insertAdjacentHTML('beforeend',`<div class="dsg">🕘 Fouilles récentes</div>`);h.forEach(x=>{const d=document.createElement('div');d.className='dsr';d.innerHTML=`<div class="dst"><span class="dsn"></span></div><div class="dsd"></div><div class="dsa"><button>↻ Refaire</button></div>`;
    d.querySelector('.dsn').textContent=new Date(x.d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' · '+DS_SYN[x.theme].nom;d.querySelector('.dsd').textContent=(x.com||[]).join(', ')+' — '+x.n.sp+' sur la carte, '+x.n.doc+' documents, '+x.n.sig+' couches';
    d.querySelector('button').onclick=()=>{DS.theme=x.theme;dsQ('dsTh').value=x.theme;dsZone(L.latLngBounds([x.z.s,x.z.w],[x.z.n,x.z.e]));map.fitBounds([[x.z.s,x.z.w],[x.z.n,x.z.e]]);DS.tab='sp';dsLance()};R.appendChild(d)});return}
- const t=DS.tab;const AIDE={sp:'Ce qui est déjà localisé : ouvrages connus, monuments, cartes anciennes superposables, photos, noms de lieux évocateurs.',doc:'Ce qui parle de la zone sans être sur la carte : livres, gravures, plans anciens, études, articles, archives. Ouvre-les pour lire.',sig:'Couches cartographiques officielles (État, collectivités). « 🧩 Afficher la couche » la montre sur la carte ; « ➕ » la garde dans ton Atlas.'};S.innerHTML=`<div class="dse dsAide">${AIDE[t]||''}</div>`+(DS.etat.ctx?`<div class="dse">${dsE(DS.etat.ctx)}</div>`:'')+(DS.ctx&&t!=='sig'?`<div class="dse">🏘️ ${DS.ctx.com.length} commune(s) : ${dsE(DS.ctx.com.slice(0,8).map(c=>c.nom).join(', '))}${DS.ctx.com.length>8?'…':''} · ${DS.ctx.ld.length} lieux-dits lus</div>`:'')+dsEtatHtml(t);
+ const t=DS.tab;const AIDE={sp:'Ce qui est déjà localisé : ouvrages connus, monuments, cartes anciennes superposables, photos, noms de lieux évocateurs.',doc:'Ce qui parle de la zone sans être sur la carte : livres, gravures, plans anciens, études, articles, archives. Ouvre-les pour lire.',sig:'Couches cartographiques officielles (État, collectivités). « 🧩 Afficher la couche » la montre sur la carte ; « 💾 Garder » en fait une copie dans l’Atlas, rangée où tu veux.'};S.innerHTML=`<div class="dse dsAide">${AIDE[t]||''}</div>`+(DS.etat.ctx?`<div class="dse">${dsE(DS.etat.ctx)}</div>`:'')+(DS.ctx&&t!=='sig'?`<div class="dse">🏘️ ${DS.ctx.com.length} commune(s) : ${dsE(DS.ctx.com.slice(0,8).map(c=>c.nom).join(', '))}${DS.ctx.com.length>8?'…':''} · ${DS.ctx.ld.length} lieux-dits lus</div>`:'')+dsEtatHtml(t);
  const L_=dsDedup(DS.res[t]).sort((a,b)=>b.score-a.score);R.innerHTML='';if(!DS.z){R.innerHTML='<div class="ev">Choisis une zone puis lance la fouille.</div>';return}
  if(!L_.length&&!Object.values(DS.etat).some(e=>e.st==='…')){R.innerHTML='<div class="ev">Aucun résultat pour cet onglet.</div>'}
  L_.slice(0,250).forEach(r=>{R.appendChild(dsLigne(r,t));if(t==='sp')dsMarque(r)});if(L_.length>250)R.insertAdjacentHTML('beforeend',`<div class="ev">… ${L_.length-250} autres résultats moins pertinents</div>`)}
@@ -2923,25 +2936,103 @@ async function dsPages(r,el){const box=el.querySelector('.dsa');const out=docume
   out.innerHTML=hits.length?hits.slice(0,20).map(h=>`<div>📄 <a target="_blank" rel="noopener" href="https://gallica.bnf.fr/ark:/${dsE(r.pages.ark)}/${dsE(h.p)}.item">page ${dsE(h.p.replace(/^f/,''))}</a> · « ${dsE(h.c)} »</div>`).join(''):'Aucune page trouvée pour ces mots.'}
  catch(e){out.textContent='❌ '+e.message}}
 // ---- couches SIG : aperçu et ajout à l'Atlas ----
-DS.cl=store.get('ds_couches',[]);const DSC=new Map();
 function dsWmsBase(u){const[a,q]=u.split('?');if(!q)return a;const k=q.split('&').filter(p=>p&&!/^(service|request|version|layers|format)=/i.test(p));return k.length?a+'?'+k.join('&'):a}
 async function dsService(s,r,el){const out=document.createElement('div');out.className='dsd';out.textContent='⏳ Lecture du service…';el.appendChild(out);
  try{if(/wms/i.test(s.p+s.u)){const base=dsWmsBase(s.u);const sep=base.includes('?')?'&':'?';const t=await dsFetch(base+sep+'SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0');const x=dsXml(t);
    const lays=[...x.getElementsByTagName('Layer')].map(l=>({n:(l.getElementsByTagName('Name')[0]||{}).textContent,t:(l.getElementsByTagName('Title')[0]||{}).textContent})).filter(l=>l.n);
-   if(!lays.length)throw new Error('aucune couche lisible');out.innerHTML='';lays.slice(0,40).forEach(l=>{const d=document.createElement('div');d.className='dsl';d.innerHTML='<span></span><button>👁 Aperçu</button><button>➕ Ajouter à l’Atlas</button>';d.firstChild.textContent=l.t||l.n;
-    const [ap,aj]=d.querySelectorAll('button');ap.onclick=()=>dsApercu(base,l);aj.onclick=()=>{dsAjoute({type:'wms',base,layer:l.n,titre:(l.t||l.n),src:r.titre});aj.textContent='✅ Gardée (Couches → Divers)'};out.appendChild(d)})}
+   if(!lays.length)throw new Error('aucune couche lisible');out.innerHTML='';lays.slice(0,40).forEach(l=>{const d=document.createElement('div');d.className='dsl';d.innerHTML='<span></span><button>👁 Aperçu</button><button>💾 Garder dans l’Atlas</button>';d.firstChild.textContent=l.t||l.n;
+    const [ap,aj]=d.querySelectorAll('button');ap.onclick=()=>dsApercu(base,l);aj.onclick=()=>dsGarder({type:'wms',base,layer:l.n,titre:(l.t||l.n),src:r.titre,lien:s.u});out.appendChild(d)})}
   else if(/wfs/i.test(s.p+s.u)){out.innerHTML='Service WFS (données vectorielles) : <a target="_blank" rel="noopener" href="'+dsE(s.u)+'">ouvrir</a>. L’ajout direct est prévu pour les services WMS ; un WFS se lit aussi, mais il faut vérifier son volume avant.'}
   else out.innerHTML='Service ArcGIS : <a target="_blank" rel="noopener" href="'+dsE(s.u)+'">ouvrir</a>.'}
  catch(e){out.textContent='❌ '+e.message+(/bloqué/.test(e.message)?' — ce serveur refuse d’être lu depuis l’Atlas ; il faudrait passer par le relais.':'')}}
 let dsAp=null;function dsApercu(base,l){if(dsAp)map.removeLayer(dsAp);dsAp=L.tileLayer.wms(base,{layers:l.n,format:'image/png',transparent:true,version:'1.3.0',opacity:.8,pane:'cont'}).addTo(map)}
-function dsAjoute(c){if(DS.cl.some(x=>x.base===c.base&&x.layer===c.layer))return;DS.cl.push({...c,d:Date.now()});store.set('ds_couches',DS.cl);dsCouches()}
-function dsCouches(){const box=document.getElementById('dsCou');if(!box)return;box.innerHTML=DS.cl.length?'':'<div style="color:#888;font-size:12px">Aucune couche ajoutée. Utilise 🕵️ Deep Search → Couches SIG.</div>';
- DS.cl.forEach((c,i)=>{const k=c.base+'|'+c.layer;const row=document.createElement('div');row.className='cou';row.innerHTML='<label><input type="checkbox"> <span></span></label> <button title="Retirer de l’Atlas" style="font-size:11px">🗑</button><input class="op" type="range" min="0" max="1" step="0.05" value="'+(c.op||.8)+'">';
+// ---- « Garder » : copie chiffrée dans le stockage de l'Atlas (data1, comme un plan calé) + ligne rangée où on veut dans le menu ----
+// Pourquoi copier : une source peut disparaître un jour ; la copie, elle, reste dans l'Atlas pour tous les membres.
+const DSG_KO=25e3;   // poids moyen estimé d'une image (octets)
+function dsgLL2T(lat,lng,z){const n=2**z;return [Math.floor((lng+180)/360*n),Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*n)]}
+// liste des images à copier pour une emprise [o,s,e,n] et un détail max
+function dsgTuiles(b,nat){const t=[];let minZ=nat;while(minZ>10){const [x0]=dsgLL2T(b[3],b[0],minZ-1),[x1]=dsgLL2T(b[1],b[2],minZ-1);if(x1-x0>=2)minZ--;else break}
+ for(let z=nat;z>=minZ;z--){const [x0,y0]=dsgLL2T(b[3],b[0],z),[x1,y1]=dsgLL2T(b[1],b[2],z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)t.push([z,x,y])}return {t,minZ}}
+function dsgUrl(c,z,x,y){if(c.type==='xyz')return c.url.replace('{z}',z).replace('{x}',x).replace('{y}',y);
+ const R=20037508.342789244,r=2*R/256/2**z,x0=x*256*r-R,y1=R-y*256*r;return c.base+(c.base.includes('?')?'&':'?')+'SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS='+encodeURIComponent(c.layer)+'&STYLES=&CRS=EPSG:3857&BBOX='+[x0,y1-256*r,x0+256*r,y1].map(v=>v.toFixed(2)).join(',')+'&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true'}
+// tous les endroits du menu où l'on peut ranger une ligne
+function dsgEndroits(){try{mkInit()}catch(e){}const o=[],corps=mkCorps();
+ const walk=(box,p)=>{[...box.querySelectorAll(':scope [data-mkc]')].filter(b=>b.parentElement.closest('[data-mkc]')===box).forEach(b=>{const k=b.dataset.mkc;if(k==='fondsliste')return;const own=b.closest('[data-mk]');const n=own?(mkNomEl(own)||{}).textContent:'';if(n)o.push({k,n:p+n.replace(/\s+/g,' ').trim()});walk(b,p+'   ')})};
+ walk(corps,'');return o}
+const DSG=document.createElement('div');DSG.id='dsG';document.body.appendChild(DSG);
+function dsGarder(c){if(typeof NTOK==='undefined'||!NTOK){alert('Partage inactif : connecte-toi avec ton compte pour copier dans l’Atlas.');return}
+ const zf=DS.z?[DS.z.w,DS.z.s,DS.z.e,DS.z.n]:null,vb=map.getBounds(),vv=[vb.getWest(),vb.getSouth(),vb.getEast(),vb.getNorth()];
+ const modes=[zf&&['zone','La zone de ta fouille',zf],['vue','Ce que montre l’écran',vv],c.ext&&['tout','Toute la carte',c.ext]].filter(Boolean);
+ const ends=dsgEndroits(),dern=store.get('ds_ouDern','r:couches');
+ DSG.innerHTML=`<div class="dsgB"><div class="eh"><span>💾 Garder dans l’Atlas</span><button class="dsgX">✕</button></div><div class="dsgC">
+ <label class="dsL">Nom</label><input id="dsgNom">
+ <label class="dsL">Où la ranger dans le menu</label><select id="dsgOu">${ends.map(e=>`<option value="${dsE(e.k)}">${dsE(e.n)}</option>`).join('')}<option value="+">➕ Nouvel onglet…</option></select>
+ <label class="dsL">Quelle partie copier</label><div id="dsgMo">${modes.map((m,i)=>`<label class="dsgR"><input type="radio" name="dsgM" value="${i}"${i?'':' checked'}> ${m[1]}</label>`).join('')}</div>
+ <label class="dsL">Niveau de détail</label><select id="dsgDet"><option value="18">Maximum (on lit les détails)</option><option value="17">Moyen</option><option value="16">Léger</option></select>
+ <div id="dsgEst" class="dsI"></div><div id="dsgPr" class="dsI"></div>
+ <div class="dsB"><button class="dsgX">Annuler</button><button id="dsgGo" class="dsGo">💾 Copier dans l’Atlas</button></div>
+ <div class="dsI" style="color:#888">La copie est chiffrée et rangée aussi dans « Plans » (par département) pour tous les membres. Si la source disparaît, elle reste.</div></div></div>`;
+ DSG.classList.add('on');const q=s=>DSG.querySelector(s);q('#dsgNom').value=c.titre;q('#dsgOu').value=ends.some(e=>e.k===dern)?dern:(ends[0]||{}).k;
+ DSG.querySelectorAll('.dsgX').forEach(b=>b.onclick=()=>{if(!DSG._run)DSG.classList.remove('on')});
+ const choix=()=>{const m=modes[+(DSG.querySelector('input[name=dsgM]:checked')||{value:0}).value];let nat=+q('#dsgDet').value,T=dsgTuiles(m[2],nat);while(T.t.length>6000&&nat>13)T=dsgTuiles(m[2],--nat);return {m,nat,T}};
+ const est=()=>{const {m,nat,T}=choix(),mo=T.t.length*DSG_KO/1e6;q('#dsgEst').innerHTML=`≈ <b>${T.t.length.toLocaleString('fr-FR')} images</b>, ≈ <b>${mo<1?'<1':Math.round(mo)} Mo</b> (moins si la carte ne remplit pas tout)${nat<+q('#dsgDet').value?' · détail réduit pour rester léger':''}${mo>150?'<br>⚠️ Trop gros : choisis une plus petite partie ou moins de détail.':''}`;q('#dsgGo').disabled=mo>150};
+ DSG.querySelectorAll('input[name=dsgM]').forEach(i=>i.onchange=est);q('#dsgDet').onchange=est;est();
+ q('#dsgOu').onchange=e=>{if(e.target.value!=='+')return;const n=(prompt('Nom du nouvel onglet :','Mes cartes anciennes')||'').trim();if(!n){e.target.value=dern;return}
+  const g=mkGrpCree('u:'+Date.now().toString(36),n);mkCorps().prepend(g);menuSauver();const o=document.createElement('option');o.value=g.querySelector('[data-mkc]').dataset.mkc;o.textContent=n;e.target.insertBefore(o,e.target.firstChild);e.target.value=o.value};
+ q('#dsgGo').onclick=()=>dsgCopie(c,choix(),q('#dsgNom').value.trim()||c.titre,q('#dsgOu').value)}
+async function dsgCopie(c,{m,nat,T},nom,ou){const q=s=>DSG.querySelector(s),pr=t=>q('#dsgPr').innerHTML=t,go=q('#dsgGo');go.disabled=true;DSG._run=1;let wl=null;try{wl=await navigator.wakeLock.request('screen')}catch(e){}
+ try{const id='u-'+[...crypto.getRandomValues(new Uint8Array(5))].map(b=>b.toString(16).padStart(2,'0')).join(''),v=1,b=m[2];
+  const cv=document.createElement('canvas');cv.width=cv.height=256;const ctx=cv.getContext('2d',{willReadFrequently:true});
+  // regroupement par paquets de 8×8 (même format que les plans calés)
+  const PQ=new Map();T.t.forEach(([z,x,y])=>{const k=z+'/'+(x>>3)+'/'+(y>>3);if(!PQ.has(k))PQ.set(k,[]);PQ.get(k).push([z,x,y])});
+  let fait=0,ok=0,ko=0,env=0,poids=0;const fich=[],pk=[],att=[],tot=T.t.length;
+  const maj=()=>pr(`Copie : <b>${Math.round(fait/tot*100)} %</b> (${ok} images gardées) · envoi ${env}/${PQ.size}<div class="impJauge"><i style="width:${(fait/tot*85+env/PQ.size*15).toFixed(1)}%"></i></div><small>Garde l’écran allumé et l’Atlas ouvert.</small>`);
+  const une=async([z,x,y])=>{for(let k=0;k<3;k++){try{const r=await fetch(dsgUrl(c,z,x,y));if(r.status===404||r.status===204)return null;if(!r.ok)throw 0;const bl=await r.blob();if(!/^image\//.test(bl.type))return null;
+    const bm=await createImageBitmap(bl);ctx.clearRect(0,0,256,256);ctx.drawImage(bm,0,0,256,256);bm.close&&bm.close();const px=ctx.getImageData(0,0,256,256).data;let vide=true,plein=true;for(let i=3;i<px.length;i+=4){if(px[i])vide=false;if(px[i]<255)plein=false;if(!vide&&!plein)break}
+    if(vide)return null;let t,o;if(webpOk()){t='w';o=await enBlob(cv,'image/webp',0.86)}else if(plein){t='j';o=await enBlob(cv,'image/jpeg',0.9)}else{t='p';o=await enBlob(cv,'image/png')}return [x&7,y&7,new Uint8Array(await o.arrayBuffer()),t]}catch(e){await dodo(800*(k+1))}}ko++;return null};
+  for(const [key,lst] of PQ){const tuiles=[];for(let i=0;i<lst.length;i+=6){const r=await Promise.all(lst.slice(i,i+6).map(une));fait+=r.length;r.forEach(t=>{if(t){tuiles.push(t);ok++}});maj()}
+   if(fait>40&&ko>fait*0.3)throw new Error('la source ne répond pas bien ('+ko+' images refusées). Réessaie plus tard.');
+   if(!tuiles.length)continue;let off=0;const h={t:tuiles.map(t=>{const r=[t[0],t[1],off,t[2].length,t[3]];off+=t[2].length;return r})};const hb=te.encode(JSON.stringify(h));
+   const out=new Uint8Array(4+hb.length+off);out[0]=hb.length&255;out[1]=hb.length>>8&255;out[2]=hb.length>>16&255;out[3]=hb.length>>24&255;out.set(hb,4);let o=4+hb.length;tuiles.forEach(t=>{out.set(t[2],o);o+=t[2].length});poids+=out.length;
+   pk.push(key);att.push((async()=>{const path=await upChemin(`u/${id}/v${v}/${key}`);const sha=await upBlob(await upChiffre(out));fich.push({path,sha});env++;maj()})());if(att.length>=2)await att.shift()}
+  await Promise.all(att);if(!ok)throw new Error('aucune image : la carte ne couvre pas cette partie');
+  pr('Recherche de la commune…');let com=null,dep='Autres plans';const cy=(b[1]+b[3])/2,cx=(b[0]+b[2])/2;
+  try{const j=await (await fetch(`https://geo.api.gouv.fr/communes?lat=${cy.toFixed(5)}&lon=${cx.toFixed(5)}&fields=nom,code,departement`)).json();if(j[0]){com=j[0].nom;dep=j[0].departement?`${j[0].departement.nom} (${j[0].departement.code})`:dep}}catch(e){}
+  pr('Enregistrement dans l’Atlas…');const auj=new Date().toLocaleDateString('fr-FR'),zs=pk.map(k=>+k.split('/')[0]),minNat=Math.min(...zs),natR=Math.max(...zs);
+  const e={id,v,u:1,ds:1,nom,nomO:nom,com:com||undefined,dep,o:3,ok:'💾',d:'u/'+id,t:`Copie gardée par ${USER||'un membre'} le ${auj} (Deep Search) — source : ${c.src}${c.lien?' · '+c.lien:''}`,
+   a:UP.moi||null,an_:USER||null,cree:Date.now(),mod:Date.now(),contour:[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]].map(p=>p.map(x=>+x.toFixed(7))),multi:false,bbox:b.map(x=>+x.toFixed(7)),
+   min:Math.max(10,minNat-1),minNat,nat:natR,pk,org:null,pts:[],def:false,srcU:c.type==='xyz'?c.url:c.base+'|'+c.layer};
+  await upCommit(fich,idx=>{idx.plans.push(e);return idx},'Couche gardée : '+id);
+  const loc=store.get('up_local',[]);loc.push({id,d:Date.now(),p:e});store.set('up_local',loc);
+  const G=store.get('ds_garde',{});G[id]={ou,p:e,on:true,op:.85};store.set('ds_garde',G);store.set('ds_ouDern',ou);dsgLignes();
+  pr(`✅ <b>« ${dsE(nom)} » est gardée</b> (${(poids/1e6).toFixed(1)} Mo, ${ok} images). Elle est cochée dans ton menu, et dans « Plans » pour tout le monde.`);go.textContent='✅ Fait';
+  const own=document.querySelector(`[data-mkc="${CSS.escape(ou)}"]`);const d=own&&own.closest('details');if(d)d.open=true}
+ catch(x){pr('');pr('⚠️ '+(x.message==='droits'?'La clé de partage n’a pas le droit d’écrire dans le stockage (data1).':'Copie impossible : '+dsE(x.message)));go.disabled=false}
+ finally{DSG._run=0;try{wl&&wl.release()}catch(_){}}}
+// lignes du menu : une par couche gardée, rangée à l'endroit choisi (ou là où tu l'as glissée en mode organisation)
+const DSGL=new Map();
+function dsgLignes(){const G=store.get('ds_garde',{}),M=(store.get(MENU_K,null)||{}).c||{};
+ for(const id in G){const g=G[id];let row=document.querySelector(`[data-mk="c:ds_${id}"]`);
+  if(!row){row=document.createElement('div');row.className='cou dsgRow';row.dataset.mk='c:ds_'+id;row.innerHTML=`<label><input type="checkbox" id="ds_${id}"> <span class="mkN"></span><button class="dsgDel" title="Retirer de mon menu">✕</button></label><input class="op" type="range" min="0" max="1" step="0.05">`;
+   row.querySelector('.mkN').textContent='💾 '+g.p.nom;const cb=row.querySelector('input[type=checkbox]'),op=row.querySelector('.op');cb.checked=!!g.on;op.value=g.op||.85;row.classList.toggle('on',cb.checked);
+   const lay=()=>{if(!DSGL.has(id)){const p=g.p;DSGL.set(id,new PTile({p,minZoom:p.min||10,maxZoom:22,maxNativeZoom:p.nat,minNativeZoom:p.minNat,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:+op.value,keepBuffer:1}))}return DSGL.get(id)};
+   const sv=()=>{const G2=store.get('ds_garde',{});if(G2[id]){G2[id].on=cb.checked;G2[id].op=+op.value;store.set('ds_garde',G2)}};
+   cb.onchange=()=>{row.classList.toggle('on',cb.checked);cb.checked?lay().addTo(map):map.removeLayer(lay());sv()};op.oninput=()=>{lay().setOpacity(+op.value);sv()};
+   row.querySelector('.dsgDel').onclick=ev=>{ev.preventDefault();ev.stopPropagation();if(!confirm('Retirer « '+g.p.nom+' » de ton menu ?\n(La copie reste dans « Plans » pour tout le monde.)'))return;map.removeLayer(lay());const G2=store.get('ds_garde',{});delete G2[id];store.set('ds_garde',G2);row.remove();menuSauver()};
+   if(g.on)setTimeout(()=>lay().addTo(map),0)}
+  let box=null;for(const ck in M)if(M[ck].includes('c:ds_'+id)){box=ck==='root'?mkCorps():document.querySelector(`[data-mkc="${CSS.escape(ck)}"]`);break}
+  if(!box)box=document.querySelector(`[data-mkc="${CSS.escape(g.ou)}"]`)||document.querySelector('#rub-couches>.rub-body');if(box&&row.parentNode!==box)box.appendChild(row)}}
+try{mkInit()}catch(e){}dsgLignes();
+// anciennes couches « découvertes » (lien direct, sans copie) : affichées dans Divers tant qu'il y en a
+DS.cl=store.get('ds_couches',[]);const DSC=new Map();
+function dsCouches(){let box=document.getElementById('dsCou');if(!DS.cl.length){box&&box.parentNode.remove();return}
+ if(!box){const div=document.createElement('div');div.innerHTML='<h5>🔗 Anciennes couches en lien direct</h5><div id="dsCou"></div>';const dv=document.querySelector('#sousrub-divers>.sousrub-body')||document.getElementById('rub-couches');dv&&dv.appendChild(div);box=document.getElementById('dsCou')}box.innerHTML='';
+ DS.cl.forEach((c,i)=>{const k=c.base+'|'+c.layer;const row=document.createElement('div');row.className='cou';row.innerHTML='<label><input type="checkbox"> <span></span></label> <button title="Retirer" style="font-size:11px">🗑</button><input class="op" type="range" min="0" max="1" step="0.05" value="'+(c.op||.8)+'">';
   row.querySelector('span').textContent=(c.type==='xyz'?'📜 ':'🧩 ')+c.titre;const cb=row.querySelector('input[type=checkbox]'),op=row.querySelector('.op');cb.checked=!!c.on;
   const ly=DSC.get(k)||DSC.set(k,c.type==='xyz'?L.tileLayer(c.base,{opacity:c.op||.8,maxZoom:21,pane:'cont'}):L.tileLayer.wms(c.base,{layers:c.layer,format:'image/png',transparent:true,version:'1.3.0',opacity:c.op||.8,pane:'cont'})).get(k);if(c.on)ly.addTo(map);
   cb.onchange=()=>{c.on=cb.checked;store.set('ds_couches',DS.cl);cb.checked?ly.addTo(map):map.removeLayer(ly)};op.oninput=()=>{c.op=+op.value;ly.setOpacity(c.op);store.set('ds_couches',DS.cl)};
   row.querySelector('button').onclick=()=>{map.removeLayer(ly);DS.cl.splice(i,1);store.set('ds_couches',DS.cl);dsCouches()};box.appendChild(row)})}
-{const div=document.createElement('div');div.innerHTML='<h5>🧩 Couches découvertes</h5><div id="dsCou"></div>';const dv=document.getElementById('sousrub-divers')||document.getElementById('rub-couches');try{(dv.querySelector('.sousrub-b')||dv).appendChild(div)}catch(e){}dsCouches()}
+dsCouches();
 // bouton dans la rubrique Rechercher
 {const b=document.createElement('button');b.id='dsOpen';b.textContent='🕵️ Atlas Deep Search : fouiller une zone';b.onclick=()=>dsOuvre(!dsP.classList.contains('on'));const r=document.getElementById('res');r&&r.after(b)}
 </script></body></html>
