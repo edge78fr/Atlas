@@ -2718,7 +2718,7 @@ setTimeout(ecrPlanif,1500);
 const CH={on:false,L:store.get('chat',[]),sha:null,busy:false,att:false,t:null,LU:store.get('chat_lu',{}),luSha:null,luBusy:false,mem:store.get('chat_mem',[])};
 const chB=document.createElement('button');chB.id='chB';chB.title='Discussion entre membres';chB.innerHTML='💬<b></b>';document.getElementById('m').appendChild(chB);
 const chP=document.createElement('div');chP.id='chP';chP.innerHTML=`<div class="eh"><span>💬 Discussion</span><button id="chX" title="Fermer">✕</button></div><div id="chL"></div><div id="chEtat"></div>
-<div id="chF"><label id="chVue" title="Joindre ma vue : position, zoom et plans affichés"><input type="checkbox" id="chVueC"> 📍 joindre ma vue</label><div id="chS"><textarea id="chT" rows="1" maxlength="1000" placeholder="Écrire un message…"></textarea><button id="chE" title="Envoyer">➤</button></div></div>`;document.getElementById('m').appendChild(chP);
+<div id="chF"><label id="chVue" title="Joindre ma vue : position, zoom et tout ce qui est affiché (fonds, couches, plans)"><input type="checkbox" id="chVueC"> 📍 joindre ma vue</label><div id="chS"><textarea id="chT" rows="1" maxlength="1000" placeholder="Écrire un message…"></textarea><button id="chE" title="Envoyer">➤</button></div></div>`;document.getElementById('m').appendChild(chP);
 L.DomEvent.disableClickPropagation(chB);L.DomEvent.disableClickPropagation(chP);L.DomEvent.disableScrollPropagation(chP);
 const chQ=i=>document.getElementById(i);
 chB.onclick=()=>{if(!CH.on&&ECR.on)ecrB.onclick();CH.on=!CH.on;if(CH.on)chMembres();chP.classList.toggle('on',CH.on);chP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));chB.classList.toggle('on',CH.on);if(CH.on){chRendu(true);chSync();setTimeout(()=>chQ('chT').focus(),50)}};chQ('chX').onclick=()=>chB.onclick();{const eo=ecrB.onclick;ecrB.onclick=()=>{if(!ECR.on&&CH.on)chB.onclick();eo()}}
@@ -2730,7 +2730,7 @@ function chRendu(bas){const l=chQ('chL'),fin=bas||l.scrollHeight-l.scrollTop-l.c
  let jour='';ms.forEach(m=>{const dj=new Date(m.d).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});if(dj!==jour){jour=dj;const s=document.createElement('div');s.className='chJ';s.textContent=dj;l.appendChild(s)}
   const moi=m.u===USER,b=document.createElement('div');b.className='chM'+(moi?' moi':'');const a=document.createElement('div');a.className='chA';a.textContent=(moi?'Moi':m.u||'?')+' · '+chHeure(m.d);
   const t=document.createElement('div');t.className='chTx';t.textContent=m.t||'';b.append(a,t);
-  if(m.v){const v=document.createElement('button');v.className='chV';v.textContent='📍 Voir l’endroit'+(m.v.pl&&m.v.pl.length?' ('+m.v.pl.length+' plan'+(m.v.pl.length>1?'s':'')+')':'');v.onclick=()=>chAller(m.v);b.appendChild(v)}
+  if(m.v){const v=document.createElement('button');v.className='chV';{const n=chVueNb(m.v);v.textContent='📍 Voir l’endroit'+(n?' ('+n+' couche'+(n>1?'s':'')+')':'')}v.onclick=()=>chAller(m.v);b.appendChild(v)}
   const lus=chLecteurs(m);
   if(moi){const k=document.createElement('div');k.className='chK'+(lus.length?' lu':'');k.textContent=lus.length?'✓✓ Lu'+(chAutres().length>1?' par '+lus.length+'/'+chAutres().length:''):'✓ Envoyé';k.title=lus.length?'Lu par : '+lus.join(', '):'Personne ne l’a encore lu';k.onclick=()=>chEtat(k.title);b.appendChild(k)}
   if(m===ms[ms.length-1]&&(lus.length||m.u===USER)){const r=document.createElement('div');r.className='chVu';const pas=chAutres().filter(u=>u!==m.u&&!lus.includes(u));r.textContent=(lus.length?'👀 Vu par '+lus.join(', '):'👀 Pas encore lu')+(lus.length&&pas.length?' · pas encore : '+pas.join(', '):'');CH._vu=r}
@@ -2745,11 +2745,25 @@ async function chLuSync(){if(!NTOK||CH.luBusy||!navigator.onLine)return;CH.luBus
   const chg=JSON.stringify(mer)!==JSON.stringify(CH.LU);CH.LU=mer;store.set('chat_lu',mer);if(chg&&CH.on)chRendu();
   if(USER&&(rem[USER]||0)<(mer[USER]||0)){const r=await nPut(NSITE+'.chatlu',await nEnc(mer),CH.luSha,'lu');if(r==='conflit')continue;CH.luSha=r}
   break}}catch(e){}finally{CH.luBusy=false}}
-function chAller(v){map.setView([v.lat,v.lng],v.z);(v.pl||[]).forEach(id=>{const p=P.find(q=>q.id===id);if(p&&!p.layer&&!pmMasque(p.id))try{charge(p)}catch(e){}});if(matchMedia('(max-width:700px)').matches)chB.onclick()}
+// vue jointe : position + tout ce qui est affiché (fonds, couches, plans, plans de terrain) avec leur opacité
+function chVuePrendre(c){const v={lat:+c.lat.toFixed(6),lng:+c.lng.toFixed(6),z:map.getZoom(),pl:ORD.slice(0,8),po:{},f:[],c:[],t:[]};
+ ORD.slice(0,8).forEach(id=>{const p=P.find(q=>q.id===id);if(p)v.po[id]=+(+p.op).toFixed(2)});
+ try{fondsOrdre.forEach(id=>{if(!fondsActifs.has(id))return;const r=fondsUI.get(id),sl=r&&r.querySelector('.fond-slider');v.f.push([id,sl?+sl.value:null])})}catch(e){}
+ document.querySelectorAll('#corps .cou > label > input[type=checkbox][id]').forEach(cb=>{if(!cb.checked)return;const op=cb.closest('.cou').querySelector(':scope > input.op');v.c.push([cb.id,op?+op.value:null])});
+ try{const ls=grpL().map(x=>x.id);ls.push('');ls.forEach(g=>{if(grpVu(g)){const n=grpCompte(g);if(n.t||n.p)v.t.push(g)}})}catch(e){}
+ return v}
+function chVueNb(v){return (v.pl||[]).length+(v.f||[]).length+(v.c||[]).length+(v.t||[]).length}
+function chAller(v){map.setView([v.lat,v.lng],v.z);
+ (v.f||[]).forEach(([id,op])=>{try{const r=fondsUI.get(id);if(!r)return;const cb=r.querySelector('input[type=checkbox]'),sl=r.querySelector('.fond-slider');if(cb&&!cb.checked){cb.checked=true;cb.onchange&&cb.onchange()}if(sl&&op!=null){sl.value=op;sl.oninput&&sl.oninput()}}catch(e){}});
+ (v.c||[]).forEach(([id,op])=>{const cb=document.getElementById(id);if(!cb){if(/^ds_/.test(id)){const p=P.find(q=>q.id===id.slice(3));if(p&&!p.layer)try{charge(p)}catch(e){}}return}
+  if(!cb.checked){cb.checked=true;cb.dispatchEvent(new Event('change',{bubbles:true}))}const o=cb.closest('.cou')&&cb.closest('.cou').querySelector(':scope > input.op');if(o&&op!=null){o.value=op;o.dispatchEvent(new Event('input',{bubbles:true}))}});
+ (v.pl||[]).forEach(id=>{const p=P.find(q=>q.id===id);if(p&&!p.layer&&!pmMasque(p.id))try{if(v.po&&v.po[id]!=null)p.op=v.po[id];charge(p)}catch(e){}});
+ if((v.t||[]).length)try{const k=grpCache();v.t.forEach(g=>k.delete(g));store.set('grpCache',[...k]);grpTout()}catch(e){}
+ try{ecrPlanif()}catch(e){}if(matchMedia('(max-width:700px)').matches)chB.onclick()}
 function chEtat(t){chQ('chEtat').textContent=t||''}
 async function chEnvoie(){const ta=chQ('chT'),t=ta.value.trim();if(!t)return;if(!NTOK){chEtat('⚠️ Partage non activé : le message ne peut pas être envoyé.');return}
  const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),u:USER||'Invité',t:t.slice(0,1000),d:Date.now()};
- if(chQ('chVueC').checked){const c=map.getCenter();m.v={lat:+c.lat.toFixed(6),lng:+c.lng.toFixed(6),z:map.getZoom(),pl:ORD.slice(0,6)};chQ('chVueC').checked=false}
+ if(chQ('chVueC').checked){const c=map.getCenter();m.v=chVuePrendre(c);chQ('chVueC').checked=false}
  CH.L.push(m);store.set('chat',CH.L);ta.value='';ta.style.height='';chRendu(true);chSync()}
 chQ('chE').onclick=chEnvoie;chQ('chT').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chEnvoie()}});
 chQ('chT').addEventListener('input',e=>{const t=e.target;t.style.height='';t.style.height=Math.min(110,t.scrollHeight)+'px'});
