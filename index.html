@@ -2683,6 +2683,8 @@ function ecrItems(){const G={f:[],a:[],c:[],p:[],t:[]};
  // couches à cocher (menu Fonds + Couches)
  [...new Set(document.querySelectorAll('#corps .cou > label > input[type=checkbox], #rub-couches .cou > label > input[type=checkbox], #rub-fonds .cou > label > input[type=checkbox]'))].forEach(cb=>{if(!cb.checked)return;const cou=cb.closest('.cou'),op=cou.querySelector(':scope > input.op');
   G.c.push({nom:ecrNomLab(cb.parentElement),op:op?+op.value:null,setOp:v=>{op.value=v;op.dispatchEvent(new Event('input',{bubbles:true}))},off:()=>{cb.checked=false;cb.dispatchEvent(new Event('change',{bubbles:true}))}})});
+ // superposition ouverte depuis Deep Search
+ try{if(typeof dsEcr==='function')dsEcr().forEach(x=>G.c.push(x))}catch(e){}
  // plans chargés (ordre : en haut = dessus)
  ORD.forEach((id,i)=>{const p=P.find(q=>q.id===id);if(!p||!p.layer)return;
   G.p.push({nom:p.nom,op:+p.op,setOp:v=>{p.op=+v;p.layer&&p.layer.setOpacity(p.op);const pr=p.ui&&p.ui.row.querySelector('input[type=range]');if(pr)pr.value=p.op;const or=document.querySelector(`#ordre .or[data-id="${CSS.escape(id)}"] input[type=range]`);if(or)or.value=p.op;sauve()},
@@ -2811,10 +2813,10 @@ function dsOuvre(on,tout){dsP.classList.toggle('on',on);dsP.classList.toggle('so
  if(on){if(typeof ECR!=='undefined'&&ECR.on)ecrB.onclick();if(typeof CH!=='undefined'&&CH.on)chB.onclick();DS.G.addTo(map);if(DS.zoneL)DS.zoneL.addTo(map);dsRendu();
   // téléphone / tablette : si le menu de l'Atlas est par-dessus, on le replie
   if(dsChevauche()){const pn=document.getElementById('p');pn.classList.add('ferme');try{store.set('ferme',true)}catch(e){}}}
- else if(tout){map.removeLayer(DS.G);if(DS.zoneL)map.removeLayer(DS.zoneL);DS_SUP.forEach(l=>map.removeLayer(l));DS_SUP.clear();if(typeof dsAp!=='undefined'&&dsAp){map.removeLayer(dsAp);dsAp=null}map.closePopup()}}
+ else if(tout){map.removeLayer(DS.G);if(DS.zoneL)map.removeLayer(DS.zoneL);dsSupOff();map.closePopup()}}
 // et l'inverse : on rouvre le menu de l'Atlas alors que Deep Search est par-dessus -> on replie Deep Search (les résultats restent)
 try{new MutationObserver(()=>{if(dsChevauche())dsOuvre(false)}).observe(document.getElementById('p'),{attributes:true,attributeFilter:['class']})}catch(e){}
-const DS_SUP=new Set();
+
 dsQ('dsX').onclick=()=>dsOuvre(false);dsQ("dsQuit").onclick=()=>dsOuvre(false,true);
 dsQ('dsTh').value=DS.theme;dsQ('dsTh').onchange=e=>DS.theme=e.target.value;
 function dsZone(b){DS.z={w:+b.getWest().toFixed(5),s:+b.getSouth().toFixed(5),e:+b.getEast().toFixed(5),n:+b.getNorth().toFixed(5)};
@@ -2933,7 +2935,7 @@ function dsLigne(r,t){const d=document.createElement('div');d.className='dsr';co
  d.querySelector('.dsn').textContent=r.titre;d.querySelector('.dsd').textContent=[r.desc,r.cote?'Cote : '+r.cote:''].filter(Boolean).join(' · ');d.querySelector('.dsm').textContent=(r.hit&&r.hit.length?'Trouvé grâce à : '+r.hit.slice(0,5).join(', ')+' · ':'')+'Source : '+[].concat(r.src).join(', ');
  const a=d.querySelector('.dsa'),bt=(x,f)=>{const b=document.createElement('button');b.textContent=x;b.onclick=f;a.appendChild(b)};
  if(r.lat!=null)bt('📍 Voir sur la carte',()=>{map.setView([r.lat,r.lng],Math.max(map.getZoom(),17));r._m&&r._m.openPopup()});if(r.act)bt('📐 Ouvrir le plan',r.act);
- if(r.xyz){let ly=null;bt('🗺️ Superposer sur l’Atlas',e=>{if(ly){map.removeLayer(ly);ly=null;e.target.textContent='🗺️ Superposer sur l’Atlas';return}ly=L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}).addTo(map);DS_SUP.add(ly);e.target.textContent='🙈 Retirer la superposition'});bt('💾 Garder dans l’Atlas',()=>dsGarder({type:'xyz',url:r.xyz.url,titre:r.xyz.titre,ext:r.xyz.ext,src:'Allmaps',lien:r.url}))}
+ if(r.xyz){bt(DS.sup&&DS.sup.k===r.xyz.url?'🙈 Retirer la superposition':'🗺️ Superposer sur l’Atlas',e=>dsSup(r.xyz.url,r.xyz.titre,()=>L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}),e.target));bt('💾 Garder dans l’Atlas',()=>dsGarder({type:'xyz',url:r.xyz.url,titre:r.xyz.titre,ext:r.xyz.ext,src:'Allmaps',lien:r.url}))}
  if(r.url){const l=document.createElement('a');l.href=r.url;l.target='_blank';l.rel='noopener';l.textContent='↗ '+(r.ouvrir||'Ouvrir la source');a.appendChild(l)}
  if(r.pages)bt('🔎 Pages où le mot apparaît',()=>dsPages(r,d));
  if(r.rec)bt('🔍 Chercher le service cartographique',async e=>{e.target.disabled=true;e.target.textContent='⏳ Lecture de la fiche…';try{const t=await dsTxt(r.rec.replace(/&amp;/g,'&'));const us=[...new Set([...t.matchAll(/<gmd:URL>([^<]*)<\/gmd:URL>/g)].map(m=>m[1].replace(/&amp;/g,'&')).filter(u=>/service=(wms|wfs)/i.test(u)&&!/intranet|\.rie\.gouv/.test(u)))];if(!us.length)throw new Error('aucun service public dans la fiche');r.svc=us.map(u=>({p:/service=wms/i.test(u)?'OGC:WMS':'OGC:WFS',n:'',u}));r.rec=null;const nv=dsLigne(r,'sig');d.replaceWith(nv)}catch(x){e.target.textContent='❌ '+x.message}});
@@ -2963,11 +2965,16 @@ async function dsService(s,r,el){const out=document.createElement('div');out.cla
  try{if(/wms/i.test(s.p+s.u)){const base=dsWmsBase(s.u);const sep=base.includes('?')?'&':'?';const t=await dsFetch(base+sep+'SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0');const x=dsXml(t);
    const lays=[...x.getElementsByTagName('Layer')].map(l=>({n:(l.getElementsByTagName('Name')[0]||{}).textContent,t:(l.getElementsByTagName('Title')[0]||{}).textContent})).filter(l=>l.n);
    if(!lays.length)throw new Error('aucune couche lisible');out.innerHTML='';lays.slice(0,40).forEach(l=>{const d=document.createElement('div');d.className='dsl';d.innerHTML='<span></span><button>👁 Aperçu</button><button>💾 Garder dans l’Atlas</button>';d.firstChild.textContent=l.t||l.n;
-    const [ap,aj]=d.querySelectorAll('button');ap.onclick=()=>dsApercu(base,l);aj.onclick=()=>dsGarder({type:'wms',base,layer:l.n,titre:(l.t||l.n),src:r.titre,lien:s.u});out.appendChild(d)})}
+    const [ap,aj]=d.querySelectorAll('button');ap.onclick=()=>dsApercu(base,l,ap);aj.onclick=()=>dsGarder({type:'wms',base,layer:l.n,titre:(l.t||l.n),src:r.titre,lien:s.u});out.appendChild(d)})}
   else if(/wfs/i.test(s.p+s.u)){out.innerHTML='Service WFS (données vectorielles) : <a target="_blank" rel="noopener" href="'+dsE(s.u)+'">ouvrir</a>. L’ajout direct est prévu pour les services WMS ; un WFS se lit aussi, mais il faut vérifier son volume avant.'}
   else out.innerHTML='Service ArcGIS : <a target="_blank" rel="noopener" href="'+dsE(s.u)+'">ouvrir</a>.'}
  catch(e){out.textContent='❌ '+e.message+(/bloqué/.test(e.message)?' — ce serveur refuse d’être lu depuis l’Atlas ; il faudrait passer par le relais.':'')}}
-let dsAp=null;function dsApercu(base,l){if(dsAp)map.removeLayer(dsAp);dsAp=L.tileLayer.wms(base,{layers:l.n,format:'image/png',transparent:true,version:'1.3.0',opacity:.8,pane:'cont'}).addTo(map)}
+// une seule superposition à la fois (carte Allmaps ou aperçu de couche SIG) ; elle apparaît dans « À l'écran »
+function dsSupOff(){if(!DS.sup)return;map.removeLayer(DS.sup.ly);if(DS.sup.btn&&DS.sup.btn.isConnected)DS.sup.btn.textContent=DS.sup.txt;DS.sup=null;try{ecrPlanif()}catch(e){}}
+function dsSup(k,titre,fab,btn,txtOn){const meme=DS.sup&&DS.sup.k===k;dsSupOff();if(meme)return;
+ const ly=fab().addTo(map);DS.sup={k,titre,ly,btn,txt:btn?(btn.textContent.startsWith('🙈')?'🗺️ Superposer sur l’Atlas':btn.textContent):''};if(btn)btn.textContent=txtOn||'🙈 Retirer la superposition';try{ecrPlanif()}catch(e){}}
+function dsEcr(){if(!DS.sup)return [];const ly=DS.sup.ly;return [{nom:'🕵️ '+DS.sup.titre,op:ly.options.opacity,setOp:v=>ly.setOpacity(+v),off:dsSupOff}]}
+function dsApercu(base,l,btn){dsSup(base+'|'+l.n,l.t||l.n,()=>L.tileLayer.wms(base,{layers:l.n,format:'image/png',transparent:true,version:'1.3.0',opacity:.8,pane:'cont'}),btn,'🙈 Retirer l’aperçu')}
 // ---- « Garder » : copie chiffrée dans le stockage de l'Atlas (data1, comme un plan calé) + ligne rangée où on veut dans le menu ----
 // Pourquoi copier : une source peut disparaître un jour ; la copie, elle, reste dans l'Atlas pour tous les membres.
 const DSG_KO=15e3;   // poids moyen estimé d'une image (octets)
