@@ -1068,6 +1068,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
  {ts:Date.parse('2026-11-25T22:40:00+01:00'),t:'💬 Discussion entre membres : bouton 💬 sur la carte, messages chiffrés, et « 📍 joindre ma vue » pour montrer un endroit précis'},
  {ts:Date.parse('2026-11-26T07:10:00+01:00'),t:'👀 Discussion : tu vois maintenant qui a lu tes messages (✓ envoyé, ✓✓ lu, « Vu par » sous le dernier message)'},
+ {ts:Date.parse('2026-11-26T19:25:00+01:00'),t:'💾 Garder une carte Allmaps : la carte entière est copiée (bords compris) et reste visible quand on dézoome · 🔓 relais Gallica / FranceArchives actif d’office'},
  {ts:Date.parse('2026-11-26T18:56:00+01:00'),t:'💾 Deep Search : « Garder dans l’Atlas » copie la carte dans le stockage de l’Atlas (elle reste même si la source disparaît) et tu choisis où la ranger dans le menu'},
  {ts:Date.parse('2026-11-26T18:20:00+01:00'),t:'🕵️ Deep Search plus clair : chaque résultat dit ce que c’est, vignettes, cartes anciennes superposables, moins de bruit'},
  {ts:Date.parse('2026-11-26T17:30:00+01:00'),t:'🕵️ Atlas Deep Search (Rechercher) : fouille une zone dans une douzaine de sources publiques (cartes, documents, couches SIG)'},
@@ -2410,7 +2411,7 @@ const upPeutSuppr=p=>!!(p&&p.u&&(UP.admin||(UP.moi&&p.a===UP.moi)));
 const PK=new Map();
 function pkParse(b){const n=b[0]|b[1]<<8|b[2]<<16|b[3]<<24;const h=JSON.parse(new TextDecoder().decode(b.subarray(4,4+n)));const m=new Map();h.t.forEach(t=>m.set(t[0]+','+t[1],t));return {m,d:b.subarray(4+n)}}
 function pkGet(p,z,bx,by){const k=p.id+'/'+p.v+'/'+z+'/'+bx+'/'+by;if(!PK.has(k)){if(PK.size>48)PK.delete(PK.keys().next().value);
- PK.set(k,upLire(`u/${p.id}/v${p.v}/${z}/${bx}/${by}`).then(b=>b?pkParse(b):null).catch(()=>{PK.delete(k);return null}))}return PK.get(k)}
+ PK.set(k,upLire(`u/${p.id}/v${p.v}/${z}/${bx}/${by}`).then(b=>{if(b)return pkParse(b);setTimeout(()=>PK.delete(k),15000);return null}).catch(()=>{PK.delete(k);return null}))}return PK.get(k)}
 const MIME={w:'image/webp',j:'image/jpeg',p:'image/png'};
 const PTile=L.GridLayer.extend({createTile(c,done){const img=document.createElement('img');img.alt='';img.style.visibility='hidden';const p=this.options.p;
  const key=c.z+'/'+(c.x>>3)+'/'+(c.y>>3);if(!p.pkS)p.pkS=new Set(p.pk);if(!p.pkS.has(key)){setTimeout(()=>done(null,img),0);return img}
@@ -2766,7 +2767,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout
 setTimeout(()=>{chBadge();chSync();chMembres()},4000);
 // ===== 🕵️ Atlas Deep Search : spatial + documents + découverte de couches SIG =====
 // Règle : aucune donnée inventée. Chaque source affiche son état réel (ok, vide, bloquée, erreur).
-const DS={z:null,theme:'tout',res:{sp:[],doc:[],sig:[]},etat:{},G:L.layerGroup(),zoneL:null,tab:'sp',run:0,dessin:false,RELAIS2:store.get('ds_relais','')};
+const DS={z:null,theme:'tout',res:{sp:[],doc:[],sig:[]},etat:{},G:L.layerGroup(),zoneL:null,tab:'sp',run:0,dessin:false,RELAIS2:store.get('ds_relais','')||'https://atlas-relais.robinmorgue.workers.dev/'};
 const DS_SYN={
  aqu:{nom:'Aqueducs et hydraulique ancienne',m:['aqueduc','arcade','conduite','rigole','regard','fontaine','captage','drainage','galerie','réservoir','étang','pierrée','nivellement','profil en long','eaux','eau','bassin','source']},
  car:{nom:'Carrières et cavités',m:['carrière','perrière','marnière','plâtrière','champignonnière','cavité','fontis','souterrain','puits','exploitation','effondrement','catiche']},
@@ -2948,7 +2949,7 @@ async function dsService(s,r,el){const out=document.createElement('div');out.cla
 let dsAp=null;function dsApercu(base,l){if(dsAp)map.removeLayer(dsAp);dsAp=L.tileLayer.wms(base,{layers:l.n,format:'image/png',transparent:true,version:'1.3.0',opacity:.8,pane:'cont'}).addTo(map)}
 // ---- « Garder » : copie chiffrée dans le stockage de l'Atlas (data1, comme un plan calé) + ligne rangée où on veut dans le menu ----
 // Pourquoi copier : une source peut disparaître un jour ; la copie, elle, reste dans l'Atlas pour tous les membres.
-const DSG_KO=25e3;   // poids moyen estimé d'une image (octets)
+const DSG_KO=15e3;   // poids moyen estimé d'une image (octets)
 function dsgLL2T(lat,lng,z){const n=2**z;return [Math.floor((lng+180)/360*n),Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*n)]}
 // liste des images à copier pour une emprise [o,s,e,n] et un détail max
 function dsgTuiles(b,nat){const t=[];let minZ=nat;while(minZ>10){const [x0]=dsgLL2T(b[3],b[0],minZ-1),[x1]=dsgLL2T(b[1],b[2],minZ-1);if(x1-x0>=2)minZ--;else break}
@@ -2960,7 +2961,8 @@ function dsgEndroits(){try{mkInit()}catch(e){}const o=[],corps=mkCorps();
  const walk=(box,p)=>{[...box.querySelectorAll(':scope [data-mkc]')].filter(b=>b.parentElement.closest('[data-mkc]')===box).forEach(b=>{const k=b.dataset.mkc;if(k==='fondsliste')return;const own=b.closest('[data-mk]');const n=own?(mkNomEl(own)||{}).textContent:'';if(n)o.push({k,n:p+n.replace(/\s+/g,' ').trim()});walk(b,p+'   ')})};
  walk(corps,'');return o}
 const DSG=document.createElement('div');DSG.id='dsG';document.body.appendChild(DSG);
-function dsGarder(c){if(typeof NTOK==='undefined'||!NTOK){alert('Partage inactif : connecte-toi avec ton compte pour copier dans l’Atlas.');return}
+async function dsGarder(c){if(typeof NTOK==='undefined'||!NTOK){alert('Partage inactif : connecte-toi avec ton compte pour copier dans l’Atlas.');return}
+ if(c.type==='xyz'&&!c.tj){try{const tj=await dsJ(c.url.replace(/\/\{z\}\/\{x\}\/\{y\}\.\w+$/,'/tiles.json'));c.tj=1;if(tj.bounds&&tj.bounds.length===4)c.ext=tj.bounds;if(tj.maxzoom)c.maxz=tj.maxzoom}catch(e){}}
  const zf=DS.z?[DS.z.w,DS.z.s,DS.z.e,DS.z.n]:null,vb=map.getBounds(),vv=[vb.getWest(),vb.getSouth(),vb.getEast(),vb.getNorth()];
  const modes=[zf&&['zone','La zone de ta fouille',zf],['vue','Ce que montre l’écran',vv],c.ext&&['tout','Toute la carte',c.ext]].filter(Boolean);
  const ends=dsgEndroits(),dern=store.get('ds_ouDern','r:couches');
@@ -2974,8 +2976,8 @@ function dsGarder(c){if(typeof NTOK==='undefined'||!NTOK){alert('Partage inactif
  <div class="dsI" style="color:#888">La copie est chiffrée et rangée aussi dans « Plans » (par département) pour tous les membres. Si la source disparaît, elle reste.</div></div></div>`;
  DSG.classList.add('on');const q=s=>DSG.querySelector(s);q('#dsgNom').value=c.titre;q('#dsgOu').value=ends.some(e=>e.k===dern)?dern:(ends[0]||{}).k;
  DSG.querySelectorAll('.dsgX').forEach(b=>b.onclick=()=>{if(!DSG._run)DSG.classList.remove('on')});
- const choix=()=>{const m=modes[+(DSG.querySelector('input[name=dsgM]:checked')||{value:0}).value];let nat=+q('#dsgDet').value,T=dsgTuiles(m[2],nat);while(T.t.length>6000&&nat>13)T=dsgTuiles(m[2],--nat);return {m,nat,T}};
- const est=()=>{const {m,nat,T}=choix(),mo=T.t.length*DSG_KO/1e6;q('#dsgEst').innerHTML=`≈ <b>${T.t.length.toLocaleString('fr-FR')} images</b>, ≈ <b>${mo<1?'<1':Math.round(mo)} Mo</b> (moins si la carte ne remplit pas tout)${nat<+q('#dsgDet').value?' · détail réduit pour rester léger':''}${mo>150?'<br>⚠️ Trop gros : choisis une plus petite partie ou moins de détail.':''}`;q('#dsgGo').disabled=mo>150};
+ const choix=()=>{const m=modes[+(DSG.querySelector('input[name=dsgM]:checked')||{value:0}).value];let nat=Math.min(+q('#dsgDet').value,c.maxz||22),T=dsgTuiles(m[2],nat);while(T.t.length>6000&&nat>13)T=dsgTuiles(m[2],--nat);return {m,nat,T}};
+ const est=()=>{const {m,nat,T}=choix(),mo=T.t.length*DSG_KO/1e6;q('#dsgEst').innerHTML=`≈ <b>${T.t.length.toLocaleString('fr-FR')} images</b>, ≈ <b>${mo<1?'<1':Math.round(mo)} Mo</b> (moins si la carte ne remplit pas tout)${nat<+q('#dsgDet').value?(c.maxz&&nat===c.maxz?' · la carte d’origine n’est pas plus précise, inutile d’aller plus loin':' · détail réduit pour rester léger'):''}${mo>150?'<br>⚠️ Trop gros : choisis une plus petite partie ou moins de détail.':''}`;q('#dsgGo').disabled=mo>150};
  DSG.querySelectorAll('input[name=dsgM]').forEach(i=>i.onchange=est);q('#dsgDet').onchange=est;est();
  q('#dsgOu').onchange=e=>{if(e.target.value!=='+')return;const n=(prompt('Nom du nouvel onglet :','Mes cartes anciennes')||'').trim();if(!n){e.target.value=dern;return}
   const g=mkGrpCree('u:'+Date.now().toString(36),n);mkCorps().prepend(g);menuSauver();const o=document.createElement('option');o.value=g.querySelector('[data-mkc]').dataset.mkc;o.textContent=n;e.target.insertBefore(o,e.target.firstChild);e.target.value=o.value};
@@ -3001,7 +3003,7 @@ async function dsgCopie(c,{m,nat,T},nom,ou){const q=s=>DSG.querySelector(s),pr=t
   pr('Enregistrement dans l’Atlas…');const auj=new Date().toLocaleDateString('fr-FR'),zs=pk.map(k=>+k.split('/')[0]),minNat=Math.min(...zs),natR=Math.max(...zs);
   const e={id,v,u:1,ds:1,nom,nomO:nom,com:com||undefined,dep,o:3,ok:'💾',d:'u/'+id,t:`Copie gardée par ${USER||'un membre'} le ${auj} (Deep Search) — source : ${c.src}${c.lien?' · '+c.lien:''}`,
    a:UP.moi||null,an_:USER||null,cree:Date.now(),mod:Date.now(),contour:[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]].map(p=>p.map(x=>+x.toFixed(7))),multi:false,bbox:b.map(x=>+x.toFixed(7)),
-   min:Math.max(10,minNat-1),minNat,nat:natR,pk,org:null,pts:[],def:false,srcU:c.type==='xyz'?c.url:c.base+'|'+c.layer};
+   min:Math.max(6,minNat-3),minNat,nat:natR,pk,org:null,pts:[],def:false,srcU:c.type==='xyz'?c.url:c.base+'|'+c.layer};
   await upCommit(fich,idx=>{idx.plans.push(e);return idx},'Couche gardée : '+id);
   const loc=store.get('up_local',[]);loc.push({id,d:Date.now(),p:e});store.set('up_local',loc);
   const G=store.get('ds_garde',{});G[id]={ou,p:e,on:true,op:.85};store.set('ds_garde',G);store.set('ds_ouDern',ou);dsgLignes();
@@ -3015,7 +3017,7 @@ function dsgLignes(){const G=store.get('ds_garde',{}),M=(store.get(MENU_K,null)|
  for(const id in G){const g=G[id];let row=document.querySelector(`[data-mk="c:ds_${id}"]`);
   if(!row){row=document.createElement('div');row.className='cou dsgRow';row.dataset.mk='c:ds_'+id;row.innerHTML=`<label><input type="checkbox" id="ds_${id}"> <span class="mkN"></span><button class="dsgDel" title="Retirer de mon menu">✕</button></label><input class="op" type="range" min="0" max="1" step="0.05">`;
    row.querySelector('.mkN').textContent='💾 '+g.p.nom;const cb=row.querySelector('input[type=checkbox]'),op=row.querySelector('.op');cb.checked=!!g.on;op.value=g.op||.85;row.classList.toggle('on',cb.checked);
-   const lay=()=>{if(!DSGL.has(id)){const p=g.p;DSGL.set(id,new PTile({p,minZoom:p.min||10,maxZoom:22,maxNativeZoom:p.nat,minNativeZoom:p.minNat,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:+op.value,keepBuffer:1}))}return DSGL.get(id)};
+   const lay=()=>{if(!DSGL.has(id)){const p=g.p;DSGL.set(id,new PTile({p,minZoom:Math.max(6,(p.minNat||10)-3),maxZoom:22,maxNativeZoom:p.nat,minNativeZoom:p.minNat,bounds:L.latLngBounds([p.bbox[1],p.bbox[0]],[p.bbox[3],p.bbox[2]]),pane:'plans',opacity:+op.value,keepBuffer:1}))}return DSGL.get(id)};
    const sv=()=>{const G2=store.get('ds_garde',{});if(G2[id]){G2[id].on=cb.checked;G2[id].op=+op.value;store.set('ds_garde',G2)}};
    cb.onchange=()=>{row.classList.toggle('on',cb.checked);cb.checked?lay().addTo(map):map.removeLayer(lay());sv()};op.oninput=()=>{lay().setOpacity(+op.value);sv()};
    row.querySelector('.dsgDel').onclick=ev=>{ev.preventDefault();ev.stopPropagation();if(!confirm('Retirer « '+g.p.nom+' » de ton menu ?\n(La copie reste dans « Plans » pour tout le monde.)'))return;map.removeLayer(lay());const G2=store.get('ds_garde',{});delete G2[id];store.set('ds_garde',G2);row.remove();menuSauver()};
