@@ -2793,7 +2793,10 @@ const dsP=document.createElement('div');dsP.id='dsP';dsP.innerHTML=`<div class="
 <div id="dsS"></div><div id="dsR"></div><div id="dsRelais"></div>`;document.getElementById('m').appendChild(dsP);
 L.DomEvent.disableClickPropagation(dsP);L.DomEvent.disableScrollPropagation(dsP);
 const dsQ=i=>document.getElementById(i);
-function dsOuvre(on){dsP.classList.toggle('on',on);dsP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));if(on){if(typeof ECR!=='undefined'&&ECR.on)ecrB.onclick();if(typeof CH!=='undefined'&&CH.on)chB.onclick();DS.G.addTo(map);dsRendu()}}
+function dsOuvre(on){dsP.classList.toggle('on',on);dsP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));if(on){if(typeof ECR!=='undefined'&&ECR.on)ecrB.onclick();if(typeof CH!=='undefined'&&CH.on)chB.onclick();DS.G.addTo(map);if(DS.zoneL)DS.zoneL.addTo(map);dsRendu()}
+ else{map.removeLayer(DS.G);if(DS.zoneL)map.removeLayer(DS.zoneL);DS_SUP.forEach(l=>map.removeLayer(l));DS_SUP.clear();if(typeof dsAp!=='undefined'&&dsAp){map.removeLayer(dsAp);dsAp=null}map.closePopup()}}
+// superpositions ouvertes depuis les résultats : retirées quand on ferme Deep Search
+const DS_SUP=new Set();
 dsQ('dsX').onclick=()=>dsOuvre(false);
 dsQ('dsTh').value=DS.theme;dsQ('dsTh').onchange=e=>DS.theme=e.target.value;
 function dsZone(b){DS.z={w:+b.getWest().toFixed(5),s:+b.getSouth().toFixed(5),e:+b.getEast().toFixed(5),n:+b.getNorth().toFixed(5)};
@@ -2912,7 +2915,7 @@ function dsLigne(r,t){const d=document.createElement('div');d.className='dsr';co
  d.querySelector('.dsn').textContent=r.titre;d.querySelector('.dsd').textContent=[r.desc,r.cote?'Cote : '+r.cote:''].filter(Boolean).join(' · ');d.querySelector('.dsm').textContent=(r.hit&&r.hit.length?'Trouvé grâce à : '+r.hit.slice(0,5).join(', ')+' · ':'')+'Source : '+[].concat(r.src).join(', ');
  const a=d.querySelector('.dsa'),bt=(x,f)=>{const b=document.createElement('button');b.textContent=x;b.onclick=f;a.appendChild(b)};
  if(r.lat!=null)bt('📍 Voir sur la carte',()=>{map.setView([r.lat,r.lng],Math.max(map.getZoom(),17));r._m&&r._m.openPopup()});if(r.act)bt('📐 Ouvrir le plan',r.act);
- if(r.xyz){let ly=null;bt('🗺️ Superposer sur l’Atlas',e=>{if(ly){map.removeLayer(ly);ly=null;e.target.textContent='🗺️ Superposer sur l’Atlas';return}ly=L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}).addTo(map);e.target.textContent='🙈 Retirer la superposition'});bt('💾 Garder dans l’Atlas',()=>dsGarder({type:'xyz',url:r.xyz.url,titre:r.xyz.titre,ext:r.xyz.ext,src:'Allmaps',lien:r.url}))}
+ if(r.xyz){let ly=null;bt('🗺️ Superposer sur l’Atlas',e=>{if(ly){map.removeLayer(ly);ly=null;e.target.textContent='🗺️ Superposer sur l’Atlas';return}ly=L.tileLayer(r.xyz.url,{opacity:.85,maxZoom:21,pane:'cont'}).addTo(map);DS_SUP.add(ly);e.target.textContent='🙈 Retirer la superposition'});bt('💾 Garder dans l’Atlas',()=>dsGarder({type:'xyz',url:r.xyz.url,titre:r.xyz.titre,ext:r.xyz.ext,src:'Allmaps',lien:r.url}))}
  if(r.url){const l=document.createElement('a');l.href=r.url;l.target='_blank';l.rel='noopener';l.textContent='↗ '+(r.ouvrir||'Ouvrir la source');a.appendChild(l)}
  if(r.pages)bt('🔎 Pages où le mot apparaît',()=>dsPages(r,d));
  if(r.rec)bt('🔍 Chercher le service cartographique',async e=>{e.target.disabled=true;e.target.textContent='⏳ Lecture de la fiche…';try{const t=await dsTxt(r.rec.replace(/&amp;/g,'&'));const us=[...new Set([...t.matchAll(/<gmd:URL>([^<]*)<\/gmd:URL>/g)].map(m=>m[1].replace(/&amp;/g,'&')).filter(u=>/service=(wms|wfs)/i.test(u)&&!/intranet|\.rie\.gouv/.test(u)))];if(!us.length)throw new Error('aucun service public dans la fiche');r.svc=us.map(u=>({p:/service=wms/i.test(u)?'OGC:WMS':'OGC:WFS',n:'',u}));r.rec=null;const nv=dsLigne(r,'sig');d.replaceWith(nv)}catch(x){e.target.textContent='❌ '+x.message}});
