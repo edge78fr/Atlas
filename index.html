@@ -1067,11 +1067,8 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'✏️ Plans de terrain : un curseur d’opacité sous chaque plan coché (Terrain → Mes plans de terrain)'},
  {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
  {ts:Date.parse('2026-11-25T22:40:00+01:00'),t:'💬 Discussion entre membres : bouton 💬 sur la carte, messages chiffrés, et « 📍 joindre ma vue » pour montrer un endroit précis'},
- {ts:Date.parse('2026-11-26T07:10:00+01:00'),t:'👀 Discussion : tu vois maintenant qui a lu tes messages (✓ envoyé, ✓✓ lu, « Vu par » sous le dernier message)'},
- {ts:Date.parse('2026-11-26T19:25:00+01:00'),t:'💾 Garder une carte Allmaps : la carte entière est copiée (bords compris) et reste visible quand on dézoome · 🔓 relais Gallica / FranceArchives actif d’office'},
- {ts:Date.parse('2026-11-26T18:56:00+01:00'),t:'💾 Deep Search : « Garder dans l’Atlas » copie la carte dans le stockage de l’Atlas (elle reste même si la source disparaît) et tu choisis où la ranger dans le menu'},
- {ts:Date.parse('2026-11-26T18:20:00+01:00'),t:'🕵️ Deep Search plus clair : chaque résultat dit ce que c’est, vignettes, cartes anciennes superposables, moins de bruit'},
- {ts:Date.parse('2026-11-26T17:30:00+01:00'),t:'🕵️ Atlas Deep Search (Rechercher) : fouille une zone dans une douzaine de sources publiques (cartes, documents, couches SIG)'},
+ {ts:Date.parse('2026-11-26T07:10:00+01:00'),t:'👀 Discussion : tu vois qui a lu tes messages (✓ envoyé, ✓✓ lu, « Vu par »)'},
+ {ts:Date.parse('2026-11-26T17:30:00+01:00'),t:'🕵️ Atlas Deep Search (dans Rechercher) : fouille une zone dans une douzaine de sources publiques'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
@@ -1089,7 +1086,7 @@ function nvPopup(){const ses=NV.ses;if(!ses||ses.vu||(!NV.plans.length&&!NV.feat
  const byId=new Map(P.map(p=>[p.id,p]));const quand=new Date(ses.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
  let h=`<div class="nvH"><b>🆕 Nouveautés ${ses.prem?'de ces 7 derniers jours':'depuis ta dernière visite'}</b><button class="nvX" title="Fermer">✕</button></div><div class="nvC">`;
  if(NV.feats.length)h+='<h5>✨ Nouvelles fonctionnalités</h5>'+NV.feats.map(t=>`<div class="nvI nvF">${esc(t)}</div>`).join('');
- const ligne=x=>{const p=byId.get(x.id);if(!p)return'';return `<div class="nvI" data-id="${esc(x.id)}">${esc(p.nom)}<small>${esc(x.typ)}${x.qui?' par '+esc(x.qui):''} · ${new Date(x.t).toLocaleDateString('fr-FR')}</small></div>`};
+ const ligne=x=>{const p=byId.get(x.id);if(!p)return'';return `<div class="nvI" data-id="${esc(x.id)}">${p.ds?'💾 ':''}${esc(p.nom)}<small>${esc(x.typ)}${x.qui?' par '+esc(x.qui):''} · ${new Date(x.t).toLocaleDateString('fr-FR')}</small></div>`};
  const grp=(titre,L)=>{if(!L.length)return'';let o=`<h5>${titre} (${L.length})</h5>`;
   if(L.length<=6)return o+L.map(ligne).join('');
   const C={};L.forEach(x=>{const p=byId.get(x.id);const c=p?(p.com||p.dep||'Autres'):'Autres';(C[c]=C[c]||[]).push(x)});
