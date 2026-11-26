@@ -313,6 +313,7 @@ details.dep>summary{padding:9px 8px;font-size:15px}
 .chM.moi .chDel{right:auto;left:-26px}
 body.v3on #chB,body.v3on #chP{display:none!important}
 @media (max-width:700px){#chP{left:8px;right:8px;width:auto;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));height:60%}.chDel{right:4px;top:auto;bottom:2px}}
+.chK{font-size:10.5px;color:#888;text-align:right;margin-top:2px;cursor:pointer}.chK.lu{color:#1a73e8;font-weight:600}.chVu{align-self:flex-end;font-size:11px;color:#777;margin:-2px 2px 2px;max-width:90%;text-align:right}#chP.sombre .chVu,#chP.sombre .chK{color:#9aa}#chP.sombre .chK.lu{color:#6fa8ff}
 </style></head><body>
 <div id="lock"><form id="lockf"><h2>🔒 Atlas</h2>
 <div id="modeU"><p>Connecte-toi avec ton pseudo et ton mot de passe.</p>
@@ -1045,6 +1046,7 @@ const NOUV=[
  {ts:Date.parse('2026-11-25T16:40:00+01:00'),t:'✏️ Plans de terrain : un curseur d’opacité sous chaque plan coché (Terrain → Mes plans de terrain)'},
  {ts:Date.parse('2026-11-25T19:00:00+01:00'),t:'☀️ Relief à soleil réglable plus fluide : aperçu immédiat en zoomant, et les zones déjà vues s\'affichent tout de suite (même le lendemain)'},
  {ts:Date.parse('2026-11-25T22:40:00+01:00'),t:'💬 Discussion entre membres : bouton 💬 sur la carte, messages chiffrés, et « 📍 joindre ma vue » pour montrer un endroit précis'},
+ {ts:Date.parse('2026-11-26T07:10:00+01:00'),t:'👀 Discussion : tu vois maintenant qui a lu tes messages (✓ envoyé, ✓✓ lu, « Vu par » sous le dernier message)'},
  {ts:Date.parse('2026-11-23T17:20:00+01:00'),t:'🆕 Ce panneau : les nouveautés depuis ta dernière visite. Les plans concernés portent 🆕 dans l\'onglet Plans pendant cette session'},
 ];
 const NV={ids:new Map(),plans:[],feats:[]};
@@ -2691,13 +2693,13 @@ fondSync=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(f
 grpTout=(f=>function(){const r=f.apply(this,arguments);ecrPlanif();return r})(grpTout);
 setTimeout(ecrPlanif,1500);
 // ===== 💬 Chat entre membres (messages chiffrés, partagés comme les points) =====
-const CH={on:false,L:store.get('chat',[]),sha:null,busy:false,att:false,t:null};
+const CH={on:false,L:store.get('chat',[]),sha:null,busy:false,att:false,t:null,LU:store.get('chat_lu',{}),luSha:null,luBusy:false,mem:store.get('chat_mem',[])};
 const chB=document.createElement('button');chB.id='chB';chB.title='Discussion entre membres';chB.innerHTML='💬<b></b>';document.getElementById('m').appendChild(chB);
 const chP=document.createElement('div');chP.id='chP';chP.innerHTML=`<div class="eh"><span>💬 Discussion</span><button id="chX" title="Fermer">✕</button></div><div id="chL"></div><div id="chEtat"></div>
 <div id="chF"><label id="chVue" title="Joindre ma vue : position, zoom et plans affichés"><input type="checkbox" id="chVueC"> 📍 joindre ma vue</label><div id="chS"><textarea id="chT" rows="1" maxlength="1000" placeholder="Écrire un message…"></textarea><button id="chE" title="Envoyer">➤</button></div></div>`;document.getElementById('m').appendChild(chP);
 L.DomEvent.disableClickPropagation(chB);L.DomEvent.disableClickPropagation(chP);L.DomEvent.disableScrollPropagation(chP);
 const chQ=i=>document.getElementById(i);
-chB.onclick=()=>{if(!CH.on&&ECR.on)ecrB.onclick();CH.on=!CH.on;chP.classList.toggle('on',CH.on);chP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));chB.classList.toggle('on',CH.on);if(CH.on){chRendu(true);chSync();setTimeout(()=>chQ('chT').focus(),50)}};chQ('chX').onclick=()=>chB.onclick();{const eo=ecrB.onclick;ecrB.onclick=()=>{if(!ECR.on&&CH.on)chB.onclick();eo()}}
+chB.onclick=()=>{if(!CH.on&&ECR.on)ecrB.onclick();CH.on=!CH.on;if(CH.on)chMembres();chP.classList.toggle('on',CH.on);chP.classList.toggle('sombre',document.getElementById('p').classList.contains('sombre'));chB.classList.toggle('on',CH.on);if(CH.on){chRendu(true);chSync();setTimeout(()=>chQ('chT').focus(),50)}};chQ('chX').onclick=()=>chB.onclick();{const eo=ecrB.onclick;ecrB.onclick=()=>{if(!ECR.on&&CH.on)chB.onclick();eo()}}
 function chVus(){return +store.get('chat_vu',0)}
 function chBadge(){const n=CH.L.filter(m=>!m.del&&m.d>chVus()&&m.u!==USER).length;chB.querySelector('b').textContent=n?(n>9?'9+':n):''}
 function chHeure(d){const t=new Date(d),j=new Date();const h=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});return t.toDateString()===j.toDateString()?h:t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+h}
@@ -2707,9 +2709,20 @@ function chRendu(bas){const l=chQ('chL'),fin=bas||l.scrollHeight-l.scrollTop-l.c
   const moi=m.u===USER,b=document.createElement('div');b.className='chM'+(moi?' moi':'');const a=document.createElement('div');a.className='chA';a.textContent=(moi?'Moi':m.u||'?')+' · '+chHeure(m.d);
   const t=document.createElement('div');t.className='chTx';t.textContent=m.t||'';b.append(a,t);
   if(m.v){const v=document.createElement('button');v.className='chV';v.textContent='📍 Voir l’endroit'+(m.v.pl&&m.v.pl.length?' ('+m.v.pl.length+' plan'+(m.v.pl.length>1?'s':'')+')':'');v.onclick=()=>chAller(m.v);b.appendChild(v)}
+  const lus=chLecteurs(m);
+  if(moi){const k=document.createElement('div');k.className='chK'+(lus.length?' lu':'');k.textContent=lus.length?'✓✓ Lu'+(chAutres().length>1?' par '+lus.length+'/'+chAutres().length:''):'✓ Envoyé';k.title=lus.length?'Lu par : '+lus.join(', '):'Personne ne l’a encore lu';k.onclick=()=>chEtat(k.title);b.appendChild(k)}
+  if(m===ms[ms.length-1]&&(lus.length||m.u===USER)){const r=document.createElement('div');r.className='chVu';const pas=chAutres().filter(u=>u!==m.u&&!lus.includes(u));r.textContent=(lus.length?'👀 Vu par '+lus.join(', '):'👀 Pas encore lu')+(lus.length&&pas.length?' · pas encore : '+pas.join(', '):'');CH._vu=r}
   if(moi){const x=document.createElement('button');x.className='chDel';x.title='Supprimer mon message';x.textContent='🗑';x.onclick=()=>{m.del=1;m.e=Date.now();store.set('chat',CH.L);chRendu();chSync()};b.appendChild(x)}
-  l.appendChild(b)});
- if(fin)l.scrollTop=l.scrollHeight;if(CH.on){const last=ms.length?ms[ms.length-1].d:0;if(last>chVus())store.set('chat_vu',last)}chBadge()}
+  l.appendChild(b);if(CH._vu){l.appendChild(CH._vu);CH._vu=null}});
+ if(fin)l.scrollTop=l.scrollHeight;if(CH.on&&!document.hidden){const last=ms.length?ms[ms.length-1].d:0;if(last>chVus())store.set('chat_vu',last);if(USER&&last>(CH.LU[USER]||0)){CH.LU[USER]=last;store.set('chat_lu',CH.LU);clearTimeout(CH.luT);CH.luT=setTimeout(chLuSync,1500)}}chBadge()}
+function chLecteurs(m){return Object.entries(CH.LU).filter(([u,t])=>u!==m.u&&u!==USER&&t>=m.d).map(([u])=>u).sort()}
+function chAutres(){return (CH.mem.length?CH.mem:Object.keys(CH.LU)).filter(u=>u!==USER)}
+async function chMembres(){try{const F=await uLire();const n=[];for(const e of Object.values(F.u||{})){if(e.v===false)continue;try{n.push((await nDec(e.n)).p)}catch(_){}}if(n.length){CH.mem=n;store.set('chat_mem',n)}}catch(e){}}
+async function chLuSync(){if(!NTOK||CH.luBusy||!navigator.onLine)return;CH.luBusy=true;try{for(let k=0;k<3;k++){
+  const f=await nGet(NSITE+'.chatlu');const rem=f?await nDec(f.content):{};CH.luSha=f&&f.sha;const mer={...rem};for(const [u,t] of Object.entries(CH.LU))if(!(mer[u]>=t))mer[u]=t;
+  const chg=JSON.stringify(mer)!==JSON.stringify(CH.LU);CH.LU=mer;store.set('chat_lu',mer);if(chg&&CH.on)chRendu();
+  if(USER&&(rem[USER]||0)<(mer[USER]||0)){const r=await nPut(NSITE+'.chatlu',await nEnc(mer),CH.luSha,'lu');if(r==='conflit')continue;CH.luSha=r}
+  break}}catch(e){}finally{CH.luBusy=false}}
 function chAller(v){map.setView([v.lat,v.lng],v.z);(v.pl||[]).forEach(id=>{const p=P.find(q=>q.id===id);if(p&&!p.layer&&!pmMasque(p.id))try{charge(p)}catch(e){}});if(matchMedia('(max-width:700px)').matches)chB.onclick()}
 function chEtat(t){chQ('chEtat').textContent=t||''}
 async function chEnvoie(){const ta=chQ('chT'),t=ta.value.trim();if(!t)return;if(!NTOK){chEtat('⚠️ Partage non activé : le message ne peut pas être envoyé.');return}
@@ -2723,8 +2736,8 @@ async function chSync(){if(!NTOK||CH.busy||!navigator.onLine)return;CH.busy=true
   const f=await nGet(NSITE+'.chat');const rem=f?await nDec(f.content):[];CH.sha=f&&f.sha;const mer=chFus(CH.L,rem);
   if(sig(mer)!==sig(CH.L)){CH.L=mer;store.set('chat',CH.L);chRendu()}
   if(sig(mer)!==sig(rem)){const r=await nPut(NSITE+'.chat',await nEnc(mer),CH.sha,'discussion');if(r==='conflit')continue;CH.sha=r}
-  break}chEtat('')}catch(e){chEtat('⚠️ Discussion injoignable pour le moment, nouvel essai bientôt.')}finally{CH.busy=false;chBadge()}}
+  break}await chLuSync();chEtat('')}catch(e){chEtat('⚠️ Discussion injoignable pour le moment, nouvel essai bientôt.')}finally{CH.busy=false;chBadge()}}
 setInterval(()=>{if(NTOK&&!document.hidden&&(CH.on||Date.now()%60000<20000))chSync()},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(chSync,1500)});
-setTimeout(()=>{chBadge();chSync()},4000);
+setTimeout(()=>{chBadge();chSync();chMembres()},4000);
 </script></body></html>
